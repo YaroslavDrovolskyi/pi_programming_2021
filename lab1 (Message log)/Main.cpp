@@ -127,14 +127,6 @@ int main() {
 
 
 
-
-
-
-
-
-
-
-	
 	message mes1{1, "Yarik", {10, 05, 2003},{12, 00, 00}, info, 200, 0.100 };
 	message mes2{2, "Second Message djg", {06, 01, 2006},{12, 00, 00}, debug, 0, 0.11 };
 	message mes3{3, "Third Message #3", {11, 10, 1975},{12, 00, 00}, info, 200, 0.100 };
