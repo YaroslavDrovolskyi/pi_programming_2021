@@ -21,6 +21,9 @@ enum WorkMode {
 	Turn_Back, Interactive, Demonstration, Benchmark
 };
 
+enum WriteMode {
+	append_to_file, file_as_new
+};
 
 struct message {
 	int id;
@@ -35,10 +38,10 @@ struct message {
 
 
 
-void WriteInBIN(vector<message>& Message_Log, string FileName, const size_t begin = 0);
+short int WriteInBIN(vector<message>& Message_Log, string FileName, const size_t begin = 0, short int WriteMode = append_to_file);
 
 short int ReadFromBIN(string FileName, vector<message>& Message_Log);
-short int WriteInTEXT(vector<message>& Message_Log, string FileName, const size_t begin = 0);
+short int WriteInTEXT(vector<message>& Message_Log, string FileName, const size_t begin = 0, short int WriteMode = append_to_file);
 short int ReadFromTEXT(string FileName, vector<message>& Message_Log);
 message GetFromUser();
 void ReadFromUser(vector<message>& Message_Log);
@@ -48,13 +51,31 @@ void ClearBD(vector<message>& Message_Log, string BINfile, string TEXTfile);
 void print(message Message);
 
 
+vector <message> Search(vector<message>& Message_Log);
+Time Get_MessageTime();
+bool CompareTime(Time time_1, Time time_2);
+int Get_MessageType();
+float Get_LoadLevel();
+bool Compare(message Message, Time StartTime, Time FinishTime);
+bool Compare(message Message, int MessageType, float LoadLevel);
+bool Compare(message Message, string MessageStart);
+void PrintSearchResult(vector<message>Search_Result);
+
+
+void Generate_newDB(vector<message>& Message_Log, const int SIZE);
+string Generate_Line();
+vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode);
+
+
+
+
 
 void WriteInBIN(message Message, string FileName);
 void WriteInTEXT(message Message, string FileName);
 
 
 int main() {
-	unsigned int start_time = clock();
+	
 	cout << "Hello, dear user!\n Chose the mode, please:\n";
 	string BINfile = "Messages log_BIN.txt";
 	string TEXTfile = "Messages log_TEXT.txt";
@@ -75,8 +96,7 @@ int main() {
 			cin >> Mode;
 		}
 		if (Mode == Turn_Back) { 
-			unsigned int finish_time = clock();
-			cout << endl << "Time: " << (float)(finish_time - start_time)/1000;
+			
 			return 0;
 		}
 		else if (Mode == Interactive) {
@@ -141,6 +161,22 @@ int main() {
 					cout << "\nSuccessfully added in DB\n";
 				}
 				else if (next == 5) {
+					if (Message_Log.size() == 0) {
+						if (ReadFromTEXT("Messages log_TEXT.txt", Message_Log) != 1) {
+							if (ReadFromBIN("Messages log_BIN.txt", Message_Log) != 1) {
+								cout << "\nDB is empty\n";
+							}
+						}
+					}
+					if (Message_Log.size() > 0) {
+						PrintSearchResult(Search(Message_Log));
+					}
+
+					
+
+
+
+
 
 				}
 				else if (next == 6) {
@@ -156,7 +192,71 @@ int main() {
 			break;
 		}
 		else if (Mode == Benchmark) {
-			cout << "Enter N = \n";
+			if (Message_Log.empty()) { Message_Log.clear(); }
+			cout << "Enter N = ";
+			int N;
+			cin >> N;
+			while (N < 0 || !cin.good()) {
+				cout << "Enter valid value: \n";
+				cin.clear();
+				cin.ignore(256, '\n');
+				cin >> N;
+			}
+
+			unsigned int start_time, finish_time;
+			float TEXT_time, BIN_time;
+			vector<message> TEXT_Search_1, TEXT_Search_2, TEXT_Search_3,
+				BIN_Search_1, BIN_Search_2, BIN_Search_3;
+
+
+			start_time = clock();
+			Generate_newDB(Message_Log, N);
+			WriteInTEXT(Message_Log, "Benchmark_TEXT.txt", 0, file_as_new);
+			Message_Log.clear();
+			ReadFromTEXT("Benchmark_TEXT.txt", Message_Log);
+			TEXT_Search_1 = AutoSearch(Message_Log, 1);
+			TEXT_Search_2 = AutoSearch(Message_Log, 2);
+			TEXT_Search_3 = AutoSearch(Message_Log, 3);
+			finish_time = clock();
+			TEXT_time = (float)(finish_time - start_time) / 1000;
+			Message_Log.clear();
+			
+			start_time = clock();
+			Generate_newDB(Message_Log, N);
+			WriteInBIN(Message_Log, "Benchmark_BIN.txt", 0, file_as_new);
+			Message_Log.clear();
+			ReadFromBIN("Benchmark_BIN.txt", Message_Log);
+			BIN_Search_1 = AutoSearch(Message_Log, 1);
+			BIN_Search_2 = AutoSearch(Message_Log, 2);
+			BIN_Search_3 = AutoSearch(Message_Log, 3);
+			finish_time = clock();
+			BIN_time = (float)(finish_time - start_time) / 1000;
+			//WriteInTEXT(Message_Log, TEXTfile, 0, file_as_new);
+			Message_Log.clear();
+
+			cout << "\nFrom BIN Search_1 (time interval)\n";
+			PrintSearchResult(BIN_Search_1);
+			cout << "\nFrom BIN Search_2 (type and load level)\n";
+			PrintSearchResult(BIN_Search_2);
+			cout << "\nFrom BIN Search_3 (beginning of message)\n";
+			PrintSearchResult(BIN_Search_3);
+			
+			cout << "\nFrom TEXT Search_1 (time interval)\n";
+			PrintSearchResult(TEXT_Search_1);
+			cout << "\nFrom TEXT Search_2 (type and load level)\n";
+			PrintSearchResult(TEXT_Search_2);
+			cout << "\nFrom TEXT Search_3 (beginning of message)\n";
+			PrintSearchResult(TEXT_Search_3);
+			
+			
+
+
+			
+			cout << "\n\n\n\n===============RESULTS===============\n";
+			
+			cout << "Time with BIN files: " << BIN_time << endl;
+			cout << "Time with TEXT files: " << TEXT_time << endl;
+
 			break;
 		}
 		else { cout << "Something is wrong"; return -1; }
@@ -167,20 +267,21 @@ int main() {
 
 
 
-	message mes1{1, "First message", {10, 10, 2000},{12, 00, 00}, info, 200, 0.100 };
+	message mes1{ 1, "First message", {10, 10, 2000},{12, 00, 00}, info, 200, 0.100 };
 	message mes2{2, "Second Message djg", {10, 10, 2000},{12, 00, 00}, debug, 0, 0.11 };
 	message mes3{3, "Third Message #3", {10, 10, 2020},{12, 00, 00}, info, 200, 0.100 };
 
-	
+	system("pause");
 	return 0;
 }
 
-void WriteInBIN (vector<message>& Message_Log, string FileName, const size_t begin) {
+short int WriteInBIN (vector<message>& Message_Log, string FileName, const size_t begin, short int WriteMode) {
 	ofstream OutputFile;
-	OutputFile.open(FileName, ofstream::app);
+	if (WriteMode == append_to_file) { OutputFile.open(FileName, ofstream::app); }
+	else if (WriteMode == file_as_new) { OutputFile.open(FileName); }
+
 	if (!OutputFile.is_open()) {
-		cout << "Error!";
-		return ;
+		return -1;
 	}
 	for (size_t i = begin; i < Message_Log.size(); i++) {
 		OutputFile.write((char*)&(Message_Log[i].id), sizeof(int));
@@ -196,6 +297,7 @@ void WriteInBIN (vector<message>& Message_Log, string FileName, const size_t beg
 		OutputFile.write((char*)&(Message_Log[i].load_level), sizeof(float));
 	}
 	OutputFile.close();
+	return 1;
 }
 
 
@@ -224,9 +326,11 @@ short int ReadFromBIN(string FileName, vector<message>& Message_Log) {
 	return 1;
 }
 
-short int WriteInTEXT(vector<message>& Message_Log, string FileName, const size_t begin) {
+short int WriteInTEXT(vector<message>& Message_Log, string FileName, const size_t begin, short int WriteMode) {
 	ofstream File;
-	File.open(FileName, ofstream::app);
+	if (WriteMode == append_to_file){ File.open(FileName, ofstream::app); }
+	else if (WriteMode == file_as_new){ File.open(FileName); }
+	
 	if (!File.is_open()) {
 		return -1;
 	}
@@ -441,6 +545,273 @@ void ClearBD(vector<message>& Message_Log, string BINfile, string TEXTfile) {
 	FileTEXT.open(TEXTfile, ofstream::out | ofstream::trunc);
 	FileBIN.close();
 	FileTEXT.close();
+}
+
+vector <message> Search(vector<message>& Message_Log) {
+	vector <message> Message_Result;
+	short int search_mode;
+	cout << "\nChoose criteriors to search:\n" <<
+		"1 - Time interval\n" <<
+		"2 - Type and load level\n" <<
+		"3 - Beginning of message\n";
+
+	cin >> search_mode;
+	while (search_mode < 1 || search_mode > 3 || !cin.good()) {
+		cout << "Enter valid value: \n";
+		cin.clear();
+		cin.ignore(256, '\n');
+		cin >> search_mode;
+	}
+	if (search_mode == 1) {
+		Time StartTime, FinishTime;
+		StartTime = Get_MessageTime();
+		FinishTime = Get_MessageTime();
+		while (CompareTime(StartTime, FinishTime) == false) {
+			StartTime = Get_MessageTime();
+			FinishTime = Get_MessageTime();
+		}
+
+		for (size_t i = 0; i < Message_Log.size(); i++) {
+			if (Compare(Message_Log[i], StartTime, FinishTime) == true) {
+				Message_Result.push_back(Message_Log[i]);
+			}
+		}
+	}
+	else if (search_mode == 2) {
+		int MessageType;
+		float LoadLevel;
+		MessageType = Get_MessageType();
+		LoadLevel = Get_LoadLevel();
+
+		for (size_t i = 0; i < Message_Log.size(); i++) {
+			if (Compare(Message_Log[i], MessageType, LoadLevel) == true) {
+				Message_Result.push_back(Message_Log[i]);
+			}
+		}
+	}
+	else if (search_mode == 3) {
+		string MessageBegin;
+		cout << "\nEnter the beginning of message: ";
+		cin.ignore(256, '\n');
+		getline(cin, MessageBegin);
+		for (size_t i = 0; i < Message_Log.size(); i++) {
+			if (Compare(Message_Log[i], MessageBegin) == true) {
+				Message_Result.push_back(Message_Log[i]);
+			}
+		}
+	}
+
+
+	return Message_Result;
+	
+	
+}
+
+vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode) {
+	vector <message> Message_Result;
+	if (search_mode == 1) {
+		Time StartTime, FinishTime;
+
+		// generate random data
+		StartTime.hour = rand() % 23;
+		StartTime.min = rand() % 59;
+		StartTime.second = rand() % 59;
+
+		FinishTime.hour = rand() % 23;
+		FinishTime.min = rand() % 59;
+		FinishTime.second = rand() % 59;
+
+		while (CompareTime(StartTime, FinishTime) == false) {
+			StartTime.hour = rand() % 23;
+			StartTime.min = rand() % 59;
+			StartTime.second = rand() % 59;
+
+			FinishTime.hour = rand() % 23;
+			FinishTime.min = rand() % 59;
+			FinishTime.second = rand() % 59;
+		}
+
+		for (size_t i = 0; i < Message_Log.size(); i++) {
+			if (Compare(Message_Log[i], StartTime, FinishTime) == true) {
+				Message_Result.push_back(Message_Log[i]);
+			}
+		}
+	}
+	else if (search_mode == 2) {
+		int MessageType;
+		float LoadLevel;
+		MessageType = rand() % 4;
+		LoadLevel = (float)(rand() % 10000) / 10000;
+
+		for (size_t i = 0; i < Message_Log.size(); i++) {
+			if (Compare(Message_Log[i], MessageType, LoadLevel) == true) {
+				Message_Result.push_back(Message_Log[i]);
+			}
+		}
+	}
+	else if (search_mode == 3) {
+		string MessageBegin = Generate_Line();
+		for (size_t i = 0; i < Message_Log.size(); i++) {
+			if (Compare(Message_Log[i], MessageBegin) == true) {
+				Message_Result.push_back(Message_Log[i]);
+			}
+		}
+	}
+	return Message_Result;
+}
+
+
+Time Get_MessageTime() {
+	Time UserTime;
+
+	cout << "Enter a time hours:  ";
+	cin >> UserTime.hour;
+	while (UserTime.hour < 0 || UserTime.hour > 23 || !cin.good()) {
+		cout << "Enter valid value: \n";
+		cin.clear();
+		cin.ignore(256, '\n');
+		cin >> UserTime.hour;
+	}
+
+	cout << "Enter a time minutes:  ";
+	cin >> UserTime.min;
+	while (UserTime.min < 0 || UserTime.min > 59 || !cin.good()) {
+		cout << "Enter valid value: \n";
+		cin.clear();
+		cin.ignore(256, '\n');
+		cin >> UserTime.min;
+	}
+
+	cout << "Enter a time seconds:  ";
+	cin >> UserTime.second;
+	while (UserTime.second < 0 || UserTime.second > 59 || !cin.good()) {
+		cout << "Enter valid value: \n";
+		cin.clear();
+		cin.ignore(256, '\n');
+		cin >> UserTime.second;
+	}
+	return UserTime;
+}
+
+// time_1 > time_2 --> false
+bool CompareTime(Time time_1, Time time_2){
+	if (time_1.hour <= time_2.hour) {
+		if (time_1.min <= time_2.min) {
+			if (time_1.second <= time_2.second) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+int Get_MessageType() {
+	int MessageType;
+	cout << "Enter a Message Type (0 -- debug, 1 -- info, 2 -- warning, 3 -- error, 4 -- fatal):  ";
+	cin >> MessageType;
+	while (MessageType < 0 || MessageType > 4 || !cin.good()) {
+		cout << "Enter valid value: \n";
+		cin.clear();
+		cin.ignore(256, '\n');
+		cin >> MessageType;
+	}
+	return MessageType;
+}
+
+float Get_LoadLevel() {
+	float LoadLevel;
+	cout << "Enter a Load level (float [0,1]):  ";
+	cin >> LoadLevel;
+	while (LoadLevel - 0 < 0 || LoadLevel - 1 > 0 || !cin.good()) {
+		cout << "Enter valid value: \n";
+		cin.clear();
+		cin.ignore(256, '\n');
+		cin >> LoadLevel;
+	}
+	return LoadLevel;
+
+}
+
+
+
+
+
+
+
+
+bool Compare(message Message, Time StartTime, Time FinishTime) {
+	if (Message.time.hour >= StartTime.hour && Message.time.hour <= FinishTime.hour) {
+		if (Message.time.min >= StartTime.min && Message.time.min <= FinishTime.min) {
+			if (Message.time.second >= StartTime.second && Message.time.second <= FinishTime.second) {
+				return true;
+			}
+			else { return false; }
+		}
+		else { return false; }
+	}
+	else { return false; }
+}
+
+bool Compare(message Message, int MessageType, float LoadLevel) {
+	if (Message.type == MessageType && Message.load_level >= LoadLevel) {
+		return true;
+	}
+	return false;
+}
+
+bool Compare(message Message, string MessageStart) {
+	if ((Message.text).length() < MessageStart.length()) { return false; }
+	if (MessageStart == "") { 
+		if (Message.text != MessageStart) { return false; }
+	}
+	else if ((Message.text).find(MessageStart) != 0) { return false; }
+	return true;
+}
+
+
+
+void PrintSearchResult(vector<message>Search_Result) {
+	if (Search_Result.size() == 0) {
+		cout << "\nNothing was found\n";
+		return;
+	}
+	for (size_t i = 0; i < Search_Result.size(); i++) {
+		print(Search_Result[i]);
+	}
+}
+
+
+void Generate_newDB(vector<message>& Message_Log, const int SIZE) {
+	message new_Message;
+	for (size_t i = 0; i < SIZE; i++) {
+		new_Message.id = i;
+		new_Message.time.hour = rand() % 23;
+		new_Message.time.min = rand() % 59;
+		new_Message.time.second = rand() % 59;
+		new_Message.date.day = rand() % 30 + 1;
+		new_Message.date.month = rand() % 11 + 1;
+		new_Message.date.year = rand() % 15 + 2006;
+		new_Message.type = rand() % 4;
+		new_Message.priority = rand() % 200;
+		new_Message.load_level = (float)(rand() % 10000) / 10000;
+		new_Message.text = Generate_Line();
+
+		Message_Log.push_back(new_Message);
+	}
+	
+}
+
+string Generate_Line() {
+	int size;
+	size = rand() % 200;
+	if (size == 0 || size == 1) { return ""; }
+
+	string new_line;
+	for (size_t i = 0; i < size - 1; i++) {
+		new_line+= (char)(rand() % 79 + 47);
+	}
+	return new_line;
 }
 
 
