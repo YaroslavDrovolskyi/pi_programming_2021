@@ -1,8 +1,10 @@
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <ctime>
+#include <io.h>
 
 using namespace std;
 
@@ -38,6 +40,7 @@ struct message {
 
 
 
+
 short int WriteInBIN(vector<message>& Message_Log, string FileName, const size_t begin = 0, short int WriteMode = append_to_file);
 
 short int ReadFromBIN(string FileName, vector<message>& Message_Log);
@@ -64,7 +67,8 @@ void PrintSearchResult(vector<message>Search_Result);
 
 void Generate_newDB(vector<message>& Message_Log, const int SIZE);
 string Generate_Line();
-vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode);
+vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode, const int program_mode = Benchmark);
+unsigned long int SizeOfFile(string filenyme);
 
 
 
@@ -189,75 +193,219 @@ int main() {
 			}
 		}
 		else if (Mode == Demonstration) {
+			//(0 --debug, 1 --info, 2 --warning, 3 --error, 4 --fatal)
+			cout << "1. Fill DB by fixed items\n\n\n";
+			message demo_message_1{ 0, "Message #1", {10, 9, 1985},{21, 10, 18}, error, 8, 0.3 };
+			message demo_message_2{ 1, "Message #2", {22, 10, 2001},{1, 15, 45}, debug, 45, 0.24 };
+			message demo_message_3{ 2, "Message #3", {1, 2, 1976},{15, 48, 25}, warning, 165, 0.16 };
+			message demo_message_4{ 3, "Message #4", {15, 6, 1989},{04, 35, 01}, info, 28, 0.199 };
+			message demo_message_5{ 4, "Message #5", {31, 1, 2018},{8, 10, 16}, fatal, 14, 0.49 };
+			message demo_message_6{ 5, "Message #6", {03, 4, 1919},{13, 51, 25}, warning, 183, 0.2345 };
+			message demo_message_7{ 6, "Message #7", {01, 8, 1979},{06, 35, 14}, debug, 74, 0.99 };
+			Message_Log.push_back(demo_message_1);
+			Message_Log.push_back(demo_message_2);
+			Message_Log.push_back(demo_message_3);
+			Message_Log.push_back(demo_message_4);
+			Message_Log.push_back(demo_message_5);
+			WriteInTEXT(Message_Log, TEXTfile, 0, file_as_new);
+			WriteInBIN(Message_Log, BINfile, 0, file_as_new);
+
+			cout << "2. Delete data from local storage and restore from text file:\n\n";
+			Message_Log.clear();
+			ReadFromTEXT(TEXTfile, Message_Log);
+			PrintBD(Message_Log);
+
+			cout << "3. Delete data from local storage and restore from binary file:\n\n";
+			Message_Log.clear();
+			ReadFromBIN(BINfile, Message_Log);
+			PrintBD(Message_Log);
+
+			cout << "4. Append some other data\n\n";
+			Message_Log.push_back(demo_message_6);
+			Message_Log.push_back(demo_message_7);
+			WriteInTEXT(Message_Log, TEXTfile, 5);
+			WriteInBIN(Message_Log, BINfile, 5);
+
+			cout << "5. Delete data from local storage and restore from binary file to check if adding was successful:\n\n\n";
+			Message_Log.clear();
+			ReadFromBIN(BINfile, Message_Log);
+			PrintBD(Message_Log);
+
+			
+			cout << "6. Search data between 00:12 : 56 and 13 : 01 : 34 :\n\n\n";
+			PrintSearchResult(AutoSearch(Message_Log, 1, Demonstration));
+			cout << "\n\n\n=========\n\n\n\n";
+
+			cout << "7. Search data with type \"info\" and load level >= 0.5:\n\n\n";
+			PrintSearchResult(AutoSearch(Message_Log, 2, Demonstration));
+			cout << "\n\n\n=========\n\n\n\n";
+
+			cout << "8. Search data with message beginning \"Mess\":\n\n\n";
+			PrintSearchResult(AutoSearch(Message_Log, 3, Demonstration));
+			cout << "\n\n\n=========\n\n\n\n";
+
+			cout << "\n\n\n\n\nDemonstration mode end\n";
+
+			
+			
+
+
+
+
 			break;
 		}
 		else if (Mode == Benchmark) {
-			if (Message_Log.empty()) { Message_Log.clear(); }
+			int START_TIME = clock();
+			if (!Message_Log.empty()) { Message_Log.clear(); }
+			int N = 10;
+			int N_10 = N;
+			unsigned int i = 1;
+			/*
 			cout << "Enter N = ";
-			int N;
+			
 			cin >> N;
 			while (N < 0 || !cin.good()) {
 				cout << "Enter valid value: \n";
 				cin.clear();
 				cin.ignore(256, '\n');
 				cin >> N;
-			}
+			}*/
 
-			unsigned int start_time, finish_time;
+			//ofstream file_for_results("results.txt", ofstream::app);
+			/*ofstream file_for_results("results.txt");
+			file_for_results.close();*/
+
+			unsigned int start_time, finish_time, gen_time_bin, gen_time_text, gen_time_vector,
+				write_time_text, write_time_bin, read_time_text, read_time_bin, search_time_text, search_time_bin,
+				search_time_vector;
 			float TEXT_time, BIN_time;
-			vector<message> TEXT_Search_1, TEXT_Search_2, TEXT_Search_3,
-				BIN_Search_1, BIN_Search_2, BIN_Search_3;
+			vector<message> Search_1, Search_2, Search_3;
+
+			cout << "1 -- N = " << N;
+
+			ofstream file_for_results("results.txt");
+			file_for_results.close();
+
+			while (true) {
+				
+				// for text files
+				start_time = clock();
+				Generate_newDB(Message_Log, N);
+				gen_time_text = clock() - start_time;
+
+				start_time = clock();
+				WriteInTEXT(Message_Log, "Benchmark_TEXT.txt", 0, file_as_new);
+				write_time_text = clock() - start_time;
+
+				Message_Log.clear();
+
+				start_time = clock();
+				ReadFromTEXT("Benchmark_TEXT.txt", Message_Log);
+				read_time_text = clock() - start_time;
+
+				start_time = clock();
+				Search_1 = AutoSearch(Message_Log, 1);
+				Search_2 = AutoSearch(Message_Log, 2);
+				Search_3 = AutoSearch(Message_Log, 3);
+				search_time_text = clock() - start_time;
+
+				Message_Log.clear();
+				Search_1.clear();
+				Search_2.clear();
+				Search_3.clear();
 
 
-			start_time = clock();
-			Generate_newDB(Message_Log, N);
-			WriteInTEXT(Message_Log, "Benchmark_TEXT.txt", 0, file_as_new);
-			Message_Log.clear();
-			ReadFromTEXT("Benchmark_TEXT.txt", Message_Log);
-			TEXT_Search_1 = AutoSearch(Message_Log, 1);
-			TEXT_Search_2 = AutoSearch(Message_Log, 2);
-			TEXT_Search_3 = AutoSearch(Message_Log, 3);
-			finish_time = clock();
-			TEXT_time = (float)(finish_time - start_time) / 1000;
-			Message_Log.clear();
-			
-			start_time = clock();
-			Generate_newDB(Message_Log, N);
-			WriteInBIN(Message_Log, "Benchmark_BIN.txt", 0, file_as_new);
-			Message_Log.clear();
-			ReadFromBIN("Benchmark_BIN.txt", Message_Log);
-			BIN_Search_1 = AutoSearch(Message_Log, 1);
-			BIN_Search_2 = AutoSearch(Message_Log, 2);
-			BIN_Search_3 = AutoSearch(Message_Log, 3);
-			finish_time = clock();
-			BIN_time = (float)(finish_time - start_time) / 1000;
-			//WriteInTEXT(Message_Log, TEXTfile, 0, file_as_new);
-			Message_Log.clear();
-
-			cout << "\nFrom BIN Search_1 (time interval)\n";
-			PrintSearchResult(BIN_Search_1);
-			cout << "\nFrom BIN Search_2 (type and load level)\n";
-			PrintSearchResult(BIN_Search_2);
-			cout << "\nFrom BIN Search_3 (beginning of message)\n";
-			PrintSearchResult(BIN_Search_3);
-			
-			cout << "\nFrom TEXT Search_1 (time interval)\n";
-			PrintSearchResult(TEXT_Search_1);
-			cout << "\nFrom TEXT Search_2 (type and load level)\n";
-			PrintSearchResult(TEXT_Search_2);
-			cout << "\nFrom TEXT Search_3 (beginning of message)\n";
-			PrintSearchResult(TEXT_Search_3);
-			
-			
+				TEXT_time = (float)(gen_time_text + write_time_text + read_time_text + search_time_text) / 1000;
 
 
-			
-			cout << "\n\n\n\n===============RESULTS===============\n";
-			
-			cout << "Time with BIN files: " << BIN_time << endl;
-			cout << "Time with TEXT files: " << TEXT_time << endl;
+				//for binary files
+				start_time = clock();
+				Generate_newDB(Message_Log, N);
+				gen_time_bin = clock() - start_time;
 
+				start_time = clock();
+				WriteInBIN(Message_Log, "Benchmark_BIN.txt", 0, file_as_new);
+				write_time_bin = clock() - start_time;
+
+				Message_Log.clear();
+
+				start_time = clock();
+				ReadFromBIN("Benchmark_BIN.txt", Message_Log);
+				read_time_bin = clock() - start_time;
+
+				start_time = clock();
+				Search_1 = AutoSearch(Message_Log, 1);
+				Search_2 = AutoSearch(Message_Log, 2);
+				Search_3 = AutoSearch(Message_Log, 3);
+				search_time_bin = clock() - start_time;
+
+				Message_Log.clear();
+				Search_1.clear();
+				Search_2.clear();
+				Search_3.clear();
+
+				BIN_time = (float)(gen_time_bin + write_time_bin + read_time_bin + search_time_bin) / 1000;
+
+
+				start_time = clock();
+				Generate_newDB(Message_Log, N);
+				gen_time_vector = clock() - start_time;
+
+				start_time = clock();
+				Search_1 = AutoSearch(Message_Log, 1);
+				Search_2 = AutoSearch(Message_Log, 2);
+				Search_3 = AutoSearch(Message_Log, 3);
+				search_time_vector = clock() - start_time;
+
+				Message_Log.clear();
+				Search_1.clear();
+				Search_2.clear();
+				Search_3.clear();
+
+
+				
+				ofstream file_for_results("results.txt", ofstream::app);
+				file_for_results << "N = " << N << '\n';
+
+				file_for_results << "TEXTfile: \t" << (float)gen_time_text / 1000 << '\t' <<
+					(float)write_time_text / 1000 << '\t' << (float)read_time_text / 1000 << '\t'
+					<< (float)search_time_text / 1000 << '\t' << TEXT_time << '\t' << SizeOfFile("Benchmark_TEXT.txt") << " Bytes\n";
+
+				file_for_results << "BINfile: \t" << (float)gen_time_bin / 1000 << '\t' <<
+					(float)write_time_bin / 1000 << '\t' << (float)read_time_bin / 1000 << '\t'
+					<< (float)search_time_bin / 1000 << '\t' << BIN_time << '\t' << SizeOfFile("Benchmark_BIN.txt") << " Bytes\n";
+
+				file_for_results << "VECTOR: \t" << (float)gen_time_vector / 1000 << '\t' <<
+					(float)search_time_vector / 1000 << '\t' << (float)(gen_time_vector + search_time_vector) / 1000 << "\n\n\n";
+
+				file_for_results.close();
+
+				cout << "\ntime: " << (float)(clock() - START_TIME) / 1000 << "\n\n\n";
+				if (BIN_time - 1 <= 0) {
+					N *= 2;
+					N_10 = N;
+					cout << "1 -- N = " << N;
+				}
+				else if (BIN_time - 1 > 0 && BIN_time - 10 <= 0) {
+					
+					N += N_10;
+					cout << "2 -- N = " << N;
+					
+				}
+				else {
+					break;
+				}
+
+				
+				
+			}
+			cout << endl << "Benchmark END" << endl;
 			break;
+
+
+
+			
+
 		}
 		else { cout << "Something is wrong"; return -1; }
 
@@ -267,9 +415,7 @@ int main() {
 
 
 
-	message mes1{ 1, "First message", {10, 10, 2000},{12, 00, 00}, info, 200, 0.100 };
-	message mes2{2, "Second Message djg", {10, 10, 2000},{12, 00, 00}, debug, 0, 0.11 };
-	message mes3{3, "Third Message #3", {10, 10, 2020},{12, 00, 00}, info, 200, 0.100 };
+	
 
 	system("pause");
 	return 0;
@@ -277,8 +423,8 @@ int main() {
 
 short int WriteInBIN (vector<message>& Message_Log, string FileName, const size_t begin, short int WriteMode) {
 	ofstream OutputFile;
-	if (WriteMode == append_to_file) { OutputFile.open(FileName, ofstream::app); }
-	else if (WriteMode == file_as_new) { OutputFile.open(FileName); }
+	if (WriteMode == append_to_file) { OutputFile.open(FileName, ofstream::app | ios::binary); }
+	else if (WriteMode == file_as_new) { OutputFile.open(FileName, ios::binary | ofstream::trunc); }
 
 	if (!OutputFile.is_open()) {
 		return -1;
@@ -304,7 +450,7 @@ short int WriteInBIN (vector<message>& Message_Log, string FileName, const size_
 
 short int ReadFromBIN(string FileName, vector<message>& Message_Log) {
 	ifstream InputFile;
-	InputFile.open(FileName);
+	InputFile.open(FileName, ifstream::in | ios::binary);
 	if (!InputFile.is_open()) {
 		return -1;
 	}
@@ -513,7 +659,13 @@ void print(message Message) {
 	cout << "Text: " << Message.text << endl;
 	cout << "Time: " << Message.time.hour << ' ' << Message.time.min << ' ' << Message.time.second << endl;
 	cout << "Date: " << Message.date.day << ' ' << Message.date.month << ' ' << Message.date.year << endl;
-	cout << "Type: " << Message.type << endl;
+	cout << "Type: ";
+	//(0 -- debug, 1 -- info, 2 -- warning, 3 -- error, 4 -- fatal)
+	if (Message.type == 0) { cout << "debug\n"; }
+	else if (Message.type == 1) { cout << "info\n"; }
+	else if (Message.type == 2) { cout << "warning\n"; }
+	else if (Message.type == 3) { cout << "error\n"; }
+	else if (Message.type == 4) { cout << "fatal\n"; }
 	cout << "Priority: " << Message.priority << endl;
 	cout << "Load level: " << Message.load_level << endl;
 	cout << "\n============================\n";
@@ -607,21 +759,17 @@ vector <message> Search(vector<message>& Message_Log) {
 	
 }
 
-vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode) {
+vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode, const int program_mode) {
 	vector <message> Message_Result;
 	if (search_mode == 1) {
 		Time StartTime, FinishTime;
 
-		// generate random data
-		StartTime.hour = rand() % 23;
-		StartTime.min = rand() % 59;
-		StartTime.second = rand() % 59;
-
-		FinishTime.hour = rand() % 23;
-		FinishTime.min = rand() % 59;
-		FinishTime.second = rand() % 59;
-
-		while (CompareTime(StartTime, FinishTime) == false) {
+		if (program_mode == Demonstration) {
+			StartTime = { 00, 12, 56 };
+			FinishTime = { 13, 01, 34 };
+		}
+		else {
+			// generate random data
 			StartTime.hour = rand() % 23;
 			StartTime.min = rand() % 59;
 			StartTime.second = rand() % 59;
@@ -629,7 +777,19 @@ vector <message> AutoSearch(vector<message>& Message_Log, const short int search
 			FinishTime.hour = rand() % 23;
 			FinishTime.min = rand() % 59;
 			FinishTime.second = rand() % 59;
+
+			while (CompareTime(StartTime, FinishTime) == false) {
+				StartTime.hour = rand() % 23;
+				StartTime.min = rand() % 59;
+				StartTime.second = rand() % 59;
+
+				FinishTime.hour = rand() % 23;
+				FinishTime.min = rand() % 59;
+				FinishTime.second = rand() % 59;
+			}
 		}
+
+		
 
 		for (size_t i = 0; i < Message_Log.size(); i++) {
 			if (Compare(Message_Log[i], StartTime, FinishTime) == true) {
@@ -640,8 +800,15 @@ vector <message> AutoSearch(vector<message>& Message_Log, const short int search
 	else if (search_mode == 2) {
 		int MessageType;
 		float LoadLevel;
-		MessageType = rand() % 4;
-		LoadLevel = (float)(rand() % 10000) / 10000;
+		if (program_mode == Demonstration) {
+			MessageType = info;
+			LoadLevel = 0.5;
+		}
+		else {
+			MessageType = rand() % 4;
+			LoadLevel = (float)(rand() % 10000) / 10000;
+		}
+		
 
 		for (size_t i = 0; i < Message_Log.size(); i++) {
 			if (Compare(Message_Log[i], MessageType, LoadLevel) == true) {
@@ -650,7 +817,14 @@ vector <message> AutoSearch(vector<message>& Message_Log, const short int search
 		}
 	}
 	else if (search_mode == 3) {
-		string MessageBegin = Generate_Line();
+		string MessageBegin;
+		if (program_mode == Benchmark) {
+			MessageBegin = Generate_Line();
+		}
+		else if (program_mode == Demonstration) {
+			MessageBegin = "Mess";
+		}
+		
 		for (size_t i = 0; i < Message_Log.size(); i++) {
 			if (Compare(Message_Log[i], MessageBegin) == true) {
 				Message_Result.push_back(Message_Log[i]);
@@ -695,11 +869,12 @@ Time Get_MessageTime() {
 
 // time_1 > time_2 --> false
 bool CompareTime(Time time_1, Time time_2){
-	if (time_1.hour <= time_2.hour) {
-		if (time_1.min <= time_2.min) {
-			if (time_1.second <= time_2.second) {
-				return true;
-			}
+	if (time_1.hour < time_2.hour) { return true; }
+	else if (time_1.hour == time_2.hour) {
+		if (time_1.min < time_2.min) { return true; }
+		else if (time_1.min == time_2.min) {
+			if (time_1.second < time_2.second) { return true; }
+			else if (time_1.second == time_2.second) { return true; }
 		}
 	}
 	return false;
@@ -741,16 +916,12 @@ float Get_LoadLevel() {
 
 
 bool Compare(message Message, Time StartTime, Time FinishTime) {
-	if (Message.time.hour >= StartTime.hour && Message.time.hour <= FinishTime.hour) {
-		if (Message.time.min >= StartTime.min && Message.time.min <= FinishTime.min) {
-			if (Message.time.second >= StartTime.second && Message.time.second <= FinishTime.second) {
-				return true;
-			}
-			else { return false; }
-		}
-		else { return false; }
+
+	if (CompareTime(StartTime, Message.time) && CompareTime(Message.time, FinishTime)) {
+		return true;
 	}
-	else { return false; }
+
+	return false;
 }
 
 bool Compare(message Message, int MessageType, float LoadLevel) {
@@ -814,6 +985,13 @@ string Generate_Line() {
 	return new_line;
 }
 
+
+unsigned long int SizeOfFile(string filename) {
+	ifstream File(filename, std::ifstream::ate | std::ifstream::binary);
+	unsigned long int size_of_file = File.tellg();
+	File.close();
+	return size_of_file;
+}
 
 
 
