@@ -1,18 +1,16 @@
-#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <ctime>
-#include <io.h>
 
 using namespace std;
 
 struct date {
-	int day, month, year;
+	short int day, month, year;
 };
 struct Time {
-	int hour, min, second;
+	short int hour, min, second;
 };
 enum MessageType {
 	debug, info, warning, error, fatal
@@ -32,7 +30,7 @@ struct message {
 	string text;
 	date date;
 	Time time;
-	int type; // debug, info, warning, error, fatal
+	short int type; // debug, info, warning, error, fatal
 	short int priority; // [0;200]
 	float load_level; // [0;1]
 
@@ -42,40 +40,66 @@ struct message {
 
 
 short int WriteInBIN(vector<message>& Message_Log, string FileName, const size_t begin = 0, short int WriteMode = append_to_file);
+short int WriteInTEXT(vector<message>& Message_Log, string FileName, const size_t begin = 0, short int WriteMode = append_to_file);
 
 short int ReadFromBIN(string FileName, vector<message>& Message_Log);
-short int WriteInTEXT(vector<message>& Message_Log, string FileName, const size_t begin = 0, short int WriteMode = append_to_file);
 short int ReadFromTEXT(string FileName, vector<message>& Message_Log);
+
+short int RemoveFromDB(const int id_to_remove, vector<message>& Message_Log, const string TEXTfile, const string BINfile);
+short int ChangeElement(const int id_to_change, vector<message>& Message_Log, const string TEXTfile, const string BINfile, short int program_mode = Interactive);
+
 message GetFromUser();
 void ReadFromUser(vector<message>& Message_Log);
-void PrintBD(vector<message>& Message_Log);
-void ClearBD(vector<message>& Message_Log, string BINfile, string TEXTfile);
+void PrintDB(vector<message>& Message_Log);
+void ClearDB(vector<message>& Message_Log, string BINfile, string TEXTfile);
+short int ClearLocalStorage(vector<message>& local_storage);
 
 void print(message Message);
 
 
 vector <message> Search(vector<message>& Message_Log);
+vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode, const int program_mode = Benchmark);
+void PrintSearchResult(vector<message>Search_Result);
+
+bool Compare(message Message, Time StartTime, Time FinishTime);
+bool Compare(message Message, int MessageType, float LoadLevel);
+bool Compare(message Message, string MessageStart);
+
 Time Get_MessageTime();
 bool CompareTime(Time time_1, Time time_2);
 int Get_MessageType();
 float Get_LoadLevel();
-bool Compare(message Message, Time StartTime, Time FinishTime);
-bool Compare(message Message, int MessageType, float LoadLevel);
-bool Compare(message Message, string MessageStart);
-void PrintSearchResult(vector<message>Search_Result);
-
 
 void Generate_newDB(vector<message>& Message_Log, const int SIZE);
 string Generate_Line();
-vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode, const int program_mode = Benchmark);
+
 unsigned long int SizeOfFile(string filenyme);
+unsigned long int size_of_local_storage(vector<message>& Message_Log);
 
 
+template <typename ElementType>
+void Is_correct_value(ElementType& value_to_check, const int floor_value = 0, const int ceiling_value = -1) {
+	// ceiling value = -1 means that it is no ceil for value_to_check
+	if (ceiling_value == -1) {
+		while (value_to_check - floor_value < 0 || !cin.good()) {
+			cout << "Enter valid value: \n";
+			cin.clear();
+			cin.ignore(256, '\n');
+			cin >> value_to_check;
+		}
+		return;
+	}
+	else {
+		while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !cin.good()) {
+			cout << "Enter valid value: \n";
+			cin.clear();
+			cin.ignore(256, '\n');
+			cin >> value_to_check;
+		}
+	}
+	return;
+}
 
-
-
-void WriteInBIN(message Message, string FileName);
-void WriteInTEXT(message Message, string FileName);
 
 
 int main() {
@@ -84,7 +108,7 @@ int main() {
 	string BINfile = "Messages log_BIN.txt";
 	string TEXTfile = "Messages log_TEXT.txt";
 	vector<message> Message_Log;
-	int Mode = -1, next = -1;
+	short int Mode = -1, next = -1;
 	while (true) {
 		cout << "===== MENU =====\n" << 
 			"0 \tEXIT\n" <<
@@ -92,13 +116,7 @@ int main() {
 			"2 \tDemonstration mode\n" <<
 			"3 \tBenchmark mode\n" << 
 			"================\n";
-		cin >> Mode;
-		while (Mode < 0 || Mode > 3 || !cin.good()) {
-			cout << "Enter valid value: \n";
-			cin.clear();
-			cin.ignore(256, '\n');
-			cin >> Mode;
-		}
+		cin >> Mode; Is_correct_value(Mode, 0, 3);
 		if (Mode == Turn_Back) { 
 			
 			return 0;
@@ -107,31 +125,30 @@ int main() {
 			while (true) {
 				cout << "\n===== MENU =====\n" <<
 					"Enter 0 to turn back\n" <<
-					"1 \tfill the BD as new one\n" <<
-					"2 \trestore BD from BIN file\n" <<
-					"3 \trestore BD from TEXT file\n" <<
-					"4 \tappend something to BD\n" <<
-					"5 \tsearch\n" <<
-					"6 \tprint BD\n" <<
-					"7 \tclear BD\n" <<
+					"1 \tfill the DB as new one\n" <<
+					"2 \trestore DB from BIN file\n" <<
+					"3 \trestore DB from TEXT file\n" <<
+					"4 \tappend something to DB\n" <<
+					"5 \tchange something in DB\n" <<
+					"6 \tremove something from DB\n" <<
+					"7 \tsearch\n" <<
+					"8 \tprint DB\n" <<
+					"9 \tclear all from local storage\n" <<
+					"10 \tclear all DB\n" <<
 					"================\n";
-				cin >> next;
-				while (next < 0 || next > 7 || !cin.good()) {
-					cout << "Enter valid value: \n";
-					cin.clear();
-					cin.ignore(256, '\n');
-					cin >> next;
-				}
+				cin >> next; Is_correct_value(next, 0, 10);
 
 				if (next == 0) { break; }
 				
 				if (next == 1) {
-					ClearBD(Message_Log, BINfile, TEXTfile);
+					ClearDB(Message_Log, BINfile, TEXTfile);
 					ReadFromUser(Message_Log);
 					cout << "\nBD successfully created\n";
 				}
 				else if (next == 2) {
-					Message_Log.clear();
+					if (Message_Log.size() != 0) {
+						Message_Log.clear();
+					}
 					
 					short int result = ReadFromBIN(BINfile, Message_Log);
 					if (result == 1) {
@@ -145,7 +162,9 @@ int main() {
 					}
 				}
 				else if (next == 3) {
-					Message_Log.clear();
+					if (Message_Log.size() != 0) {
+						Message_Log.clear();
+					}
 
 					short int result = ReadFromTEXT(TEXTfile, Message_Log);
 					if (result == 1) {
@@ -165,6 +184,54 @@ int main() {
 					cout << "\nSuccessfully added in DB\n";
 				}
 				else if (next == 5) {
+					int id_to_change;
+					if (Message_Log.size() == 0) {
+						if (ReadFromTEXT("Messages log_TEXT.txt", Message_Log) != 1) {
+							if (ReadFromBIN("Messages log_BIN.txt", Message_Log) != 1) {
+								cout << "\nDB is empty\n";
+								break;
+							}
+						}
+					}
+					cout << "Enter ID of data, that you want to change: ";
+					cin >> id_to_change; Is_correct_value(id_to_change, 0);
+					/*while (id_to_change < 0 || !cin.good()) {
+						cout << "Enter valid value: \n";
+						cin.clear();
+						cin.ignore(256, '\n');
+						cin >> id_to_change;
+					}*/
+					if (ChangeElement(id_to_change, Message_Log, TEXTfile, BINfile) == 1) {
+						cout << "Data successfully changed\n";
+					}
+					else { cout << "No data with this ID in DB\n"; }
+				}
+
+				else if (next == 6) {
+					int id_to_remove;
+					if (Message_Log.size() == 0) {
+						if (ReadFromTEXT("Messages log_TEXT.txt", Message_Log) != 1) {
+							if (ReadFromBIN("Messages log_BIN.txt", Message_Log) != 1) {
+								cout << "\nDB is empty\n";
+								break;
+							}
+						}
+					}
+					cout << "Enter ID of data, that you want to remove: ";
+					cin >> id_to_remove; Is_correct_value(id_to_remove, 0);
+					/*while (id_to_remove < 0 || !cin.good()) {
+						cout << "Enter valid value: \n";
+						cin.clear();
+						cin.ignore(256, '\n');
+						cin >> id_to_remove;
+					}*/
+					if (RemoveFromDB(id_to_remove, Message_Log, TEXTfile, BINfile) == 1) {
+						cout << "Data successfully removed\n";
+					}
+					else { cout << "No data with this ID in DB\n"; }
+				}
+
+				else if (next == 7) {
 					if (Message_Log.size() == 0) {
 						if (ReadFromTEXT("Messages log_TEXT.txt", Message_Log) != 1) {
 							if (ReadFromBIN("Messages log_BIN.txt", Message_Log) != 1) {
@@ -176,32 +243,34 @@ int main() {
 						PrintSearchResult(Search(Message_Log));
 					}
 
-					
-
-
-
-
-
 				}
-				else if (next == 6) {
-					PrintBD(Message_Log);
+				else if (next == 8) {
+					PrintDB(Message_Log);
 				}
-				else if (next == 7) {
-					ClearBD(Message_Log, BINfile, TEXTfile);
+				else if (next == 9) {
+					if (ClearLocalStorage(Message_Log) == 1) {
+						cout << "\nLocal storage successfully cleared\n";
+					}
+					else {
+						cout << "Local storage is already empty!\n";
+					}
+				}
+				else if (next == 10) {
+					ClearDB(Message_Log, BINfile, TEXTfile);
 					cout << "\nDB successfully cleared\n";
 				}
 			}
 		}
 		else if (Mode == Demonstration) {
-			//(0 --debug, 1 --info, 2 --warning, 3 --error, 4 --fatal)
+			//(0 -- debug, 1 -- info, 2 -- warning, 3 -- error, 4 -- fatal)
 			cout << "1. Fill DB by fixed items\n\n\n";
-			message demo_message_1{ 0, "Message #1", {10, 9, 1985},{21, 10, 18}, error, 8, 0.3 };
-			message demo_message_2{ 1, "Message #2", {22, 10, 2001},{1, 15, 45}, debug, 45, 0.24 };
-			message demo_message_3{ 2, "Message #3", {1, 2, 1976},{15, 48, 25}, warning, 165, 0.16 };
-			message demo_message_4{ 3, "Message #4", {15, 6, 1989},{04, 35, 01}, info, 28, 0.199 };
-			message demo_message_5{ 4, "Message #5", {31, 1, 2018},{8, 10, 16}, fatal, 14, 0.49 };
-			message demo_message_6{ 5, "Message #6", {03, 4, 1919},{13, 51, 25}, warning, 183, 0.2345 };
-			message demo_message_7{ 6, "Message #7", {01, 8, 1979},{06, 35, 14}, debug, 74, 0.99 };
+			message demo_message_1{ 0, "Message #1", {10, 9, 1985},{21, 10, 18}, error, 8, (float)0.3 };
+			message demo_message_2{ 1, "Message #2", {22, 10, 2001},{1, 15, 45}, debug, 45, (float)0.24 };
+			message demo_message_3{ 2, "Message #3", {1, 2, 1976},{15, 48, 25}, warning, 165, (float)0.16 };
+			message demo_message_4{ 3, "Message #4", {15, 6, 1989},{04, 35, 01}, info, 28, (float)0.199 };
+			message demo_message_5{ 4, "Message #5", {31, 1, 2018},{8, 10, 16}, fatal, 14, (float)0.49 };
+			message demo_message_6{ 5, "Message #6", {03, 4, 1919},{13, 51, 25}, warning, 183, (float) 0.2345 };
+			message demo_message_7{ 6, "Message #7", {01, 8, 1979},{06, 35, 14}, debug, 74, (float) 0.99 };
 			Message_Log.push_back(demo_message_1);
 			Message_Log.push_back(demo_message_2);
 			Message_Log.push_back(demo_message_3);
@@ -213,12 +282,12 @@ int main() {
 			cout << "2. Delete data from local storage and restore from text file:\n\n";
 			Message_Log.clear();
 			ReadFromTEXT(TEXTfile, Message_Log);
-			PrintBD(Message_Log);
+			PrintDB(Message_Log);
 
 			cout << "3. Delete data from local storage and restore from binary file:\n\n";
 			Message_Log.clear();
 			ReadFromBIN(BINfile, Message_Log);
-			PrintBD(Message_Log);
+			PrintDB(Message_Log);
 
 			cout << "4. Append some other data\n\n";
 			Message_Log.push_back(demo_message_6);
@@ -229,10 +298,9 @@ int main() {
 			cout << "5. Delete data from local storage and restore from binary file to check if adding was successful:\n\n\n";
 			Message_Log.clear();
 			ReadFromBIN(BINfile, Message_Log);
-			PrintBD(Message_Log);
+			PrintDB(Message_Log);
 
-			
-			cout << "6. Search data between 00:12 : 56 and 13 : 01 : 34 :\n\n\n";
+			cout << "6. Search data between 00:12:56 and 13:01:34 :\n\n\n";
 			PrintSearchResult(AutoSearch(Message_Log, 1, Demonstration));
 			cout << "\n\n\n=========\n\n\n\n";
 
@@ -244,13 +312,32 @@ int main() {
 			PrintSearchResult(AutoSearch(Message_Log, 3, Demonstration));
 			cout << "\n\n\n=========\n\n\n\n";
 
+			cout << "9. Remove element with ID = 3\n\n\n";
+			if (RemoveFromDB(3, Message_Log, TEXTfile, BINfile) == 1) {
+				cout << "Data successfully removed\n";
+			}
+			else { cout << "No data with this ID in DB\n"; }
+			PrintDB(Message_Log);
+
+
+			cout << "10. Change message and priority of message with ID = 5\n";
+			if (ChangeElement(5, Message_Log, TEXTfile, BINfile, Demonstration) == 1) {
+				cout << "Data successfully changed\n";
+			}
+			else { cout << "No data with this ID in DB\n"; }
+			PrintDB(Message_Log);
+
+
+			cout << "11. Remove all from local storage:\n";
+			if (ClearLocalStorage(Message_Log) == 1) {
+				cout << "\nLocal storage successfully cleared\n";
+			}
+			else {
+				cout << "Local storage is already empty!\n";
+			}
+
+			
 			cout << "\n\n\n\n\nDemonstration mode end\n";
-
-			
-			
-
-
-
 
 			break;
 		}
@@ -259,7 +346,7 @@ int main() {
 			if (!Message_Log.empty()) { Message_Log.clear(); }
 			int N = 10;
 			int N_10 = N;
-			unsigned int i = 1;
+			//unsigned int i = 1;
 			/*
 			cout << "Enter N = ";
 			
@@ -270,10 +357,6 @@ int main() {
 				cin.ignore(256, '\n');
 				cin >> N;
 			}*/
-
-			//ofstream file_for_results("results.txt", ofstream::app);
-			/*ofstream file_for_results("results.txt");
-			file_for_results.close();*/
 
 			unsigned int start_time, finish_time, gen_time_bin, gen_time_text, gen_time_vector,
 				write_time_text, write_time_bin, read_time_text, read_time_bin, search_time_text, search_time_bin,
@@ -346,7 +429,7 @@ int main() {
 
 				BIN_time = (float)(gen_time_bin + write_time_bin + read_time_bin + search_time_bin) / 1000;
 
-
+				// for std::vector
 				start_time = clock();
 				Generate_newDB(Message_Log, N);
 				gen_time_vector = clock() - start_time;
@@ -363,7 +446,7 @@ int main() {
 				Search_3.clear();
 
 
-				
+				// write results in file
 				ofstream file_for_results("results.txt", ofstream::app);
 				file_for_results << "N = " << N << '\n';
 
@@ -376,7 +459,7 @@ int main() {
 					<< (float)search_time_bin / 1000 << '\t' << BIN_time << '\t' << SizeOfFile("Benchmark_BIN.txt") << " Bytes\n";
 
 				file_for_results << "VECTOR: \t" << (float)gen_time_vector / 1000 << '\t' <<
-					(float)search_time_vector / 1000 << '\t' << (float)(gen_time_vector + search_time_vector) / 1000 << "\n\n\n";
+					(float)search_time_vector / 1000 << '\t' << (float)(gen_time_vector + search_time_vector) / 1000 << '\t' << size_of_local_storage(Message_Log) << " Bytes\n\n\n";
 
 				file_for_results.close();
 
@@ -407,6 +490,7 @@ int main() {
 			
 
 		}
+
 		else { cout << "Something is wrong"; return -1; }
 
 
@@ -458,9 +542,11 @@ short int ReadFromBIN(string FileName, vector<message>& Message_Log) {
 	message Message;
 	size_t size;
 	while (InputFile.read((char*)&Message.id, sizeof(int))) {
+
 		InputFile.read((char*)&size, sizeof(size));
 		(Message.text).resize(size);
 		InputFile.read(&(Message.text)[0], size);
+
 		InputFile.read((char*)&Message.date, sizeof(date));
 		InputFile.read((char*)&Message.time, sizeof(Time));
 		InputFile.read((char*)&Message.type, sizeof(MessageType));
@@ -531,122 +617,169 @@ short int ReadFromTEXT(string FileName, vector<message>& Message_Log) {
 	
 }
 
+short int RemoveFromDB(const int id_to_remove, vector<message>& Message_Log, const string TEXTfile, const string BINfile) {
+	int index_to_remove = -1;
+	for (size_t i = 0; i < Message_Log.size(); i++) {
+		if (id_to_remove == Message_Log[i].id) {
+			index_to_remove = i;
+			break;
+		}
+	}
+	if (index_to_remove == -1) { return 0; }
+	Message_Log.erase(Message_Log.begin() + index_to_remove);
+	WriteInBIN(Message_Log, BINfile, 0, file_as_new);
+	WriteInTEXT(Message_Log, TEXTfile, 0, file_as_new);
+	return 1;
+}
+
+short int ChangeElement(const int id_to_change, vector<message>& Message_Log, const string TEXTfile, const string BINfile, short int program_mode) {
+	int index_to_change = -1;
+	for (size_t i = 0; i < Message_Log.size(); i++) {
+		if (id_to_change == Message_Log[i].id) {
+			index_to_change = i;
+			break;
+		}
+	}
+	if (index_to_change == -1) { return 0; }
+	if (program_mode == Interactive){ 
+		cout << "It is this message:\n\n";
+		print(Message_Log[index_to_change]);
+		cout << "\nEnter a new values:\n\n";
+		Message_Log[index_to_change] = GetFromUser();
+		Message_Log[index_to_change].id = id_to_change;
+	}
+	else if (program_mode == Demonstration) {
+		Message_Log[index_to_change].text = "Changed message";
+		Message_Log[index_to_change].priority = 200;
+	}
+	
+	WriteInBIN(Message_Log, BINfile, 0, file_as_new);
+	WriteInTEXT(Message_Log, TEXTfile, 0, file_as_new);
+	return 1;
+}
+
+
+
+
+
 message GetFromUser() {
 	message Message;
 	cin.ignore(256,'\n');
+
 	cout << "Enter a Message:  ";
 	getline(cin, Message.text);
 	
 
 	//cout << "Enter a date in format DD MM YY:  ";
 	cout << "Enter a day:  ";
-	cin >> Message.date.day;
-	while (Message.date.day <= 0 || Message.date.day > 31 || !cin.good()) {
+	cin >> Message.date.day; Is_correct_value(Message.date.day, 1, 31);
+	/*while (Message.date.day <= 0 || Message.date.day > 31 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256,'\n');
 		
 		cin >> Message.date.day;
-	}
+	}*/
 
 	cout << "Enter a month:  ";
-	cin >> Message.date.month;
-	while (Message.date.month <= 0 || Message.date.month > 12 || !cin.good()) {
+	cin >> Message.date.month; Is_correct_value(Message.date.month, 1, 12);
+	/*while (Message.date.month <= 0 || Message.date.month > 12 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.date.month;
-	}
+	}*/
 
 	cout << "Enter a year:  ";
-	cin >> Message.date.year;
-	while (Message.date.year <= 0 || !cin.good()) {
+	cin >> Message.date.year; Is_correct_value(Message.date.year, 1);
+	/*while (Message.date.year <= 0 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.date.year;
-	}
+	}*/
 
 	cout << "Enter a time hours:  ";
-	cin >> Message.time.hour;
-	while (Message.time.hour < 0 || Message.time.hour > 23 || !cin.good()) {
+	cin >> Message.time.hour; Is_correct_value(Message.time.hour, 0, 23);
+	/*while (Message.time.hour < 0 || Message.time.hour > 23 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.time.hour;
-	}
+	}*/
 
 	cout << "Enter a time minutes:  ";
-	cin >> Message.time.min;
-	while (Message.time.min < 0 || Message.time.min > 59 || !cin.good()) {
+	cin >> Message.time.min; Is_correct_value(Message.time.min, 0, 59);
+	/*while (Message.time.min < 0 || Message.time.min > 59 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.time.min;
-	}
+	}*/
 
 	cout << "Enter a time seconds:  ";
-	cin >> Message.time.second;
-	while (Message.time.second < 0 || Message.time.min > 59 || !cin.good()) {
+	cin >> Message.time.second; Is_correct_value(Message.time.second, 0, 59);
+	/*while (Message.time.second < 0 || Message.time.min > 59 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.time.second;
-	}
+	}*/
 
 
 	cout << "Enter a Message Type (0 -- debug, 1 -- info, 2 -- warning, 3 -- error, 4 -- fatal):  ";
-	cin >> Message.type;
-	while (Message.type < 0 || Message.type > 4 || !cin.good()) {
+	cin >> Message.type; Is_correct_value(Message.type, 0, 4);
+	/*while (Message.type < 0 || Message.type > 4 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.type;
-	}
+	}*/
 
 
 	cout << "Enter a Message priotity (int [0,200]):  ";
-	cin >> Message.priority;
-	while (Message.priority < 0 || Message.priority > 200 || !cin.good()) {
+	cin >> Message.priority; Is_correct_value(Message.priority, 0, 200);
+	/*while (Message.priority < 0 || Message.priority > 200 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.priority;
-	}
+	}*/
 
 	cout << "Enter a Load level (float [0,1]):  ";
-	cin >> Message.load_level;
-	while (Message.load_level - 0 < 0 || Message.load_level -1 > 0 || !cin.good()) {
+	cin >> Message.load_level; Is_correct_value(Message.load_level, 0, 1);
+	/*while (Message.load_level - 0 < 0 || Message.load_level -1 > 0 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> Message.load_level;
-	}
+	}*/
 
 
 	return Message;
 }
 
 void ReadFromUser(vector<message>& Message_Log) {
-	// doesn't matter, if ReadFromTEXT will return 0 or -1 
+	// doesn't matter, if it will be nothing in text file
 	if (Message_Log.size() == 0) { ReadFromTEXT("Messages log_TEXT.txt", Message_Log); }
 	message Message;
 	size_t begin = Message_Log.size();
 	bool next = true;
 	while (next == true) {
 		Message = GetFromUser();
+		//Giving ID to each element
 		if (Message_Log.size() == 0) { Message.id = 0; }
 		else {Message.id = Message_Log[Message_Log.size() - 1].id + 1;}
 		Message_Log.push_back(Message);
 		
 		cout << "0 -- finish, 1 -- continue\n";
-		cin >> next;
-		while (next < 0 || next > 1 || !cin.good()) {
+		cin >> next; Is_correct_value(next, 0, 1);
+		/*while (next < 0 || next > 1 || !cin.good()) {
 			cout << "Enter valid value: \n";
 			cin.clear();
 			cin.ignore(256, '\n');
 			cin >> next;
-		}
+		}*/
 	}
 
 	// Write added info in files
@@ -671,7 +804,7 @@ void print(message Message) {
 	cout << "\n============================\n";
 }
 
-void PrintBD(vector<message>& Message_Log) {
+void PrintDB(vector<message>& Message_Log) {
 	if (Message_Log.size() == 0) {
 		if (ReadFromTEXT("Messages log_TEXT.txt", Message_Log) != 1) {
 			if (ReadFromBIN("Messages log_BIN.txt", Message_Log) != 1) {
@@ -690,13 +823,21 @@ void PrintBD(vector<message>& Message_Log) {
 		print(Message_Log[i]);
 	}
 }
-void ClearBD(vector<message>& Message_Log, string BINfile, string TEXTfile) {
+void ClearDB(vector<message>& Message_Log, string BINfile, string TEXTfile) {
 	ofstream FileBIN, FileTEXT;
 	Message_Log.clear();
 	FileBIN.open(BINfile, ofstream::out | ofstream::trunc);
 	FileTEXT.open(TEXTfile, ofstream::out | ofstream::trunc);
 	FileBIN.close();
 	FileTEXT.close();
+}
+
+short int ClearLocalStorage(vector<message>& local_storage) {
+	if (local_storage.size() != 0) {
+		local_storage.clear();
+		return 1;
+	}
+	return 0;
 }
 
 vector <message> Search(vector<message>& Message_Log) {
@@ -707,18 +848,21 @@ vector <message> Search(vector<message>& Message_Log) {
 		"2 - Type and load level\n" <<
 		"3 - Beginning of message\n";
 
-	cin >> search_mode;
-	while (search_mode < 1 || search_mode > 3 || !cin.good()) {
+	cin >> search_mode; Is_correct_value(search_mode, 1, 3);
+	/*(while (search_mode < 1 || search_mode > 3 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> search_mode;
-	}
+	}*/
 	if (search_mode == 1) {
 		Time StartTime, FinishTime;
+		cout << "\nEnter the beginning time:\n";
 		StartTime = Get_MessageTime();
 		FinishTime = Get_MessageTime();
+		cout << "\nEnter the ending time:\n";
 		while (CompareTime(StartTime, FinishTime) == false) {
+			cout << "\nEnter valid time (Begin time < Ending time):\n";
 			StartTime = Get_MessageTime();
 			FinishTime = Get_MessageTime();
 		}
@@ -839,31 +983,31 @@ Time Get_MessageTime() {
 	Time UserTime;
 
 	cout << "Enter a time hours:  ";
-	cin >> UserTime.hour;
-	while (UserTime.hour < 0 || UserTime.hour > 23 || !cin.good()) {
+	cin >> UserTime.hour; Is_correct_value(UserTime.hour, 0, 23);
+	/*while (UserTime.hour < 0 || UserTime.hour > 23 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> UserTime.hour;
-	}
+	}*/
 
 	cout << "Enter a time minutes:  ";
-	cin >> UserTime.min;
-	while (UserTime.min < 0 || UserTime.min > 59 || !cin.good()) {
+	cin >> UserTime.min; Is_correct_value(UserTime.min, 0, 59);
+	/*while (UserTime.min < 0 || UserTime.min > 59 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> UserTime.min;
-	}
+	}*/
 
 	cout << "Enter a time seconds:  ";
-	cin >> UserTime.second;
-	while (UserTime.second < 0 || UserTime.second > 59 || !cin.good()) {
+	cin >> UserTime.second; Is_correct_value(UserTime.second, 0, 59);
+	/*while (UserTime.second < 0 || UserTime.second > 59 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> UserTime.second;
-	}
+	}*/
 	return UserTime;
 }
 
@@ -884,36 +1028,29 @@ bool CompareTime(Time time_1, Time time_2){
 int Get_MessageType() {
 	int MessageType;
 	cout << "Enter a Message Type (0 -- debug, 1 -- info, 2 -- warning, 3 -- error, 4 -- fatal):  ";
-	cin >> MessageType;
-	while (MessageType < 0 || MessageType > 4 || !cin.good()) {
+	cin >> MessageType; Is_correct_value(MessageType, 0, 4);
+	/*while (MessageType < 0 || MessageType > 4 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> MessageType;
-	}
+	}*/
 	return MessageType;
 }
 
 float Get_LoadLevel() {
 	float LoadLevel;
 	cout << "Enter a Load level (float [0,1]):  ";
-	cin >> LoadLevel;
-	while (LoadLevel - 0 < 0 || LoadLevel - 1 > 0 || !cin.good()) {
+	cin >> LoadLevel; Is_correct_value(LoadLevel, 0, 1);
+	/*while (LoadLevel - 0 < 0 || LoadLevel - 1 > 0 || !cin.good()) {
 		cout << "Enter valid value: \n";
 		cin.clear();
 		cin.ignore(256, '\n');
 		cin >> LoadLevel;
-	}
+	}*/
 	return LoadLevel;
 
 }
-
-
-
-
-
-
-
 
 bool Compare(message Message, Time StartTime, Time FinishTime) {
 
@@ -967,6 +1104,7 @@ void Generate_newDB(vector<message>& Message_Log, const int SIZE) {
 		new_Message.priority = rand() % 200;
 		new_Message.load_level = (float)(rand() % 10000) / 10000;
 		new_Message.text = Generate_Line();
+		
 
 		Message_Log.push_back(new_Message);
 	}
@@ -974,7 +1112,7 @@ void Generate_newDB(vector<message>& Message_Log, const int SIZE) {
 }
 
 string Generate_Line() {
-	int size;
+	size_t size;
 	size = rand() % 200;
 	if (size == 0 || size == 1) { return ""; }
 
@@ -993,49 +1131,11 @@ unsigned long int SizeOfFile(string filename) {
 	return size_of_file;
 }
 
-
-
-
-void WriteInTEXT(message Message, string FileName) {
-	ofstream File;
-	File.open(FileName, ofstream::app);
-	if (!File.is_open()) {
-		cout << "Error!";
-		return;
+unsigned long int size_of_local_storage(vector<message>& Message_Log) {
+	unsigned long int Size = 0;
+	Size += Message_Log.capacity() * sizeof(message);
+	for (size_t i = 0; i < Message_Log.size(); i++) {
+		Size += (Message_Log[i].text).capacity();
 	}
-	File << '\n' << Message.id << '\t';
-	File << Message.date.day << ' ';
-	File << Message.date.month << ' ';
-	File << Message.date.year << '\t';
-	File << Message.time.hour << ' ';
-	File << Message.time.min << ' ';
-	File << Message.time.second << '\t';
-	File << Message.type << '\t';
-	File << Message.priority << '\t';
-	File << Message.load_level << '\n';
-	File << Message.text;
-
-	File.close();
-}
-void WriteInBIN(message Message, string FileName) {
-	ofstream OutputFile;
-	OutputFile.open(FileName, ofstream::app);
-	if (!OutputFile.is_open()) {
-		cout << "Error!";
-		return;
-	}
-
-	OutputFile.write((char*)&(Message.id), sizeof(int));
-
-	size_t size = (Message.text).size();
-	OutputFile.write((char*)&size, sizeof(size));
-	OutputFile.write(&(Message.text)[0], size);  //text
-
-	OutputFile.write((char*)&(Message.date), sizeof(date));
-	OutputFile.write((char*)&(Message.time), sizeof(Time));
-	OutputFile.write((char*)&(Message.type), sizeof(MessageType));
-	OutputFile.write((char*)&(Message.priority), sizeof(short int));
-	OutputFile.write((char*)&(Message.load_level), sizeof(float));
-
-	OutputFile.close();
+	return Size;
 }
