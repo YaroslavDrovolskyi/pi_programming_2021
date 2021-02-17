@@ -133,8 +133,8 @@ int main() {
 					"6 \tremove something from DB\n" <<
 					"7 \tsearch\n" <<
 					"8 \tprint DB\n" <<
-					"9 \tclear all from local storage\n" <<
-					"10 \tclear all DB\n" <<
+					"9 \tremove all from local storage\n" <<
+					"10 \tremove all DB\n" <<
 					"================\n";
 				cin >> next; Is_correct_value(next, 0, 10);
 
@@ -981,6 +981,7 @@ void PrintSearchResult(vector<message>Search_Result) {
 		cout << "\nNothing was found\n";
 		return;
 	}
+	cout << "\nResult of searching:\n\n";
 	for (size_t i = 0; i < Search_Result.size(); i++) {
 		print(Search_Result[i]);
 	}
