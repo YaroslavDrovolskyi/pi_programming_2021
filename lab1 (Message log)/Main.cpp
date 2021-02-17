@@ -30,7 +30,7 @@ struct message {
 	string text;
 	date date;
 	Time time;
-	short int type; // debug, info, warning, error, fatal
+	int type; // debug, info, warning, error, fatal
 	short int priority; // [0;200]
 	float load_level; // [0;1]
 
