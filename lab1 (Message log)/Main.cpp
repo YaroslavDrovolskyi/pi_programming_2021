@@ -363,7 +363,7 @@ int main() {
 			file_for_results.close();
 
 			while (true) {
-				
+				Message_Log.reserve(N);
 				// for text files
 				start_time = clock();
 				Generate_newDB(Message_Log, N);
@@ -433,6 +433,7 @@ int main() {
 				Search_3 = AutoSearch(Message_Log, 3);
 				search_time_vector = clock() - start_time;
 
+				long int vector_memory = size_of_local_storage(Message_Log);
 				Message_Log.clear();
 				Search_1.clear();
 				Search_2.clear();
@@ -452,7 +453,7 @@ int main() {
 					<< (float)search_time_bin / 1000 << "s\t" << BIN_time << "s\t" << SizeOfFile("Benchmark_BIN.txt") << " Bytes\n";
 
 				file_for_results << "VECTOR: \t" << (float)gen_time_vector / 1000 << "s\t" <<
-					(float)search_time_vector / 1000 << "s\t" << (float)(gen_time_vector + search_time_vector) / 1000 << "s\t\t\t" << size_of_local_storage(Message_Log) << " Bytes\n\n\n";
+					(float)search_time_vector / 1000 << "s\t" << (float)(gen_time_vector + search_time_vector) / 1000 << "s\t\t\t" << vector_memory << " Bytes\n\n\n";
 
 				file_for_results.close();
 
@@ -1031,9 +1032,16 @@ unsigned long int SizeOfFile(string filename) {
 
 unsigned long int size_of_local_storage(vector<message>& Message_Log) {
 	unsigned long int Size = 0;
+	/*
 	Size += Message_Log.capacity() * sizeof(message);
 	for (size_t i = 0; i < Message_Log.size(); i++) {
-		Size += (Message_Log[i].text).size();
+		Size += (Message_Log[i].text).capacity();
+	}
+	*/
+	size_t n = Message_Log.size();
+	for (size_t i = 0; i < Message_Log.size(); i++) {
+		Size += sizeof(Message_Log[i]);
+		Size += (Message_Log[i].text).capacity();
 	}
 	return Size;
 }

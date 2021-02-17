@@ -5,104 +5,68 @@ For std::vector time of generation, search and total time
 
 
 N = 10
-TEXTfile: 	0s	0.006s	0.001s	0s	0.007s	1315 Bytes
-BINfile: 	0.001s	0.012s	0s	0.001s	0.014s	911 Bytes
-VECTOR: 	0s	0s	0s			728 Bytes
+TEXTfile: 	0.001s	0.002s	0.001s	0.001s	0.005s	1315 Bytes
+BINfile: 	0s	0.002s	0s	0s	0.002s	911 Bytes
+VECTOR: 	0.001s	0s	0.001s			1590 Bytes
 
 
 N = 20
-TEXTfile: 	0.002s	0.004s	0.002s	0.001s	0.009s	2724 Bytes
-BINfile: 	0.001s	0.014s	0.001s	0s	0.016s	2514 Bytes
-VECTOR: 	0.008s	0.002s	0.01s			1568 Bytes
+TEXTfile: 	0.001s	0.006s	0.003s	0.001s	0.011s	2724 Bytes
+BINfile: 	0.001s	0.022s	0s	0.001s	0.024s	2514 Bytes
+VECTOR: 	0.002s	0s	0.002s			3420 Bytes
 
 
 N = 40
-TEXTfile: 	0.002s	0.01s	0.006s	0.001s	0.019s	5344 Bytes
-BINfile: 	0.002s	0.02s	0.001s	0.001s	0.024s	5207 Bytes
-VECTOR: 	0.002s	0.001s	0.003s			2352 Bytes
+TEXTfile: 	0.002s	0.005s	0.007s	0.001s	0.015s	5344 Bytes
+BINfile: 	0.002s	0.003s	0.001s	0s	0.006s	5207 Bytes
+VECTOR: 	0.002s	0.001s	0.003s			6568 Bytes
 
 
 N = 80
-TEXTfile: 	0.005s	0.017s	0.015s	0.002s	0.039s	11615 Bytes
-BINfile: 	0.005s	0.017s	0.001s	0.003s	0.026s	10956 Bytes
-VECTOR: 	0.004s	0.001s	0.005s			5264 Bytes
+TEXTfile: 	0.005s	0.017s	0.012s	0.002s	0.036s	11615 Bytes
+BINfile: 	0.005s	0.01s	0.001s	0.002s	0.018s	10956 Bytes
+VECTOR: 	0.005s	0.001s	0.006s			13232 Bytes
 
 
 N = 160
-TEXTfile: 	0.009s	0.022s	0.022s	0.003s	0.056s	21156 Bytes
-BINfile: 	0.009s	0.025s	0.001s	0.004s	0.039s	19618 Bytes
-VECTOR: 	0.008s	0.004s	0.012s			11816 Bytes
+TEXTfile: 	0.008s	0.021s	0.022s	0.003s	0.054s	21156 Bytes
+BINfile: 	0.011s	0.03s	0.002s	0.003s	0.046s	19618 Bytes
+VECTOR: 	0.008s	0.003s	0.011s			25488 Bytes
 
 
 N = 320
-TEXTfile: 	0.027s	0.033s	0.044s	0.007s	0.111s	44315 Bytes
-BINfile: 	0.017s	0.012s	0.002s	0.005s	0.036s	40346 Bytes
-VECTOR: 	0.017s	0.008s	0.025s			26544 Bytes
+TEXTfile: 	0.018s	0.03s	0.044s	0.006s	0.098s	44315 Bytes
+BINfile: 	0.018s	0.013s	0.002s	0.006s	0.039s	40346 Bytes
+VECTOR: 	0.017s	0.008s	0.025s			51808 Bytes
 
 
 N = 640
-TEXTfile: 	0.037s	0.053s	0.087s	0.014s	0.191s	86437 Bytes
-BINfile: 	0.034s	0.013s	0.005s	0.011s	0.063s	81810 Bytes
-VECTOR: 	0.035s	0.011s	0.046s			39816 Bytes
+TEXTfile: 	0.037s	0.056s	0.085s	0.016s	0.194s	86437 Bytes
+BINfile: 	0.033s	0.012s	0.005s	0.011s	0.061s	81810 Bytes
+VECTOR: 	0.034s	0.01s	0.044s			104192 Bytes
 
 
 N = 1280
-TEXTfile: 	0.075s	0.096s	0.2s	0.025s	0.396s	173512 Bytes
-BINfile: 	0.068s	0.017s	0.009s	0.03s	0.124s	163267 Bytes
-VECTOR: 	0.084s	0.029s	0.113s			89544 Bytes
+TEXTfile: 	0.073s	0.088s	0.186s	0.026s	0.373s	173512 Bytes
+BINfile: 	0.069s	0.016s	0.009s	0.033s	0.127s	163267 Bytes
+VECTOR: 	0.079s	0.022s	0.101s			210240 Bytes
 
 
 N = 2560
-TEXTfile: 	0.167s	0.244s	0.365s	0.046s	0.822s	353315 Bytes
-BINfile: 	0.137s	0.026s	0.024s	0.053s	0.24s	324512 Bytes
-VECTOR: 	0.137s	0.05s	0.187s			201432 Bytes
+TEXTfile: 	0.144s	0.241s	0.345s	0.048s	0.778s	353315 Bytes
+BINfile: 	0.138s	0.027s	0.021s	0.055s	0.241s	324512 Bytes
+VECTOR: 	0.144s	0.05s	0.194s			415504 Bytes
 
 
 N = 5120
-TEXTfile: 	0.285s	0.354s	0.709s	0.102s	1.45s	701946 Bytes
-BINfile: 	0.288s	0.049s	0.043s	0.091s	0.471s	658146 Bytes
-VECTOR: 	0.276s	0.119s	0.395s			302120 Bytes
+TEXTfile: 	0.281s	0.346s	0.697s	0.105s	1.429s	701946 Bytes
+BINfile: 	0.29s	0.033s	0.047s	0.096s	0.466s	658146 Bytes
+VECTOR: 	0.281s	0.118s	0.399s			832800 Bytes
 
 
 N = 10240
-TEXTfile: 	0.616s	0.678s	1.402s	0.209s	2.905s	1397267 Bytes
-BINfile: 	0.55s	0.073s	0.086s	0.214s	0.923s	1320304 Bytes
-VECTOR: 	0.545s	0.194s	0.739s			679728 Bytes
-
-
-N = 20480
-TEXTfile: 	1.212s	1.367s	2.781s	0.337s	5.697s	2811396 Bytes
-BINfile: 	1.099s	0.117s	0.151s	0.425s	1.792s	2624820 Bytes
-VECTOR: 	1.128s	0.368s	1.496s			1529360 Bytes
-
-
-N = 40960
-TEXTfile: 	2.296s	2.703s	5.508s	0.893s	11.4s	5628239 Bytes
-BINfile: 	2.196s	0.222s	0.302s	0.966s	3.686s	5250011 Bytes
-VECTOR: 	2.203s	0.811s	3.014s			2294040 Bytes
-
-
-N = 61440
-TEXTfile: 	3.421s	4.052s	8.257s	1.344s	17.074s	8452503 Bytes
-BINfile: 	3.31s	0.32s	0.453s	1.175s	5.258s	7892867 Bytes
-VECTOR: 	3.327s	1.403s	4.73s			3441032 Bytes
-
-
-N = 81920
-TEXTfile: 	4.637s	5.433s	11.054s	2.063s	23.187s	11321262 Bytes
-BINfile: 	4.414s	0.423s	0.627s	1.608s	7.072s	10528739 Bytes
-VECTOR: 	4.409s	1.751s	6.16s			5161520 Bytes
-
-
-N = 102400
-TEXTfile: 	5.816s	6.711s	13.765s	1.581s	27.873s	14079473 Bytes
-BINfile: 	5.5s	0.547s	0.789s	1.864s	8.7s	13129133 Bytes
-VECTOR: 	5.515s	1.702s	7.217s			7742280 Bytes
-
-
-N = 122880
-TEXTfile: 	6.652s	8.113s	16.592s	2.226s	33.583s	16972542 Bytes
-BINfile: 	6.606s	0.653s	0.95s	1.94s	10.149s	15745808 Bytes
-VECTOR: 	6.636s	2.084s	8.72s			7742280 Bytes
+TEXTfile: 	0.571s	0.662s	1.384s	0.219s	2.836s	1397267 Bytes
+BINfile: 	0.554s	0.066s	0.076s	0.228s	0.924s	1320304 Bytes
+VECTOR: 	0.551s	0.191s	0.742s			1655120 Bytes
 
 
