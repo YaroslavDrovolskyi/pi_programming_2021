@@ -11,9 +11,3 @@ Message #5
 Changed message
 6	1 8 1979	6 35 14	0	74	0.99
 Message #7
-7	12 12 2000	1 1 1	1	1	1
-Some other message
-8	20 12 2010	12 30 56	2	198	0.99
-
-9	1 1 1	1 1 1	1	1	1
-jh
