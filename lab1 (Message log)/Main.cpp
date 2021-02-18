@@ -352,7 +352,7 @@ int main() {
 			float TEXT_time, BIN_time;
 			vector<message> Search_1, Search_2, Search_3;
 
-			cout << "1 -- N = " << N;
+			cout << "N = " << N;
 
 			// to clear file for results
 			ofstream file_for_results("results.txt");
@@ -464,11 +464,11 @@ int main() {
 				if (BIN_time - 1 <= 0) {
 					N *= 2;
 					N_10 = N;
-					cout << "1 -- N = " << N;
+					cout << "N = " << N;
 				}
 				else if (BIN_time - 1 > 0 && BIN_time - 10 <= 0) {
 					N += N_10;
-					cout << "2 -- N = " << N;
+					cout << "N = " << N;
 				}
 				else {
 					break;
@@ -1038,7 +1038,6 @@ unsigned long int size_of_local_storage(vector<message>& Message_Log) {
 		Size += (Message_Log[i].text).capacity();
 	}
 	*/
-	size_t n = Message_Log.size();
 	for (size_t i = 0; i < Message_Log.size(); i++) {
 		Size += sizeof(Message_Log[i]);
 		Size += (Message_Log[i].text).capacity();
