@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -44,6 +45,10 @@ template <typename ElementType>
 short int remove(DoublyLinkedList<ElementType>* list, size_t index_to_remove);
 
 template <typename ElementType>
+short int remove_by_item(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_remove);
+
+
+template <typename ElementType>
 ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_search);
 
 template <typename ElementType>
@@ -66,6 +71,7 @@ template <typename ElementType>
 ListNode<ElementType>* insert(DoublyLinkedList<ElementType>* list, size_t index_to_insert, ElementType value);
 
 void StaticArray_Realization();
+void ListArray_Realization();
 
 
 
@@ -91,6 +97,16 @@ template <typename ElementType>
 void print_List(StaticArrayList<ElementType>& list);
 
 
+template <typename ElementType>
+short int remove_list(DoublyLinkedList<ElementType>*& list);
+
+template <typename ElementType>
+short int remove_list(StaticArrayList<ElementType>& list);
+
+template <typename ElementType>
+short int remove_list(vector<ElementType>& list);
+
+
 
 
 int main() {
@@ -98,10 +114,10 @@ int main() {
 	DoublyLinkedList<Point>* MyList = nullptr;
 	bool is_list_created = false;
 	
-	cout << "Hello!\n\n";
+	std::cout << "Hello!\n\n";
 	short int program_mode = 1, next = 1;
 	while (program_mode) {
-		cout << "\nChoose the mode\n" <<
+		std::cout << "\nChoose the mode\n" <<
 			"0 - EXIT\n" <<
 			"1 - Interactive mode\n" <<
 			"1 - Demonstrative\n" <<
@@ -109,7 +125,7 @@ int main() {
 		cin >> program_mode;
 		Is_correct_value(program_mode, 0, 3);
 		if (program_mode == Interactive) {
-			cout << "\nChoose the realization of list (1 -- linked list, 2 -- static array, 3 -- std::vector): ";
+			std::cout << "\nChoose the realization of list (1 -- linked list, 2 -- static array, 3 -- std::vector): ";
 			short int realization;
 			cin >> realization;
 			Is_correct_value(realization, 1, 3);
@@ -118,94 +134,130 @@ int main() {
 					print_Menu();
 					short int next;
 					cin >> next;
-					Is_correct_value(next, 0, 7);
-					if (next == 0) { break; }
+					Is_correct_value(next, 0, 8);
+					if (next == 0) {
+						remove_list(MyList); break;
+					}
 					switch (next) {
+					//case 0: {
+					//	remove_list(MyList); break;
+					//}
 					case 1: {
 						if (MyList) {
-							cout << "\nList is already created\n";
+							std::cout << "\nList is already created\n";
 							break;
 						}
 						MyList = create_empty <Point>();
 						is_list_created = true;
-						cout << "\nList is created\n";
+						std::cout << "\nList is created\n";
 						break;
 					}
 					case 2: { // add in the end
 						if (!MyList) {
-							cout << "List isn't created";
+							std::cout << "List isn't created";
 						}
 						else {
-							cout << "\nEnter item:\n";
+							std::cout << "\nEnter item:\n";
 							//Point new_point = get_point();
 							append(MyList, get_point());
-							cout << "\nItem added\n";
+							std::cout << "\nItem added\n";
 						}
 						break;
 					}
 					case 3: { // insert by index
 						if (!MyList) {
-							cout << "\nList isn't created\n";
+							std::cout << "\nList isn't created\n";
 						}
 						else {
-							int index_to_insert;
-							cout << "\nEnter index: ";
-							cin >> index_to_insert;
-							Is_correct_value(index_to_insert, 0);
-							if (insert(MyList, index_to_insert, get_point())) {
-							cout << "\nItem succesfully inserted\n";
+							size_t index_to_insert = get_index();
+							if (index_to_insert >= MyList->size) {
+								std::cout << "\nNo element with this index\n";
 							}
 							else {
-								cout << "\nNo element with this index\n";
+								if (insert(MyList, index_to_insert, get_point())) {
+									std::cout << "\nItem succesfully inserted\n";
+								}
+								else {
+									std::cout << "\nNo element with this index\n";
+								}
 							}
+							
 						}
 						break;
 					}
 					case 4: { // remove by index
 						if (!MyList) {
-							cout << "\nList isn't created\n";
+							std::cout << "\nList isn't created\n";
 							break;
 						}
 						else {
-							int index_to_remove = get_index();
-							if (remove(MyList, index_to_remove) == 0) {
-								cout << "\nNo element with this index\n";
+							size_t index_to_remove = get_index();
+							
+							ListNode<Point>* item_to_remove = get(MyList, index_to_remove);
+							if (!item_to_remove) {
+								std::cout << "\nNo element with this index\n";
 							}
 							else {
-								cout << "\nItem successfully removed\n";
+								std::cout << "\nAre you sure to remove this element? (0 - No, 1 - Yes)\n";
+								print_Point(item_to_remove->data);
+								bool remove_or_not = false;
+								std::cin >> remove_or_not;
+								Is_correct_value(remove_or_not, 0, 1);
+								if (!remove_or_not) {
+									std::cout << "\nItem isn't removed\n";
+									break;
+								}
+								else {
+									remove_by_item(MyList, item_to_remove);
+									std::cout << "\nItem successfully removed\n";
+								}
+							}
+						}
+						break;
+					}
+					case 5: { // get by index
+						if (!MyList) {
+							std::cout << "\nList isn't created\n";
+						}
+						else {
+							int index_to_search = get_index();
+							ListNode<Point>* result_of_search = get(MyList, index_to_search);
+							if (result_of_search) {
+								std::cout << "\nYour item is: ";
+								print_Point(result_of_search->data);
+							}
+							else {
+								std::cout << "\nNo element with this index\n";
 							}
 						
 						}
 						break;
 					}
-					case 5: { // get by index
-						int index_to_search = get_index();
-						ListNode<Point>* result_of_search = get(MyList, index_to_search);
-						if (result_of_search) {
-							cout << "\nYour item is: ";
-							print_Point(result_of_search->data);
-						}
-						else {
-							cout << "\nNo element with this index\n";
-						}
-						break;
-					}
 					case 6: { // length
 						if (!MyList) {
-							cout << "\nList is empty\n";
+							std::cout << "\nList isn't created\n";
 						}
 						else {
-							cout << "Length of linked list is: " <<
+							std::cout << "Length of linked list is: " <<
 								length(MyList) << endl;
 						}
 						break;
 					}
 					case 7: { // print list
 						if (!MyList) {
-							cout << "\nList isn't created\n";
+							std::cout << "\nList isn't created\n";
 						}
 						else {
 							print_List(MyList);
+						}
+						break;
+					}
+					case 8: {
+						if (remove_list(MyList) == 0) {
+							std::cout << "\nList isn't created\n";
+						}
+						else {
+							std::cout << "\nLinked list successfully removed\n";
 						}
 						break;
 					}
@@ -218,7 +270,7 @@ int main() {
 			StaticArray_Realization();
 			}
 			else if (realization == 3) { // std::vector
-
+			ListArray_Realization();
 			}
 		}
 		else if (program_mode == Demonstration) {
@@ -229,8 +281,8 @@ int main() {
 			break;
 		}
 	}
-	cout << "\n\n\nTHE end!\n\n\n";
-	system("pause");
+	std::cout << "\n\n\nTHE end!\n\n\n";
+	std::system("pause");
 	return 0;
 }
 
@@ -240,6 +292,19 @@ int main() {
 template <typename ElementType>
 short int remove(DoublyLinkedList<ElementType>* list, size_t index_to_remove) {
 	ListNode<ElementType>* node_to_remove = get(list, index_to_remove);
+
+	if (node_to_remove == nullptr) {
+		return 0;
+	}
+	else {
+		remove_by_item(list, node_to_remove);
+		return 1;
+	}
+}
+
+
+template <typename ElementType>
+short int remove_by_item(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_remove) {
 
 	if (node_to_remove == nullptr) {
 		return 0;
@@ -261,6 +326,8 @@ short int remove(DoublyLinkedList<ElementType>* list, size_t index_to_remove) {
 	list->size--;
 	return 1;
 }
+
+
 
 
 
@@ -386,15 +453,15 @@ void Is_correct_value(ElementType& value_to_check, const int floor_value, const 
 
 Point get_point() {
 	Point user_point;
-	cout << "Enter a point coordinate X: ";
+	std::cout << "Enter a point coordinate X: ";
 	cin >> user_point.x;
 	Is_correct_value(user_point.x);
 
-	cout << "Enter a point coordinate Y: ";
+	std::cout << "Enter a point coordinate Y: ";
 	cin >> user_point.y;
 	Is_correct_value(user_point.y);
 
-	cout << "Enter a point coordinate Z: ";
+	std::cout << "Enter a point coordinate Z: ";
 	cin >> user_point.z;
 	Is_correct_value(user_point.z);
 
@@ -403,7 +470,7 @@ Point get_point() {
 
 int get_index() {
 	int index;
-	cout << "\nEnter index: ";
+	std::cout << "\nEnter index: ";
 	cin >> index;
 	Is_correct_value(index, 0);
 	return index;
@@ -419,20 +486,41 @@ void print_List(DoublyLinkedList<ElementType>* list) {
 	ListNode<ElementType>* current_node = list->begin;
 	cout << endl << "Your list is: \n";
 	while (current_node) {
-		i++;
 		cout << i << '\t';
 		print_Point(current_node->data);
 		current_node = current_node->next;
+		i++;
 	}
 }
 
 void print_Point(Point p) {
-	cout << '(' << p.x << "; " << p.y << "; " << p.z << ")\n";
+	std::cout << '(' << p.x << "; " << p.y << "; " << p.z << ")\n";
 	return;
 }
 
+template <typename ElementType>
+short int remove_list(DoublyLinkedList<ElementType>*& list) {
+	if (!list) {
+		return 0;
+	}
+	else {
+		ListNode<ElementType>* current_node = list->begin;
+		while (list->begin) {
+			current_node = list->begin;
+			list->begin = list->begin->next;
+			delete current_node;
+		}
+		list = nullptr;
+		return 1;
+	}
+	
+}
+
+
+
+
 void print_Menu() {
-	cout << "\n\n=======MENU=======\n" <<
+	std::cout << "\n\n=======MENU=======\n" <<
 		"0 \tchoose mode\n" <<
 		"1 \tcreate new list\n" <<
 		"2 \tadd in the list end\n" <<
@@ -441,6 +529,7 @@ void print_Menu() {
 		"5 \tget element by index\n" <<
 		"6 \tlength of list\n" <<
 		"7 \tprint list\n" <<
+		"8 \tremove list\n"
 		"===================\n\n";
 }
 
@@ -454,9 +543,10 @@ void StaticArray_Realization(){
 		print_Menu();
 		short int next;
 		cin >> next;
-		Is_correct_value(next, 0, 7);
+		Is_correct_value(next, 0, 8);
 		switch (next) {
 		case 0: { // only way to turn back
+			//remove_list(StaticList);
 			return;
 			break;
 		}
@@ -468,98 +558,123 @@ void StaticArray_Realization(){
 				StaticList.size = 0;
 				StaticList.capacity = SIZE;
 
-				cout << "\nList successfully created\n";
+				std::cout << "\nList successfully created\n";
 			}
 			else {
-				cout << "\nList is already created\n";
+				std::cout << "\nList is already created\n";
 			}
 			break;
 		}
 		case 2: { // append
 			if (StaticList.array == nullptr) {
-				cout << "\nList isn't created\n";
+				std::cout << "\nList isn't created\n";
 			}
 			else {
 				if (append(StaticList, get_point()) == 1) {
-					cout << "\nSucessfully appended\n";
+					std::cout << "\nSucessfully appended\n";
 				}
 				else {
-					cout << "\nError of append: List is already full\n";
+					std::cout << "\nError of append: List is already full\n";
 				}
 			}
 			break;
 		}
 		case 3: { // insert by index
 			if (StaticList.array == nullptr) {
-				cout << "\nList isn't created\n";
+				std::cout << "\nList isn't created\n";
 			}
 			else {
 				size_t index_to_insert = get_index();
-				Point value_to_insert = get_point();
-				short int result_of_insert;
-				result_of_insert = insert(StaticList, index_to_insert, value_to_insert);
-				if (result_of_insert == 1) {
-					cout << "\nValue successfully inserted\n";
-				}
-				else if (result_of_insert == -1) {
-					cout << "\nList if already full\n";
+				if (index_to_insert >= StaticList.size) {
+					std::cout << "\nNo element with this index\n";
 				}
 				else {
-					cout << "\nNo element with this index in list\n";
+					Point value_to_insert = get_point();
+					short int result_of_insert;
+					result_of_insert = insert(StaticList, index_to_insert, value_to_insert);
+					if (result_of_insert == 1) {
+						std::cout << "\nValue successfully inserted\n";
+					}
+					else if (result_of_insert == -1) {
+						std::cout << "\nList if already full\n";
+					}
+					else {
+						std::cout << "\nNo element with this index in list\n";
+					}
 				}
+				
 			}
 			break;
 		}
 		case 4: { // remove by index
 			if (StaticList.array == nullptr) {
-				cout << "\nList isn't created\n";
+				std::cout << "\nList isn't created\n";
 			}
 			else {
 				size_t index_to_remove = get_index();
-				short int result_of_remove;
-				result_of_remove = remove(StaticList, index_to_remove);
-				if (result_of_remove == 1) {
-					cout << "\nValue successfully removed\n";
+				if (index_to_remove >= StaticList.size) {
+					std::cout << "\nNo element with this index in StaticList\n";
 				}
-				else if (result_of_remove == 0) {
-					cout << "\nNo element with this index in list\n";
+				else {
+					std::cout << "\nAre you sure to revove this item? (0 - No. 1 - Yes)\n";
+					print_Point(StaticList.array[index_to_remove]);
+					bool remove_or_not = false;
+					std::cin >> remove_or_not;
+					Is_correct_value(remove_or_not, 0, 1);
+					if (!remove_or_not) {
+						std::cout << "\nItem wasn't remove\n";
+					}
+					else {
+						remove(StaticList, index_to_remove);
+						std::cout << "\nItem successfully removed\n";
+					}
 				}
 			}
 			break;
 		}
 		case 5: { // get by index
 			if (StaticList.array == nullptr) {
-				cout << "\nList isn't created\n";
+				std::cout << "\nList isn't created\n";
 			}
 			else {
 				size_t index_to_search = get_index();
 				Point* result_of_search = get(StaticList, index_to_search);
 				if (result_of_search == nullptr) {
-					cout << "\nNo element with this index in list\n";
+					std::cout << "\nNo element with this index in list\n";
 				}
 				else {
-					cout << "\nYour point is: ";
+					std::cout << "\nYour point is: ";
 					print_Point(*result_of_search);
-					cout << endl;
+					std::cout << endl;
 				}
 			}
 			break;
 		}
 		case 6: { // length
 			if (StaticList.array == nullptr) {
-				cout << "\nList isn't created\n";
+				std::cout << "\nList isn't created\n";
 			}
 			else {
-				cout << "\nSize of list: " << length(StaticList) << endl;
+				std::cout << "\nSize of list: " << length(StaticList) << endl;
 			}
 			break;
 		}
 		case 7: { // print list
 			if (StaticList.array == nullptr) {
-				cout << "\nList isn't created\n";
+				std::cout << "\nList isn't created\n";
 			}
 			else {
 				print_List(StaticList);
+			}
+			break;
+		}
+		case 8: { // remove list
+			if (StaticList.array == nullptr) {
+				std::cout << "\nList isn't created\n";
+			}
+			else {
+				remove_list(StaticList);
+				std::cout << "\nList successfully removed\n";
 			}
 			break;
 		}
@@ -633,7 +748,172 @@ void print_List(StaticArrayList<ElementType>& list) {
 	}
 	cout << endl << "Your list is: \n";
 	for (size_t i = 0; i < list.size; i++) {
+		std::cout << i << '\t';
 		print_Point(list.array[i]);
 	}
 }
 
+
+template <typename ElementType>
+short int remove_list(StaticArrayList<ElementType>& list) {
+	if (!list.array) {
+		return 0;
+	}
+	else {
+		list.array = nullptr;
+		return 1;
+	}
+}
+
+
+
+void ListArray_Realization() {
+	vector<Point> ArrayList;
+
+	while (true) {
+		print_Menu();
+		short int next;
+		cin >> next;
+		Is_correct_value(next, 0, 8);
+		switch (next) {
+		case 0: { // only way to turn back
+			remove_list(ArrayList);
+			return;
+			break;
+		}
+		case 1: { // create list
+			if (ArrayList.capacity() != 0) {
+				std::cout << "\nArrayList is already created\n";
+			}
+			else {
+				ArrayList.reserve(5);
+				std::cout << "\nArrayList successfully created\n";
+			}
+			
+			break;
+		}
+		case 2: { // append
+			if (ArrayList.capacity() == 0) {
+				std::cout << "\nArrayList isn't created\n";
+			}
+			else {
+				std::cout << "\nEnter a point to append:\n";
+				Point item_to_append;
+				item_to_append = get_point();
+				ArrayList.push_back(item_to_append);
+			}
+			break;
+		}
+		case 3: { // insert by index
+			if (ArrayList.capacity() == 0) {
+				std::cout << "\nArrayList isn't created\n";
+			}
+			else {
+				//std::cout << "\nEnter index to insert:\n";
+				size_t index_to_insert = get_index();
+				if (index_to_insert >= ArrayList.size()) {
+					std::cout << "\nNo element with this index in ArryList\n";
+					break;
+				}
+				//std::cout << "\nEnter a point to insert:\n";
+				Point item_to_insert = get_point();
+				ArrayList.insert(ArrayList.begin() + index_to_insert, item_to_insert);
+				std::cout << "\nItem successfully inserted in ArryList\n";
+			}
+			break;
+		}
+		case 4: { // remove by index
+			if (ArrayList.capacity() == 0) {
+				std::cout << "\nArrayList isn't created\n";
+			}
+			else {
+				//std::cout << "\nEnter index to remove:\n";
+				size_t index_to_remove = get_index();
+				if (index_to_remove >= ArrayList.size()) {
+					std::cout << "\nNo element with this index in ArryList\n";
+					break;
+				}
+				std::cout << "\nIt is your point. Are you sure to remove it?  (0 -- No, 1 -- Yes)\n";
+				print_Point(ArrayList[index_to_remove]);
+				bool remove_or_not = false;
+				std::cin >> remove_or_not;
+				Is_correct_value(remove_or_not, 0, 1);
+				if (!remove_or_not) { 
+					std::cout << "\nItem isn't removed\n";
+					break; 
+				}
+				else {
+					ArrayList.erase(ArrayList.begin() + index_to_remove);
+					std::cout << "\nItem successfully removed\n";
+				}
+			}
+			break;
+		}
+		case 5: { // get by index
+			if (ArrayList.capacity() == 0) {
+				std::cout << "\nArrayList isn't created\n";
+			}
+			else {
+				size_t index_to_search = get_index();
+				if (index_to_search >= ArrayList.size()) {
+					std::cout << "\nNo element with this index in ArryList\n";
+					break;
+				}
+				std::cout << "\nYour point is: ";
+				print_Point(ArrayList[index_to_search]);
+			}
+			break;
+		}
+		case 6: { // length
+			if (ArrayList.capacity() == 0) {
+				std::cout << "\nArrayList isn't created\n";
+			}
+			else {
+				std::cout << "\nArray list lenght: " << ArrayList.size();
+			}
+			break;
+		}
+		case 7: { // print list
+			if (ArrayList.capacity() == 0) {
+				std::cout << "\nArrayList isn't created\n";
+			}
+			else {
+				if (ArrayList.size() == 0) {
+					std::cout << "\nArrayList is empty\n";
+				}
+				else {
+					std::cout << "Your ArrayList is:\n";
+					for (size_t i = 0; i < ArrayList.size(); i++) {
+						std::cout << i << '\t';
+						print_Point(ArrayList[i]);
+					}
+				}
+				
+			}
+			break;
+		}
+		case 8: { // remove list
+			if (remove_list(ArrayList) == 1) {
+				std::cout << "\nArrayList successfully removed\n";
+			}
+			else {
+				std::cout << "\nArrayList isn't created\n";
+			}
+		}
+		default: break;
+		}
+	}
+
+}
+
+template <typename ElementType>
+short int remove_list(vector<ElementType>& list) {
+	if (list.capacity() == 0) {
+		return 0;
+	}
+	else {
+		list.clear();
+		list.shrink_to_fit();
+		return 1;
+	}
+}
