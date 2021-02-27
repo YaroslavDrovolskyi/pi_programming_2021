@@ -52,6 +52,9 @@ template <typename ElementType>
 ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_search);
 
 template <typename ElementType>
+void set(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_edit);
+
+template <typename ElementType>
 size_t length(DoublyLinkedList<ElementType>* list);
 
 template <typename ElementType>
@@ -75,8 +78,8 @@ void ListArray_Realization();
 
 
 
-template <typename ElementType>
-StaticArrayList<ElementType> create_empty(const size_t SIZE);
+//template <typename ElementType>
+//StaticArrayList<ElementType> create_empty(const size_t SIZE);
 
 template <typename ElementType>
 short int append(StaticArrayList<ElementType>& list, const ElementType value);
@@ -89,6 +92,9 @@ short int remove(StaticArrayList<ElementType>& list, const size_t index_to_remov
 
 template <typename ElementType>
 ElementType* get(StaticArrayList<ElementType>& list, const size_t index_to_get);
+
+template <typename ElementType>
+void set(StaticArrayList<ElementType>& list, const size_t index_to_change);
 
 template <typename ElementType>
 size_t length(StaticArrayList<ElementType>& list);
@@ -225,6 +231,13 @@ int main() {
 							if (result_of_search) {
 								std::cout << "\nYour item is: ";
 								print_Point(result_of_search->data);
+								std::cout << "\nChange this item? (0 - No, 1 - Yes)\n";
+								bool next;
+								std::cin >> next;
+								Is_correct_value(next, 0, 1);
+								if (next) {
+									set(MyList, result_of_search);
+								}
 							}
 							else {
 								std::cout << "\nNo element with this index\n";
@@ -274,6 +287,14 @@ int main() {
 			}
 		}
 		else if (program_mode == Demonstration) {
+		std::cout << std::endl << "Linked list:" << std::endl;
+		DoublyLinkedList<Point>* linked_list = create_empty<Point>();
+		append(linked_list, { 0,0,0 });
+		append(linked_list, { 0,0,1 });
+		append(linked_list, { 1,2,3 });
+		append(linked_list, { 1,4,5 });
+		append(linked_list, { 2,6,10 });
+		append(linked_list, { 123,100,0 });
 			break;
 		}
 
@@ -386,6 +407,15 @@ ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_
 	}
 	return current;
 }
+
+
+template <typename ElementType>
+void set(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_edit) {
+	std::cout << "\nEnter new values:\n";
+	node_to_edit->data = get_point();
+	std::cout << "\nData successfully changed!\n";
+}
+
 
 
 template <typename ElementType>
@@ -510,6 +540,7 @@ short int remove_list(DoublyLinkedList<ElementType>*& list) {
 			list->begin = list->begin->next;
 			delete current_node;
 		}
+		delete list;
 		list = nullptr;
 		return 1;
 	}
@@ -645,7 +676,14 @@ void StaticArray_Realization(){
 				else {
 					std::cout << "\nYour point is: ";
 					print_Point(*result_of_search);
-					std::cout << endl;
+					std::cout << std::endl;
+					std::cout << "\nChange this item? (0 - No, 1 - Yes)\n";
+					bool next;
+					std::cin >> next;
+					Is_correct_value(next, 0, 1);
+					if (next) {
+						set(StaticList, index_to_search);
+					}
 				}
 			}
 			break;
@@ -655,7 +693,7 @@ void StaticArray_Realization(){
 				std::cout << "\nList isn't created\n";
 			}
 			else {
-				std::cout << "\nSize of list: " << length(StaticList) << endl;
+				std::cout << "\nSize of list: " << length(StaticList) << std::endl;
 			}
 			break;
 		}
@@ -733,6 +771,14 @@ ElementType* get(StaticArrayList<ElementType>& list, const size_t index_to_searc
 	else {
 		return &list.array[index_to_search];
 	}
+}
+
+template <typename ElementType>
+void set(StaticArrayList<ElementType>& list, const size_t index_to_change) {
+	std::cout << "\nEnter new values\n";
+	list.array[index_to_change] = get_point();
+	std::cout << "\nItem successully changed\n";
+	
 }
 
 template <typename ElementType>
@@ -861,6 +907,15 @@ void ListArray_Realization() {
 				}
 				std::cout << "\nYour point is: ";
 				print_Point(ArrayList[index_to_search]);
+				std::cout << "\nChange this item? (0 - No, 1 - Yes)\n";
+				bool next;
+				std::cin >> next;
+				Is_correct_value(next, 0, 1);
+				if (next) {
+					std::cout << "\nEnter new values\n";
+					ArrayList[index_to_search] = get_point();
+					std::cout << "\nItem successully changed\n";
+				}
 			}
 			break;
 		}
