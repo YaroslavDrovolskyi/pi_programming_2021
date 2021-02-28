@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include<ctime>
+#include <fstream>
 
 using namespace std;
 
@@ -52,7 +54,7 @@ template <typename ElementType>
 ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_search);
 
 template <typename ElementType>
-void set(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_edit);
+void set(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_edit, ElementType new_data);
 
 template <typename ElementType>
 size_t length(DoublyLinkedList<ElementType>* list);
@@ -67,6 +69,10 @@ void print_Menu();
 
 template <typename ElementType>
 void print_List(DoublyLinkedList<ElementType>* list);
+
+template <typename ElementType>
+void print_List(std::vector<ElementType> array_list);
+
 
 void print_Point(Point p);
 
@@ -94,7 +100,7 @@ template <typename ElementType>
 ElementType* get(StaticArrayList<ElementType>& list, const size_t index_to_get);
 
 template <typename ElementType>
-void set(StaticArrayList<ElementType>& list, const size_t index_to_change);
+void set(StaticArrayList<ElementType>& list, const size_t index_to_change, ElementType new_data);
 
 template <typename ElementType>
 size_t length(StaticArrayList<ElementType>& list);
@@ -113,13 +119,24 @@ template <typename ElementType>
 short int remove_list(vector<ElementType>& list);
 
 
+template <typename ElementType>
+long int get_memory(DoublyLinkedList<ElementType>* linked_list);
+
+template <typename ElementType>
+long int get_memory(StaticArrayList<ElementType> static_list);
+
+template <typename ElementType>
+long int get_memory(std::vector<ElementType> array_list);
+
+
+
 
 
 int main() {
 	
 	DoublyLinkedList<Point>* MyList = nullptr;
 	bool is_list_created = false;
-	
+	const size_t SIZE = 10;
 	std::cout << "Hello!\n\n";
 	short int program_mode = 1, next = 1;
 	while (program_mode) {
@@ -236,7 +253,9 @@ int main() {
 								std::cin >> next;
 								Is_correct_value(next, 0, 1);
 								if (next) {
-									set(MyList, result_of_search);
+									std::cout << "\nEnter new values\n";
+									Point new_data = get_point();
+									set(MyList, result_of_search, new_data);
 								}
 							}
 							else {
@@ -287,7 +306,10 @@ int main() {
 			}
 		}
 		else if (program_mode == Demonstration) {
-		std::cout << std::endl << "Linked list:" << std::endl;
+
+		// Linked list
+		std::cout << std::endl << "\n\n===Linked list===\n\n";
+		std::cout << "Created linked list and added some elements\n";
 		DoublyLinkedList<Point>* linked_list = create_empty<Point>();
 		append(linked_list, { 0,0,0 });
 		append(linked_list, { 0,0,1 });
@@ -295,10 +317,248 @@ int main() {
 		append(linked_list, { 1,4,5 });
 		append(linked_list, { 2,6,10 });
 		append(linked_list, { 123,100,0 });
+		print_List(linked_list);
+		std::cout << "\nInsert (45; 34; 56) before element with index 2\n";
+		insert(linked_list, 2, { 45,34,56 });
+		print_List(linked_list);
+		std::cout << "\nRemove element with index 5\n";
+		remove(linked_list, 5);
+		print_List(linked_list);
+		std::cout << "\nGet element with index 3 and change it on (55; 11; 100)\n";
+		set(linked_list, get(linked_list, 3), {55,11,100});
+		print_List(linked_list);
+		std::cout << "\nLength of linked list: " << length(linked_list) << std::endl;
+		std::cout << "\nRemove linked list\n";
+		remove_list(linked_list);
+		std::cout << "\nLinked list removed\n";
+
+		// Static List
+		std::cout << std::endl << "\n\n===Static array list===\n\n" << std::endl;
+		std::cout << "Created static array list and added some elements\n";
+		StaticArrayList<Point> static_list;
+		Point arr[SIZE];
+		static_list.array = arr;
+		static_list.size = 0;
+		static_list.capacity = SIZE;
+		append(static_list, { 0,0,0 });
+		append(static_list, { 0,0,1 });
+		append(static_list, { 1,2,3 });
+		append(static_list, { 1,4,5 });
+		append(static_list, { 2,6,10 });
+		append(static_list, { 123,100,0 });
+		print_List(static_list);
+		std::cout << "\nInsert (45; 34; 56) before element with index 2\n";
+		insert(static_list, 2, { 45,34,56 });
+		print_List(static_list);
+		std::cout << "\nRemove element with index 3\n";
+		remove(static_list, 3);
+		print_List(static_list);
+		std::cout << "\nGet element with index 3 and change it on (55; 11; 100)\n";
+		set(static_list, 3, { 55,11,100 });
+		print_List(static_list);
+		std::cout << "\nLength of static list: " << length(static_list) << std::endl;
+		std::cout << "\nRemove static list\n";
+		remove_list(static_list);
+		std::cout << "\nStatic list removed\n";
+
+		// Array list
+		std::cout << std::endl << "\n\n===Array list (std::vector)===\n\n" << std::endl;
+		std::cout << "Created Array list and added some elements\n";
+		std::vector<Point> array_list;
+		array_list.reserve(5);
+		array_list.push_back({ 0,0,0 });
+		array_list.push_back({ 0,0,1 });
+		array_list.push_back({ 1,2,3 });
+		array_list.push_back({ 1,4,5 });
+		array_list.push_back({ 2,6,10 });
+		array_list.push_back({ 123,100,0 });
+		print_List(array_list);
+		std::cout << "\nInsert (45; 34; 56) before element with index 2\n";
+		array_list.insert(array_list.begin() + 2, { 45,34,56 });
+		print_List(array_list);
+		std::cout << "\nRemove element with index 5\n";
+		array_list.erase(array_list.begin() + 5);
+		print_List(array_list);
+		std::cout << "\nGet element with index 3 and change it on (55; 11; 100)\n";
+		array_list[3] = { 55,11,100 };
+		print_List(array_list);
+		std::cout << "\nLength of array list: " << array_list.size() << std::endl;
+		std::cout << "\nRemove array list\n";
+		remove_list(array_list);
+		std::cout << "\nArray list removed\n";
+
+
 			break;
 		}
 
 		else if (program_mode == Benchmark) {
+		long int begin_time = clock();
+		unsigned int N = 10;
+		size_t i = 0;
+		Point point_array[81920];
+		long int start_time;
+		DoublyLinkedList<Point>* linked_list;
+		StaticArrayList<Point> static_list;
+		std::vector<Point> array_list;
+		ofstream file_result("result.txt");
+		file_result << "Result of Benchmark mode.\nStatic list tested only up to 81920, because error, when try to create for more items\n";
+		while (N <= 163840) { // 163 840
+			file_result << "N = " << N << std::endl;
+			std::cout << "N = " << N << std::endl;
+
+			/* linked list */
+			start_time = clock();
+			linked_list = create_empty<Point>();
+			long int create_time = (clock() - start_time);
+
+			// append
+			start_time = clock();
+			for (i = 1; i <= 9 * N / 10; i++) {
+				append(linked_list, { 5,5,5 });
+			}
+			long int append_time = (clock() - start_time);
+
+			// insert
+			start_time = clock();
+			for (i = 1; i <= N / 10; i++) {
+				insert(linked_list, N/5, { 0,0,0 });
+			}
+			long int insert_time = (clock() - start_time);
+			long int Memory = get_memory(linked_list);
+			//print_List(linked_list);
+
+			// change
+			start_time = clock();
+			for (i = 1; i <= N / 5; i++) {
+				set(linked_list, get(linked_list, i), { 100, 100, 100 });
+			}
+			long int get_set_time = (clock() - start_time);
+
+			// remove item
+			start_time = clock();
+			for (i = 1; i <= N / 5; i++) {
+				remove(linked_list, i);
+			}
+			long int remove_item_time = (clock() - start_time);
+
+			// remove list
+			start_time = clock();
+			remove_list(linked_list);
+			long int remove_list_time = (clock() - start_time);
+
+			file_result << "Linked list\n" << "Create time\t\t" << create_time << " ms\n" <<
+				"Append 0.9*N items\t" << append_time << " ms\n" << "Insert 0.1*N items\t" << insert_time <<
+				" ms\n" << "Get-set 0.2*N items\t" << get_set_time << " ms\n" <<
+				"Remove 0.2*N items\t" << remove_item_time << " ms\n" << "Remove list\t\t" << remove_list_time 
+				<< " s\nMemory\t\t" << Memory << " bytes\n\n";
+
+
+			if (N <= 81920) {
+				/* Static list */
+				// create
+				start_time = clock();
+				static_list.array = point_array;
+				static_list.size = 0;
+				static_list.capacity = SIZE;
+				create_time = (clock() - start_time);
+
+				//append
+				start_time = clock();
+				for (i = 1; i <= 9* N / 10; i++) {
+					append(static_list, { 5,5,5 });
+				}
+				append_time = (clock() - start_time);
+
+				//insert
+				start_time = clock();
+				for (i = 1; i <= N / 10; i++) {
+					insert(static_list, N / 5, { 0,0,0 });
+				}
+				insert_time = (clock() - start_time);
+				Memory = get_memory(static_list);
+				//print_List(static_list);
+
+				//change
+				start_time = clock();
+				for (i = 1; i <= N / 5; i++) {
+					get(static_list, i);
+					set(static_list, i, { 100, 100, 100 });
+				}
+				get_set_time = (clock() - start_time);
+
+				//remove elements
+				start_time = clock();
+				for (i = 1; i <= N / 5; i++) {
+					remove(static_list, i);
+				}
+				remove_item_time = (clock() - start_time);
+
+				//remove list
+				start_time = clock();
+				remove_list(static_list);
+				remove_list_time = (clock() - start_time);
+
+				file_result << "Static list\n" << "Create time\t\t" << create_time << " ms\n" <<
+					"Append 0.9*N items\t" << append_time << " ms\n" << "Insert 0.1*N items\t" << insert_time <<
+					" ms\n" << "Get-set 0.2*N items\t" << get_set_time << " ms\n" <<
+					"Remove 0.2*N items\t" << remove_item_time << " ms\n" << "Remove list\t\t" << remove_list_time 
+					<< " s\nMemory\t\t" << Memory << " bytes\n\n";
+
+			}
+
+
+			// array list (std::vector)
+			start_time = clock();
+			array_list.reserve(N);
+			create_time = (clock() - start_time);
+
+			// create
+			start_time = clock();
+			for (i = 1; i <= 9* N / 10; i++) {
+				array_list.push_back({ 5,5,5 });
+			}
+			append_time = (clock() - start_time);
+
+			// insert
+			start_time = clock();
+			for (i = 1; i <= N / 10; i++) {
+				array_list.insert(array_list.begin(), { 0,0,0 });
+			}
+			Memory = get_memory(array_list);
+			//print_List(array_list);
+
+			// change
+			insert_time = (clock() - start_time);
+			start_time = clock();
+			for (i = 1; i <= N / 5; i++) {
+				array_list[i] = { 100,100,100 };
+			}
+			get_set_time = (clock() - start_time);
+
+			// remove item
+			start_time = clock();
+			for (i = 1; i <= N / 5; i++) {
+				array_list.erase(array_list.begin() + i);
+			}
+			remove_item_time = (clock() - start_time);
+
+			// remove list
+			start_time = clock();
+			remove_list(array_list);
+			remove_list_time = (clock() - start_time);
+
+			file_result << "Array list\n" << "Create time\t\t" << create_time << " ms\n" <<
+				"Append 0.9*N items\t" << append_time << " ms\n" << "Insert 0.1*N items\t" << insert_time <<
+				" ms\n" << "Get-set 0.2*N items\t" << get_set_time << " ms\n" <<
+				"Remove 0.2*N items\t" << remove_item_time << " ms\n" << "Remove list\t\t" << remove_list_time
+				<< " s\nMemory\t\t" << Memory << " bytes\n\n\n";
+
+			N *= 2;
+			std::cout << "Time: " << (float)(clock() - begin_time) / 1000 << 's' <<std::endl << std::endl;
+		}
+		file_result.close();
+
+
 			break;
 		}
 	}
@@ -410,10 +670,11 @@ ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_
 
 
 template <typename ElementType>
-void set(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_edit) {
-	std::cout << "\nEnter new values:\n";
-	node_to_edit->data = get_point();
-	std::cout << "\nData successfully changed!\n";
+void set(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_edit, ElementType new_data) {
+	//std::cout << "\nEnter new values:\n";
+	//node_to_edit->data = get_point();
+	//std::cout << "\nData successfully changed!\n";
+	node_to_edit->data = new_data;
 }
 
 
@@ -682,7 +943,9 @@ void StaticArray_Realization(){
 					std::cin >> next;
 					Is_correct_value(next, 0, 1);
 					if (next) {
-						set(StaticList, index_to_search);
+						std::cout << "\nEnter new values\n";
+						Point new_data = get_point();
+						set(StaticList, index_to_search, new_data);
 					}
 				}
 			}
@@ -747,7 +1010,7 @@ template <typename ElementType>
 short int insert(StaticArrayList<ElementType>& list, const size_t index_to_insert, const ElementType value) {
 	if (list.size == list.capacity) { return -1; } // full
 	if (index_to_insert >= list.size) { return 0; } // no index
-	for (size_t i = index_to_insert + 1; i <= list.size; i++) {
+	for (size_t i = list.size; i >= index_to_insert + 1; i--) {
 		list.array[i] = list.array[i - 1];
 	}
 	list.array[index_to_insert] = value;
@@ -774,10 +1037,10 @@ ElementType* get(StaticArrayList<ElementType>& list, const size_t index_to_searc
 }
 
 template <typename ElementType>
-void set(StaticArrayList<ElementType>& list, const size_t index_to_change) {
-	std::cout << "\nEnter new values\n";
-	list.array[index_to_change] = get_point();
-	std::cout << "\nItem successully changed\n";
+void set(StaticArrayList<ElementType>& list, const size_t index_to_change, ElementType new_data) {
+	//std::cout << "\nEnter new values\n";
+	list.array[index_to_change] = new_data;
+	//std::cout << "\nItem successully changed\n";
 	
 }
 
@@ -807,6 +1070,7 @@ short int remove_list(StaticArrayList<ElementType>& list) {
 	}
 	else {
 		list.array = nullptr;
+		list.size = 0;
 		return 1;
 	}
 }
@@ -933,17 +1197,7 @@ void ListArray_Realization() {
 				std::cout << "\nArrayList isn't created\n";
 			}
 			else {
-				if (ArrayList.size() == 0) {
-					std::cout << "\nArrayList is empty\n";
-				}
-				else {
-					std::cout << "Your ArrayList is:\n";
-					for (size_t i = 0; i < ArrayList.size(); i++) {
-						std::cout << i << '\t';
-						print_Point(ArrayList[i]);
-					}
-				}
-				
+				print_List(ArrayList);
 			}
 			break;
 		}
@@ -972,3 +1226,33 @@ short int remove_list(vector<ElementType>& list) {
 		return 1;
 	}
 }
+
+template <typename ElementType>
+void print_List(std::vector<ElementType> array_list) {
+	if (array_list.size() == 0) {
+		std::cout << "\nArrayList is empty\n";
+	}
+	else {
+		std::cout << "\nYour ArrayList is:\n";
+		for (size_t i = 0; i < array_list.size(); i++) {
+			std::cout << i << '\t';
+			print_Point(array_list[i]);
+		}
+	}
+}
+
+template <typename ElementType>
+long int get_memory(DoublyLinkedList<ElementType>* linked_list) {
+	return (linked_list->size * sizeof(ListNode<Point>) + sizeof(*linked_list));
+}
+
+template <typename ElementType>
+long int get_memory(StaticArrayList<ElementType> static_list) {
+	return (static_list.capacity*sizeof(Point) + sizeof(StaticArrayList<Point>));
+}
+
+template <typename ElementType>
+long int get_memory(std::vector<ElementType> array_list) {
+	return (array_list.capacity()*sizeof(Point));
+}
+

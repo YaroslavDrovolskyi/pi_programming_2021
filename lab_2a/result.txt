@@ -1,0 +1,428 @@
+Result of Benchmark mode.
+Static list tested only up to 81920, because error, when try to create for more items
+N = 10
+Linked list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		212 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		120 bytes
+
+
+N = 20
+Linked list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		412 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		240 bytes
+
+
+N = 40
+Linked list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		812 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		480 bytes
+
+
+N = 80
+Linked list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		1612 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		960 bytes
+
+
+N = 160
+Linked list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		3212 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		1920 bytes
+
+
+N = 320
+Linked list
+Create time		0 ms
+Append 0.9*N items	1 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		6412 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		3840 bytes
+
+
+N = 640
+Linked list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	1 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		12812 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	1 ms
+Remove list		0 s
+Memory		7680 bytes
+
+
+N = 1280
+Linked list
+Create time		0 ms
+Append 0.9*N items	1 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		25612 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	1 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	2 ms
+Remove list		0 s
+Memory		15360 bytes
+
+
+N = 2560
+Linked list
+Create time		0 ms
+Append 0.9*N items	3 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	1 ms
+Remove 0.2*N items	0 ms
+Remove list		1 s
+Memory		51212 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	2 ms
+Insert 0.1*N items	1 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	2 ms
+Remove list		0 s
+Memory		30720 bytes
+
+
+N = 5120
+Linked list
+Create time		0 ms
+Append 0.9*N items	4 ms
+Insert 0.1*N items	4 ms
+Get-set 0.2*N items	2 ms
+Remove 0.2*N items	3 ms
+Remove list		1 s
+Memory		102412 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	1 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	2 ms
+Insert 0.1*N items	5 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	9 ms
+Remove list		0 s
+Memory		61440 bytes
+
+
+N = 10240
+Linked list
+Create time		0 ms
+Append 0.9*N items	3 ms
+Insert 0.1*N items	13 ms
+Get-set 0.2*N items	11 ms
+Remove 0.2*N items	15 ms
+Remove list		2 s
+Memory		204812 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	1 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	4 ms
+Insert 0.1*N items	20 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	33 ms
+Remove list		0 s
+Memory		122880 bytes
+
+
+N = 20480
+Linked list
+Create time		0 ms
+Append 0.9*N items	6 ms
+Insert 0.1*N items	58 ms
+Get-set 0.2*N items	50 ms
+Remove 0.2*N items	62 ms
+Remove list		4 s
+Memory		409612 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	1 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		1 ms
+Append 0.9*N items	10 ms
+Insert 0.1*N items	75 ms
+Get-set 0.2*N items	1 ms
+Remove 0.2*N items	109 ms
+Remove list		0 s
+Memory		245760 bytes
+
+
+N = 40960
+Linked list
+Create time		0 ms
+Append 0.9*N items	13 ms
+Insert 0.1*N items	212 ms
+Get-set 0.2*N items	221 ms
+Remove 0.2*N items	255 ms
+Remove list		10 s
+Memory		819212 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	2 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	1 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		0 ms
+Append 0.9*N items	18 ms
+Insert 0.1*N items	283 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	423 ms
+Remove list		0 s
+Memory		491520 bytes
+
+
+N = 81920
+Linked list
+Create time		0 ms
+Append 0.9*N items	36 ms
+Insert 0.1*N items	1461 ms
+Get-set 0.2*N items	902 ms
+Remove 0.2*N items	3109 ms
+Remove list		20 s
+Memory		1638412 bytes
+
+Static list
+Create time		0 ms
+Append 0.9*N items	4 ms
+Insert 0.1*N items	0 ms
+Get-set 0.2*N items	2 ms
+Remove 0.2*N items	0 ms
+Remove list		0 s
+Memory		132 bytes
+
+Array list
+Create time		1 ms
+Append 0.9*N items	34 ms
+Insert 0.1*N items	1208 ms
+Get-set 0.2*N items	1 ms
+Remove 0.2*N items	1709 ms
+Remove list		0 s
+Memory		983040 bytes
+
+
+N = 163840
+Linked list
+Create time		0 ms
+Append 0.9*N items	54 ms
+Insert 0.1*N items	16686 ms
+Get-set 0.2*N items	12880 ms
+Remove 0.2*N items	21483 ms
+Remove list		41 s
+Memory		3276812 bytes
+
+Array list
+Create time		1 ms
+Append 0.9*N items	69 ms
+Insert 0.1*N items	13239 ms
+Get-set 0.2*N items	3 ms
+Remove 0.2*N items	16755 ms
+Remove list		1 s
+Memory		1966080 bytes
+
+
