@@ -15,8 +15,8 @@ struct Point {
 template <typename ElementType>
 struct StaticArrayList {
 	ElementType* array;
-	size_t size;
-	size_t capacity;
+	std::size_t size;
+	std::size_t capacity;
 };
 
 
@@ -31,7 +31,7 @@ template <typename ElementType>
 struct DoublyLinkedList {
 	ListNode<ElementType>* begin;
 	ListNode<ElementType>* end;
-	size_t size;
+	std::size_t size;
 };
 
 template <typename ElementType>
@@ -41,22 +41,22 @@ template <typename ElementType>
 void append(DoublyLinkedList <ElementType>* list, ElementType value);
 
 template <typename ElementType>
-short int insert(DoublyLinkedList<ElementType>* list, size_t index_to_insert, ElementType value);
+short int insert(DoublyLinkedList<ElementType>* list, std::size_t index_to_insert, ElementType value);
 
 template <typename ElementType>
-short int remove(DoublyLinkedList<ElementType>* list, size_t index_to_remove);
+short int remove(DoublyLinkedList<ElementType>* list, std::size_t index_to_remove);
 
 template <typename ElementType>
 short int remove_by_item(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_remove);
 
 template <typename ElementType>
-ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_search);
+ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, std::size_t index_to_search);
 
 template <typename ElementType>
 void set(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_edit, ElementType new_data);
 
 template <typename ElementType>
-size_t length(DoublyLinkedList<ElementType>* list);
+std::size_t length(DoublyLinkedList<ElementType>* list);
 
 template <typename ElementType>
 void Is_correct_value(ElementType& value_to_check, const int floor_value = -1, const int ceiling_value = -1);
@@ -81,19 +81,19 @@ template <typename ElementType>
 short int append(StaticArrayList<ElementType>& list, const ElementType value);
 
 template <typename ElementType>
-short int insert(StaticArrayList<ElementType>& list, const size_t index_to_insert, const ElementType value);
+short int insert(StaticArrayList<ElementType>& list, const std::size_t index_to_insert, const ElementType value);
 
 template <typename ElementType>
-short int remove(StaticArrayList<ElementType>& list, const size_t index_to_remove);
+short int remove(StaticArrayList<ElementType>& list, const std::size_t index_to_remove);
 
 template <typename ElementType>
-ElementType* get(StaticArrayList<ElementType>& list, const size_t index_to_get);
+ElementType* get(StaticArrayList<ElementType>& list, const std::size_t index_to_get);
 
 template <typename ElementType>
-void set(StaticArrayList<ElementType>& list, const size_t index_to_change, ElementType new_data);
+void set(StaticArrayList<ElementType>& list, const std::size_t index_to_change, ElementType new_data);
 
 template <typename ElementType>
-size_t length(StaticArrayList<ElementType>& list);
+std::size_t length(StaticArrayList<ElementType>& list);
 
 template <typename ElementType>
 void print_List(StaticArrayList<ElementType>& list);
@@ -126,7 +126,7 @@ int main() {
 	
 	DoublyLinkedList<Point>* MyList = nullptr;
 	//bool is_list_created = false;
-	const size_t SIZE = 10;
+	const std::size_t SIZE = 10;
 	std::cout << "Hello!\n\n";
 	short int program_mode = 1, next = 1;
 	while (program_mode) {
@@ -179,7 +179,7 @@ int main() {
 							std::cout << "\nList isn't created\n";
 						}
 						else {
-							size_t index_to_insert = get_index();
+							std::size_t index_to_insert = get_index();
 							
 							if (insert(MyList, index_to_insert, get_point()) == 1) {
 								std::cout << "\nItem succesfully inserted\n";
@@ -197,7 +197,7 @@ int main() {
 							break;
 						}
 						else {
-							size_t index_to_remove = get_index();
+							std::size_t index_to_remove = get_index();
 							
 							ListNode<Point>* item_to_remove = get(MyList, index_to_remove);
 							if (!item_to_remove) {
@@ -378,8 +378,8 @@ int main() {
 		long int begin_time = clock();
 		long int start_time;
 		unsigned int N = 10;
-		size_t i = 0;
-		const size_t SIZE = 81920;
+		std::size_t i = 0;
+		const std::size_t SIZE = 81920;
 		Point point_array[SIZE];
 		DoublyLinkedList<Point>* linked_list;
 		StaticArrayList<Point> static_list;
@@ -555,7 +555,7 @@ int main() {
 
 
 template <typename ElementType>
-short int remove(DoublyLinkedList<ElementType>* list, size_t index_to_remove) {
+short int remove(DoublyLinkedList<ElementType>* list, std::size_t index_to_remove) {
 	ListNode<ElementType>* node_to_remove = get(list, index_to_remove);
 
 	if (node_to_remove == nullptr) {
@@ -597,7 +597,7 @@ short int remove_by_item(DoublyLinkedList<ElementType>* list, ListNode<ElementTy
 
 
 template <typename ElementType>
-short int insert(DoublyLinkedList<ElementType>* list, size_t index_to_insert, ElementType value) {
+short int insert(DoublyLinkedList<ElementType>* list, std::size_t index_to_insert, ElementType value) {
 	ListNode<ElementType>* new_node = new ListNode<ElementType>;
 	ListNode<ElementType>* current_node = get(list, index_to_insert);
 	if (current_node == nullptr) {
@@ -621,12 +621,12 @@ short int insert(DoublyLinkedList<ElementType>* list, size_t index_to_insert, El
 }
 
 template <typename ElementType>
-ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_search) {
+ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, std::size_t index_to_search) {
 	if (index_to_search >= list->size) {
 		return nullptr;
 	}
 	ListNode<ElementType>* current;
-	size_t i;
+	std::size_t i;
 	if (index_to_search < (list->size - 1) / 2) {
 		current = list->begin;
 		i = 0;
@@ -688,7 +688,7 @@ void append(DoublyLinkedList <ElementType>* list, ElementType value) {
 }
 
 template <typename ElementType>
-size_t length(DoublyLinkedList<ElementType>* list) {
+std::size_t length(DoublyLinkedList<ElementType>* list) {
 	return list->size;
 }
 
@@ -810,7 +810,7 @@ void print_Menu() {
 }
 
 void StaticArray_Realization(){
-	const size_t SIZE = 20;
+	const std::size_t SIZE = 20;
 	StaticArrayList<Point> StaticList;
 	StaticList.array = nullptr;
 	
@@ -860,7 +860,7 @@ void StaticArray_Realization(){
 				std::cout << "\nList isn't created\n";
 			}
 			else {
-				size_t index_to_insert = get_index();
+				std::size_t index_to_insert = get_index();
 				if (index_to_insert >= StaticList.size) {
 					std::cout << "\nNo element with this index\n";
 				}
@@ -887,7 +887,7 @@ void StaticArray_Realization(){
 				std::cout << "\nList isn't created\n";
 			}
 			else {
-				size_t index_to_remove = get_index();
+				std::size_t index_to_remove = get_index();
 				if (index_to_remove >= StaticList.size) {
 					std::cout << "\nNo element with this index in StaticList\n";
 				}
@@ -913,7 +913,7 @@ void StaticArray_Realization(){
 				std::cout << "\nList isn't created\n";
 			}
 			else {
-				size_t index_to_search = get_index();
+				std::size_t index_to_search = get_index();
 				Point* result_of_search = get(StaticList, index_to_search);
 				if (result_of_search == nullptr) {
 					std::cout << "\nNo element with this index in list\n";
@@ -979,10 +979,10 @@ short int append(StaticArrayList<ElementType>& list,  const ElementType value) {
 }
 
 template <typename ElementType>
-short int insert(StaticArrayList<ElementType>& list, const size_t index_to_insert, const ElementType value) {
+short int insert(StaticArrayList<ElementType>& list, const std::size_t index_to_insert, const ElementType value) {
 	if (list.size == list.capacity) { return -1; } // full
 	if (index_to_insert >= list.size) { return 0; } // no index
-	for (size_t i = list.size; i >= index_to_insert + 1; i--) {
+	for (std::size_t i = list.size; i >= index_to_insert + 1; i--) {
 		list.array[i] = list.array[i - 1];
 	}
 	list.array[index_to_insert] = value;
@@ -991,9 +991,9 @@ short int insert(StaticArrayList<ElementType>& list, const size_t index_to_inser
 }
 
 template <typename ElementType>
-short int remove(StaticArrayList<ElementType>& list, const size_t index_to_remove) {
+short int remove(StaticArrayList<ElementType>& list, const std::size_t index_to_remove) {
 	if (index_to_remove >= list.size) { return 0; } // no index
-	for (size_t i = index_to_remove; i < list.size; i++) {
+	for (std::size_t i = index_to_remove; i < list.size; i++) {
 		list.array[i] = list.array[i + 1];
 	}
 	list.size--;
@@ -1001,7 +1001,7 @@ short int remove(StaticArrayList<ElementType>& list, const size_t index_to_remov
 }
 
 template <typename ElementType>
-ElementType* get(StaticArrayList<ElementType>& list, const size_t index_to_search) {
+ElementType* get(StaticArrayList<ElementType>& list, const std::size_t index_to_search) {
 	if (index_to_search >= list.size) { return nullptr; }
 	else {
 		return &list.array[index_to_search];
@@ -1009,7 +1009,7 @@ ElementType* get(StaticArrayList<ElementType>& list, const size_t index_to_searc
 }
 
 template <typename ElementType>
-void set(StaticArrayList<ElementType>& list, const size_t index_to_change, ElementType new_data) {
+void set(StaticArrayList<ElementType>& list, const std::size_t index_to_change, ElementType new_data) {
 	//std::cout << "\nEnter new values\n";
 	list.array[index_to_change] = new_data;
 	//std::cout << "\nItem successully changed\n";
@@ -1017,7 +1017,7 @@ void set(StaticArrayList<ElementType>& list, const size_t index_to_change, Eleme
 }
 
 template <typename ElementType>
-size_t length(StaticArrayList<ElementType>& list) {
+std::size_t length(StaticArrayList<ElementType>& list) {
 	return list.size;
 }
 
@@ -1028,7 +1028,7 @@ void print_List(StaticArrayList<ElementType>& list) {
 		return;
 	}
 	std::cout << std::endl << "Your list is: \n";
-	for (size_t i = 0; i < list.size; i++) {
+	for (std::size_t i = 0; i < list.size; i++) {
 		std::cout << i << '\t';
 		print_Point(list.array[i]);
 	}
@@ -1093,7 +1093,7 @@ void ListArray_Realization() {
 			}
 			else {
 				//std::cout << "\nEnter index to insert:\n";
-				size_t index_to_insert = get_index();
+				std::size_t index_to_insert = get_index();
 				if (index_to_insert >= ArrayList.size()) {
 					std::cout << "\nNo element with this index in ArrayList\n";
 					break;
@@ -1111,7 +1111,7 @@ void ListArray_Realization() {
 			}
 			else {
 				//std::cout << "\nEnter index to remove:\n";
-				size_t index_to_remove = get_index();
+				std::size_t index_to_remove = get_index();
 				if (index_to_remove >= ArrayList.size()) {
 					std::cout << "\nNo element with this index in ArrayList\n";
 					break;
@@ -1137,7 +1137,7 @@ void ListArray_Realization() {
 				std::cout << "\nArrayList isn't created\n";
 			}
 			else {
-				size_t index_to_search = get_index();
+				std::size_t index_to_search = get_index();
 				if (index_to_search >= ArrayList.size()) {
 					std::cout << "\nNo element with this index in ArrayList\n";
 					break;
@@ -1207,7 +1207,7 @@ void print_List(std::vector<ElementType> array_list) {
 	}
 	else {
 		std::cout << "\nYour ArrayList is:\n";
-		for (size_t i = 0; i < array_list.size(); i++) {
+		for (std::size_t i = 0; i < array_list.size(); i++) {
 			std::cout << i << '\t';
 			print_Point(array_list[i]);
 		}
