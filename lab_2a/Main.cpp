@@ -1,9 +1,9 @@
 #include <iostream>
 #include <vector>
-#include<ctime>
+#include <ctime>
 #include <fstream>
 
-using namespace std;
+//using namespace std;
 
 enum ProgramMode { Exit, Interactive, Demonstration, Benchmark };
 
@@ -49,7 +49,6 @@ short int remove(DoublyLinkedList<ElementType>* list, size_t index_to_remove);
 template <typename ElementType>
 short int remove_by_item(DoublyLinkedList<ElementType>* list, ListNode<ElementType>* node_to_remove);
 
-
 template <typename ElementType>
 ListNode<ElementType>* get(DoublyLinkedList<ElementType>* list, size_t index_to_search);
 
@@ -82,11 +81,6 @@ ListNode<ElementType>* insert(DoublyLinkedList<ElementType>* list, size_t index_
 void StaticArray_Realization();
 void ListArray_Realization();
 
-
-
-//template <typename ElementType>
-//StaticArrayList<ElementType> create_empty(const size_t SIZE);
-
 template <typename ElementType>
 short int append(StaticArrayList<ElementType>& list, const ElementType value);
 
@@ -116,7 +110,7 @@ template <typename ElementType>
 short int remove_list(StaticArrayList<ElementType>& list);
 
 template <typename ElementType>
-short int remove_list(vector<ElementType>& list);
+short int remove_list(std::vector<ElementType>& list);
 
 
 template <typename ElementType>
@@ -143,20 +137,20 @@ int main() {
 		std::cout << "\nChoose the mode\n" <<
 			"0 - EXIT\n" <<
 			"1 - Interactive mode\n" <<
-			"1 - Demonstrative\n" <<
+			"2 - Demonstrative\n" <<
 			"3 - Benchark\n\n";
-		cin >> program_mode;
+		std::cin >> program_mode;
 		Is_correct_value(program_mode, 0, 3);
 		if (program_mode == Interactive) {
-			std::cout << "\nChoose the realization of list (1 -- linked list, 2 -- static array, 3 -- std::vector): ";
+			std::cout << "\nChoose the realization of list (1 - linked list, 2 - static array, 3 - std::vector): ";
 			short int realization;
-			cin >> realization;
+			std::cin >> realization;
 			Is_correct_value(realization, 1, 3);
 			if (realization == 1) { // linked list
 				while (true) {
 					print_Menu();
 					short int next;
-					cin >> next;
+					std::cin >> next;
 					Is_correct_value(next, 0, 8);
 					if (next == 0) {
 						remove_list(MyList); break;
@@ -271,7 +265,7 @@ int main() {
 						}
 						else {
 							std::cout << "Length of linked list is: " <<
-								length(MyList) << endl;
+								length(MyList) << std::endl;
 						}
 						break;
 					}
@@ -393,15 +387,15 @@ int main() {
 
 		else if (program_mode == Benchmark) {
 		long int begin_time = clock();
+		long int start_time;
 		unsigned int N = 10;
 		size_t i = 0;
 		const size_t SIZE = 81920;
-		Point point_array[81920];
-		long int start_time;
+		Point point_array[SIZE];
 		DoublyLinkedList<Point>* linked_list;
 		StaticArrayList<Point> static_list;
 		std::vector<Point> array_list;
-		ofstream file_result("result.txt");
+		std::ofstream file_result("result.txt");
 		file_result << "Result of Benchmark mode.\nStatic list tested only up to 81920, because error, when try to create for more items\n";
 		while (N <= 163840) { // 163 840
 			file_result << "N = " << N << std::endl;
@@ -718,27 +712,27 @@ void Is_correct_value(ElementType& value_to_check, const int floor_value, const 
 	// ceiling value = -1 means that it is no ceil for value_to_check
 	// floor value = -1 means that it is no floor for value_to_check
 	if (ceiling_value == -1) {
-		while (value_to_check - floor_value < 0 || !cin.good()) {
-			cout << "Enter valid value: \n";
-			cin.clear();
-			cin.ignore(256, '\n');
-			cin >> value_to_check;
+		while (value_to_check - floor_value < 0 || !std::cin.good()) {
+			std::cout << "Enter valid value: \n";
+			std::cin.clear();
+			std::cin.ignore(256, '\n');
+			std::cin >> value_to_check;
 		}
 	}
 	else if (floor_value == -1) {
-		while (!cin.good()) {
-			cout << "Enter valid value: \n";
-			cin.clear();
-			cin.ignore(256, '\n');
-			cin >> value_to_check;
+		while (!std::cin.good()) {
+			std::cout << "Enter valid value: \n";
+			std::cin.clear();
+			std::cin.ignore(256, '\n');
+			std::cin >> value_to_check;
 		}
 	}
 	else {
-		while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !cin.good()) {
-			cout << "Enter valid value: \n";
-			cin.clear();
-			cin.ignore(256, '\n');
-			cin >> value_to_check;
+		while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !std::cin.good()) {
+			std::cout << "Enter valid value: \n";
+			std::cin.clear();
+			std::cin.ignore(256, '\n');
+			std::cin >> value_to_check;
 		}
 	}
 	return;
@@ -747,15 +741,15 @@ void Is_correct_value(ElementType& value_to_check, const int floor_value, const 
 Point get_point() {
 	Point user_point;
 	std::cout << "Enter a point coordinate X: ";
-	cin >> user_point.x;
+	std::cin >> user_point.x;
 	Is_correct_value(user_point.x);
 
 	std::cout << "Enter a point coordinate Y: ";
-	cin >> user_point.y;
+	std::cin >> user_point.y;
 	Is_correct_value(user_point.y);
 
 	std::cout << "Enter a point coordinate Z: ";
-	cin >> user_point.z;
+	std::cin >> user_point.z;
 	Is_correct_value(user_point.z);
 
 	return user_point;
@@ -764,7 +758,7 @@ Point get_point() {
 int get_index() {
 	int index;
 	std::cout << "\nEnter index: ";
-	cin >> index;
+	std::cin >> index;
 	Is_correct_value(index, 0);
 	return index;
 }
@@ -772,14 +766,14 @@ int get_index() {
 template <typename ElementType>
 void print_List(DoublyLinkedList<ElementType>* list) {
 	if (list->begin == nullptr) {
-		cout << "\nList is empty\n";
+		std::cout << "\nList is empty\n";
 		return;
 	}
 	int i = 0;
 	ListNode<ElementType>* current_node = list->begin;
-	cout << endl << "Your list is: \n";
+	std::cout << std::endl << "Your list is: \n";
 	while (current_node) {
-		cout << i << '\t';
+		std::cout << i << '\t';
 		print_Point(current_node->data);
 		current_node = current_node->next;
 		i++;
@@ -836,7 +830,7 @@ void StaticArray_Realization(){
 	while (true) {
 		print_Menu();
 		short int next;
-		cin >> next;
+		std::cin >> next;
 		Is_correct_value(next, 0, 8);
 		switch (next) {
 		case 0: { // only way to turn back
@@ -1054,10 +1048,10 @@ size_t length(StaticArrayList<ElementType>& list) {
 template <typename ElementType>
 void print_List(StaticArrayList<ElementType>& list) {
 	if (list.size == 0) {
-		cout << "\nList is empty\n";
+		std::cout << "\nList is empty\n";
 		return;
 	}
-	cout << endl << "Your list is: \n";
+	std::cout << std::endl << "Your list is: \n";
 	for (size_t i = 0; i < list.size; i++) {
 		std::cout << i << '\t';
 		print_Point(list.array[i]);
@@ -1080,12 +1074,12 @@ short int remove_list(StaticArrayList<ElementType>& list) {
 
 
 void ListArray_Realization() {
-	vector<Point> ArrayList;
+	std::vector<Point> ArrayList;
 
 	while (true) {
 		print_Menu();
 		short int next;
-		cin >> next;
+		std::cin >> next;
 		Is_correct_value(next, 0, 8);
 		switch (next) {
 		case 0: { // only way to turn back
@@ -1218,7 +1212,7 @@ void ListArray_Realization() {
 }
 
 template <typename ElementType>
-short int remove_list(vector<ElementType>& list) {
+short int remove_list(std::vector<ElementType>& list) {
 	if (list.capacity() == 0) {
 		return 0;
 	}
