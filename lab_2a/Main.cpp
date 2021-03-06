@@ -395,6 +395,7 @@ int main() {
 		long int begin_time = clock();
 		unsigned int N = 10;
 		size_t i = 0;
+		const size_t SIZE = 81920;
 		Point point_array[81920];
 		long int start_time;
 		DoublyLinkedList<Point>* linked_list;
@@ -452,7 +453,7 @@ int main() {
 				"Remove 0.2*N items\t" << remove_item_time << " ms\n" << "Remove list\t\t" << remove_list_time 
 				<< " s\nMemory\t\t" << Memory << " bytes\n\n";
 
-
+			
 			if (N <= 81920) {
 				/* Static list */
 				// create
@@ -460,6 +461,7 @@ int main() {
 				static_list.array = point_array;
 				static_list.size = 0;
 				static_list.capacity = SIZE;
+				//Memory = get_memory(static_list);
 				create_time = (clock() - start_time);
 
 				//append
@@ -507,7 +509,7 @@ int main() {
 			}
 
 
-			// array list (std::vector)
+			/* array list (std::vector) */
 			start_time = clock();
 			array_list.reserve(N);
 			create_time = (clock() - start_time);
@@ -1248,7 +1250,7 @@ long int get_memory(DoublyLinkedList<ElementType>* linked_list) {
 
 template <typename ElementType>
 long int get_memory(StaticArrayList<ElementType> static_list) {
-	return (static_list.capacity*sizeof(Point) + sizeof(StaticArrayList<Point>));
+	return (static_list.size*sizeof(Point) + sizeof(StaticArrayList<Point>));
 }
 
 template <typename ElementType>

@@ -46,7 +46,7 @@ Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		252 bytes
 
 Array list
 Create time		0 ms
@@ -65,7 +65,7 @@ Append 0.9*N items	0 ms
 Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
-Remove list		0 s
+Remove list		1 s
 Memory		812 bytes
 
 Static list
@@ -75,7 +75,7 @@ Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		492 bytes
 
 Array list
 Create time		0 ms
@@ -104,7 +104,7 @@ Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		972 bytes
 
 Array list
 Create time		0 ms
@@ -120,7 +120,7 @@ N = 160
 Linked list
 Create time		0 ms
 Append 0.9*N items	0 ms
-Insert 0.1*N items	0 ms
+Insert 0.1*N items	1 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
 Remove list		0 s
@@ -133,7 +133,7 @@ Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		1932 bytes
 
 Array list
 Create time		0 ms
@@ -148,7 +148,7 @@ Memory		1920 bytes
 N = 320
 Linked list
 Create time		0 ms
-Append 0.9*N items	1 ms
+Append 0.9*N items	0 ms
 Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
@@ -162,7 +162,7 @@ Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		3852 bytes
 
 Array list
 Create time		0 ms
@@ -177,8 +177,8 @@ Memory		3840 bytes
 N = 640
 Linked list
 Create time		0 ms
-Append 0.9*N items	0 ms
-Insert 0.1*N items	1 ms
+Append 0.9*N items	1 ms
+Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
 Remove list		0 s
@@ -189,16 +189,16 @@ Create time		0 ms
 Append 0.9*N items	0 ms
 Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	0 ms
+Remove 0.2*N items	1 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		7692 bytes
 
 Array list
 Create time		0 ms
-Append 0.9*N items	0 ms
+Append 0.9*N items	1 ms
 Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	1 ms
+Remove 0.2*N items	0 ms
 Remove list		0 s
 Memory		7680 bytes
 
@@ -210,7 +210,7 @@ Append 0.9*N items	1 ms
 Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
 Remove 0.2*N items	0 ms
-Remove list		0 s
+Remove list		1 s
 Memory		25612 bytes
 
 Static list
@@ -218,16 +218,16 @@ Create time		0 ms
 Append 0.9*N items	0 ms
 Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	0 ms
+Remove 0.2*N items	2 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		15372 bytes
 
 Array list
 Create time		0 ms
-Append 0.9*N items	0 ms
-Insert 0.1*N items	1 ms
+Append 0.9*N items	1 ms
+Insert 0.1*N items	0 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	2 ms
+Remove 0.2*N items	1 ms
 Remove list		0 s
 Memory		15360 bytes
 
@@ -235,28 +235,28 @@ Memory		15360 bytes
 N = 2560
 Linked list
 Create time		0 ms
-Append 0.9*N items	3 ms
-Insert 0.1*N items	0 ms
-Get-set 0.2*N items	1 ms
-Remove 0.2*N items	0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	1 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	1 ms
 Remove list		1 s
 Memory		51212 bytes
 
 Static list
 Create time		0 ms
 Append 0.9*N items	0 ms
-Insert 0.1*N items	0 ms
+Insert 0.1*N items	3 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	0 ms
+Remove 0.2*N items	8 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		30732 bytes
 
 Array list
 Create time		0 ms
 Append 0.9*N items	2 ms
 Insert 0.1*N items	1 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	2 ms
+Remove 0.2*N items	5 ms
 Remove list		0 s
 Memory		30720 bytes
 
@@ -264,58 +264,58 @@ Memory		30720 bytes
 N = 5120
 Linked list
 Create time		0 ms
-Append 0.9*N items	4 ms
-Insert 0.1*N items	4 ms
+Append 0.9*N items	2 ms
+Insert 0.1*N items	3 ms
 Get-set 0.2*N items	2 ms
-Remove 0.2*N items	3 ms
+Remove 0.2*N items	2 ms
 Remove list		1 s
 Memory		102412 bytes
 
 Static list
 Create time		0 ms
 Append 0.9*N items	1 ms
-Insert 0.1*N items	0 ms
+Insert 0.1*N items	13 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	0 ms
+Remove 0.2*N items	29 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		61452 bytes
 
 Array list
 Create time		0 ms
-Append 0.9*N items	2 ms
-Insert 0.1*N items	5 ms
+Append 0.9*N items	3 ms
+Insert 0.1*N items	7 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	9 ms
-Remove list		0 s
+Remove 0.2*N items	10 ms
+Remove list		1 s
 Memory		61440 bytes
 
 
 N = 10240
 Linked list
 Create time		0 ms
-Append 0.9*N items	3 ms
+Append 0.9*N items	4 ms
 Insert 0.1*N items	13 ms
-Get-set 0.2*N items	11 ms
-Remove 0.2*N items	15 ms
-Remove list		2 s
+Get-set 0.2*N items	10 ms
+Remove 0.2*N items	14 ms
+Remove list		3 s
 Memory		204812 bytes
 
 Static list
 Create time		0 ms
-Append 0.9*N items	1 ms
-Insert 0.1*N items	0 ms
-Get-set 0.2*N items	0 ms
-Remove 0.2*N items	0 ms
+Append 0.9*N items	0 ms
+Insert 0.1*N items	54 ms
+Get-set 0.2*N items	1 ms
+Remove 0.2*N items	115 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		122892 bytes
 
 Array list
 Create time		0 ms
-Append 0.9*N items	4 ms
-Insert 0.1*N items	20 ms
+Append 0.9*N items	5 ms
+Insert 0.1*N items	18 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	33 ms
-Remove list		0 s
+Remove 0.2*N items	32 ms
+Remove list		1 s
 Memory		122880 bytes
 
 
@@ -323,26 +323,26 @@ N = 20480
 Linked list
 Create time		0 ms
 Append 0.9*N items	6 ms
-Insert 0.1*N items	58 ms
-Get-set 0.2*N items	50 ms
-Remove 0.2*N items	62 ms
-Remove list		4 s
+Insert 0.1*N items	53 ms
+Get-set 0.2*N items	47 ms
+Remove 0.2*N items	61 ms
+Remove list		5 s
 Memory		409612 bytes
 
 Static list
 Create time		0 ms
 Append 0.9*N items	1 ms
-Insert 0.1*N items	0 ms
+Insert 0.1*N items	217 ms
 Get-set 0.2*N items	0 ms
-Remove 0.2*N items	0 ms
+Remove 0.2*N items	476 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		245772 bytes
 
 Array list
-Create time		1 ms
-Append 0.9*N items	10 ms
-Insert 0.1*N items	75 ms
-Get-set 0.2*N items	1 ms
+Create time		0 ms
+Append 0.9*N items	9 ms
+Insert 0.1*N items	70 ms
+Get-set 0.2*N items	0 ms
 Remove 0.2*N items	109 ms
 Remove list		0 s
 Memory		245760 bytes
@@ -352,27 +352,27 @@ N = 40960
 Linked list
 Create time		0 ms
 Append 0.9*N items	13 ms
-Insert 0.1*N items	212 ms
-Get-set 0.2*N items	221 ms
-Remove 0.2*N items	255 ms
+Insert 0.1*N items	213 ms
+Get-set 0.2*N items	196 ms
+Remove 0.2*N items	251 ms
 Remove list		10 s
 Memory		819212 bytes
 
 Static list
 Create time		0 ms
 Append 0.9*N items	2 ms
-Insert 0.1*N items	0 ms
-Get-set 0.2*N items	1 ms
-Remove 0.2*N items	0 ms
+Insert 0.1*N items	879 ms
+Get-set 0.2*N items	0 ms
+Remove 0.2*N items	1875 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		491532 bytes
 
 Array list
-Create time		0 ms
-Append 0.9*N items	18 ms
-Insert 0.1*N items	283 ms
-Get-set 0.2*N items	0 ms
-Remove 0.2*N items	423 ms
+Create time		1 ms
+Append 0.9*N items	17 ms
+Insert 0.1*N items	278 ms
+Get-set 0.2*N items	1 ms
+Remove 0.2*N items	420 ms
 Remove list		0 s
 Memory		491520 bytes
 
@@ -380,28 +380,28 @@ Memory		491520 bytes
 N = 81920
 Linked list
 Create time		0 ms
-Append 0.9*N items	36 ms
-Insert 0.1*N items	1461 ms
-Get-set 0.2*N items	902 ms
-Remove 0.2*N items	3109 ms
+Append 0.9*N items	26 ms
+Insert 0.1*N items	1369 ms
+Get-set 0.2*N items	849 ms
+Remove 0.2*N items	2967 ms
 Remove list		20 s
 Memory		1638412 bytes
 
 Static list
 Create time		0 ms
 Append 0.9*N items	4 ms
-Insert 0.1*N items	0 ms
-Get-set 0.2*N items	2 ms
-Remove 0.2*N items	0 ms
+Insert 0.1*N items	3558 ms
+Get-set 0.2*N items	1 ms
+Remove 0.2*N items	7541 ms
 Remove list		0 s
-Memory		132 bytes
+Memory		983052 bytes
 
 Array list
-Create time		1 ms
-Append 0.9*N items	34 ms
-Insert 0.1*N items	1208 ms
-Get-set 0.2*N items	1 ms
-Remove 0.2*N items	1709 ms
+Create time		0 ms
+Append 0.9*N items	35 ms
+Insert 0.1*N items	1173 ms
+Get-set 0.2*N items	2 ms
+Remove 0.2*N items	1643 ms
 Remove list		0 s
 Memory		983040 bytes
 
@@ -409,19 +409,19 @@ Memory		983040 bytes
 N = 163840
 Linked list
 Create time		0 ms
-Append 0.9*N items	54 ms
-Insert 0.1*N items	16686 ms
-Get-set 0.2*N items	12880 ms
-Remove 0.2*N items	21483 ms
-Remove list		41 s
+Append 0.9*N items	52 ms
+Insert 0.1*N items	15740 ms
+Get-set 0.2*N items	12152 ms
+Remove 0.2*N items	20488 ms
+Remove list		39 s
 Memory		3276812 bytes
 
 Array list
 Create time		1 ms
 Append 0.9*N items	69 ms
-Insert 0.1*N items	13239 ms
-Get-set 0.2*N items	3 ms
-Remove 0.2*N items	16755 ms
+Insert 0.1*N items	12774 ms
+Get-set 0.2*N items	2 ms
+Remove 0.2*N items	16246 ms
 Remove list		1 s
 Memory		1966080 bytes
 
