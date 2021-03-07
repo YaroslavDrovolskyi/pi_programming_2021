@@ -125,7 +125,7 @@ long int get_memory(std::vector<ElementType> array_list);
 int main() {
 	
 	DoublyLinkedList<Point>* MyList = nullptr;
-	//bool is_list_created = false;
+
 	const std::size_t SIZE = 10;
 	std::cout << "Hello!\n\n";
 	short int program_mode = 1, next = 1;
@@ -206,10 +206,10 @@ int main() {
 							else {
 								std::cout << "\nAre you sure to remove this element? (0 - No, 1 - Yes)\n";
 								print_Point(item_to_remove->data);
-								bool remove_or_not = false;
+								short int remove_or_not = 0;
 								std::cin >> remove_or_not;
 								Is_correct_value(remove_or_not, 0, 1);
-								if (!remove_or_not) {
+								if (remove_or_not == 0) {
 									std::cout << "\nItem isn't removed\n";
 									break;
 								}
@@ -232,10 +232,10 @@ int main() {
 								std::cout << "\nYour item is: ";
 								print_Point(result_of_search->data);
 								std::cout << "\nChange this item? (0 - No, 1 - Yes)\n";
-								bool next;
+								short int next;
 								std::cin >> next;
 								Is_correct_value(next, 0, 1);
-								if (next) {
+								if (next == 1) {
 									std::cout << "\nEnter new values\n";
 									Point new_data = get_point();
 									set(MyList, result_of_search, new_data);
@@ -699,15 +699,7 @@ template <typename ElementType>
 void Is_correct_value(ElementType& value_to_check, const int floor_value, const int ceiling_value) {
 	// ceiling value = -1 means that it is no ceil for value_to_check
 	// floor value = -1 means that it is no floor for value_to_check
-	if (ceiling_value == -1) {
-		while (value_to_check - floor_value < 0 || !std::cin.good()) {
-			std::cout << "Enter valid value: \n";
-			std::cin.clear();
-			std::cin.ignore(256, '\n');
-			std::cin >> value_to_check;
-		}
-	}
-	else if (floor_value == -1) {
+	if (ceiling_value == -1 && floor_value == -1) {
 		while (!std::cin.good()) {
 			std::cout << "Enter valid value: \n";
 			std::cin.clear();
@@ -716,13 +708,32 @@ void Is_correct_value(ElementType& value_to_check, const int floor_value, const 
 		}
 	}
 	else {
-		while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !std::cin.good()) {
-			std::cout << "Enter valid value: \n";
-			std::cin.clear();
-			std::cin.ignore(256, '\n');
-			std::cin >> value_to_check;
+		if (ceiling_value == -1) {
+			while (value_to_check - floor_value < 0 || !std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
+		}
+		else if (floor_value == -1) {
+			while (!std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
+		}
+		else {
+			while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
 		}
 	}
+
 	return;
 }
 
@@ -894,10 +905,10 @@ void StaticArray_Realization(){
 				else {
 					std::cout << "\nAre you sure to revove this item? (0 - No. 1 - Yes)\n";
 					print_Point(StaticList.array[index_to_remove]);
-					bool remove_or_not = false;
+					short int remove_or_not = 0;
 					std::cin >> remove_or_not;
 					Is_correct_value(remove_or_not, 0, 1);
-					if (!remove_or_not) {
+					if (remove_or_not == 0) {
 						std::cout << "\nItem wasn't remove\n";
 					}
 					else {
@@ -923,10 +934,10 @@ void StaticArray_Realization(){
 					print_Point(*result_of_search);
 					std::cout << std::endl;
 					std::cout << "\nChange this item? (0 - No, 1 - Yes)\n";
-					bool next;
+					short int next;
 					std::cin >> next;
 					Is_correct_value(next, 0, 1);
-					if (next) {
+					if (next == 1) {
 						std::cout << "\nEnter new values\n";
 						Point new_data = get_point();
 						set(StaticList, index_to_search, new_data);
@@ -1118,10 +1129,10 @@ void ListArray_Realization() {
 				}
 				std::cout << "\nIt is your point. Are you sure to remove it?  (0 -- No, 1 -- Yes)\n";
 				print_Point(ArrayList[index_to_remove]);
-				bool remove_or_not = false;
+				short int remove_or_not = 0;
 				std::cin >> remove_or_not;
 				Is_correct_value(remove_or_not, 0, 1);
-				if (!remove_or_not) { 
+				if (remove_or_not == 0) { 
 					std::cout << "\nItem isn't removed\n";
 					break; 
 				}
@@ -1145,10 +1156,10 @@ void ListArray_Realization() {
 				std::cout << "\nYour point is: ";
 				print_Point(ArrayList[index_to_search]);
 				std::cout << "\nChange this item? (0 - No, 1 - Yes)\n";
-				bool next;
+				short int next;
 				std::cin >> next;
 				Is_correct_value(next, 0, 1);
-				if (next) {
+				if (next == 1) {
 					std::cout << "\nEnter new values\n";
 					ArrayList[index_to_search] = get_point();
 					std::cout << "\nItem successully changed\n";
