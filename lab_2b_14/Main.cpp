@@ -11,9 +11,9 @@ template <typename DataType>
 struct ListNode {
 	ListNode<DataType>* next;
 	DataType data;
-	std::size_t priority;
+	int priority;
 
-	ListNode<DataType>(DataType data, std::size_t priority, ListNode* next = nullptr) {
+	ListNode<DataType>(DataType data, int priority, ListNode* next = nullptr) {
 		this->data = data;
 		this->priority = priority;
 		this->next = next;
@@ -33,7 +33,7 @@ struct PriorityQueue {
 
 
 
-	void insert(DataType data, std::size_t priority) {
+	void insert(DataType data, int priority) {
 		ListNode<DataType>* new_node = new ListNode<DataType>(data, priority);
 		if (!this->begin) {
 			this->begin = this->end = new_node;
@@ -70,7 +70,7 @@ struct PriorityQueue {
 		this->size--;
 		return result;
 	}
-	int peek() {
+	DataType peek() {
 		assert(this->begin != nullptr && "Try get item from empty queue");
 		return this->begin->data;
 	}
@@ -79,6 +79,7 @@ struct PriorityQueue {
 			std::cout << "Queue is empty" << std::endl;
 		}
 		else {
+			std::cout << "\n\nYour queue is (priority, value)\n";
 			ListNode<DataType>* current_node = this->begin;
 			while (current_node) {
 				std::cout << current_node->priority << '\t' << current_node->data << std::endl;
@@ -105,7 +106,7 @@ struct PriorityQueue {
 
 
 private:
-	ListNode<DataType>* place_to_insert(std::size_t priority) {
+	ListNode<DataType>* place_to_insert(int priority) {
 		ListNode<DataType>* current_node;
 		ListNode<DataType>* place = current_node = this->begin;
 
@@ -120,38 +121,18 @@ private:
 
 template <typename ElementType>
 void Is_correct_value(ElementType& value_to_check, const int floor_value = -1, const int ceiling_value = -1);
-std::size_t get_priority();
+int get_priority();
 int get_value();
 void print_menu();
 
 
 int main() {
-	PriorityQueue<double> MyQueue;
-	/*
-	MyQueue.insert(1.3, 5);
-	MyQueue.insert(1.3, 6);
-	MyQueue.insert(1.3, 9);
-	MyQueue.insert(2.3, 5);
-	MyQueue.insert(1.3, 0);
-	MyQueue.insert(1.3, 1);
-	MyQueue.insert(3.3, 5);
-	MyQueue.insert(2.3, 0);
-	MyQueue.insert(1.3, 7);
-	MyQueue.insert(1.3, 8);
-	MyQueue.print();
-	//std::cout << "\n\n\n\n\n";
-	for (std::size_t i = 1; i <= 10; i++) {
-		std::cout << MyQueue.dequeu() << std::endl;
-	}
-	std::cout << std::endl << MyQueue.size << std::endl;
-	//std::cout << MyQueue.dequeu() << std::endl;
-	*/
-
+	PriorityQueue<int> MyQueue;
 
 	std::cout << "Hello!" << std::endl;
 	short int program_mode = 0;
 	while (true) {
-		std::cout << "\nChose program mode (1 - Interactive, 2 - Demonstration)\n";
+		std::cout << "\nChose program mode (0 - Exit, 1 - Interactive, 2 - Demonstration)\n";
 		std::cin >> program_mode;
 		Is_correct_value(program_mode, 0, 2);
 		if (program_mode == Exit) { break; }
@@ -163,7 +144,8 @@ int main() {
 				Is_correct_value(next, 0, 5);
 				if (next == 0) { 
 					MyQueue.clear();
-					break; }
+					break; 
+				}
 				switch (next) {
 				case 1: { // add item
 					MyQueue.insert(get_value(), get_priority());
@@ -171,17 +153,18 @@ int main() {
 					break;
 				}
 				case 2: { // pop
-					if (MyQueue.size == 0) {
+					if (MyQueue.is_empty()) { // check for don't call assert in function of pop
 						std::cout << "\nQueue is empty\n";
 					}
 					else {
 						int result = MyQueue.dequeu();
 						std::cout << "\nYour item = " << result << std::endl;
+						std::cout << "\nItem removed from queue\n";
 					}
 					break;
 				}
 				case 3: { // peek
-					if (MyQueue.size == 0) {
+					if (MyQueue.is_empty()) { // check for don't call assert in function of peek
 						std::cout << "\nQueue is empty\n";
 					}
 					else {
@@ -201,15 +184,45 @@ int main() {
 						MyQueue.clear();
 						std::cout << "\nQueue is successfully cleared\n";
 					}
+					break;
 				}
-				default:break;
+				case 6: {
+					MyQueue.print();
+					break;
+				}
+				default: break;
 				}
 			}
 
 
 		}
 		else if (program_mode == Demonstrative) {
+			short int priorities[] = { 5, 1, 3, 7, 15, 45, 10, 5, 6, 17 };
+			std::cout << "\n1.Fill queue in incorrect order\n";
+			for (std::size_t i = 0; i < 10; i++) {
+				MyQueue.insert(2 * i + 1, priorities[i]);
+			}
+			MyQueue.print(); 
 
+			std::cout << "\n2.Peek item from queue\n";
+			std::cout << "\nYour item = " << MyQueue.peek() << std::endl;
+			MyQueue.print();
+
+			std::cout << "\n3.Pop item from queue\n";
+			std::cout << "\nYour item = " << MyQueue.dequeu() << std::endl;
+			MyQueue.print();
+
+			std::cout << "\n4.Size of queue = " << MyQueue.size << std::endl;
+
+			std::cout << "\n5.Clear queue\n";
+			MyQueue.clear();
+			std::cout << "Queue was successfully cleared\n\n";
+			MyQueue.print();
+
+			std::size_t a = 0;
+			Is_correct_value(a, 1);
+
+			break;
 		}
 	}
 
@@ -227,15 +240,7 @@ template <typename ElementType>
 void Is_correct_value(ElementType& value_to_check, const int floor_value, const int ceiling_value) {
 	// ceiling value = -1 means that it is no ceil for value_to_check
 	// floor value = -1 means that it is no floor for value_to_check
-	if (ceiling_value == -1) {
-		while (value_to_check - floor_value < 0 || !std::cin.good()) {
-			std::cout << "Enter valid value: \n";
-			std::cin.clear();
-			std::cin.ignore(256, '\n');
-			std::cin >> value_to_check;
-		}
-	}
-	else if (floor_value == -1) {
+	if (ceiling_value == -1 && floor_value == -1) {
 		while (!std::cin.good()) {
 			std::cout << "Enter valid value: \n";
 			std::cin.clear();
@@ -244,20 +249,39 @@ void Is_correct_value(ElementType& value_to_check, const int floor_value, const 
 		}
 	}
 	else {
-		while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !std::cin.good()) {
-			std::cout << "Enter valid value: \n";
-			std::cin.clear();
-			std::cin.ignore(256, '\n');
-			std::cin >> value_to_check;
+		if (ceiling_value == -1) {
+			while (value_to_check - floor_value < 0 || !std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
+		}
+		else if (floor_value == -1) {
+			while (!std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
+		}
+		else {
+			while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
 		}
 	}
+	
 	return;
 }
 
 
-std::size_t get_priority() {
+int get_priority() {
 	std::cout << "\nEnter a priority: ";
-	std::size_t priority;
+	int priority;
 	std::cin >> priority;
 	Is_correct_value(priority, 0);
 	return priority;
@@ -277,7 +301,7 @@ void print_menu() {
 		"1 \tadd item to queue\n" <<
 		"2 \tpop\n" <<
 		"3 \tpeek\n" <<
-		"3 \tsize of queue\n" <<
-		"5 \tremove queue\n" <<
+		"4 \tsize of queue\n" <<
+		"5 \tclear queue\n" <<
 		"==============\n\n";
 }
