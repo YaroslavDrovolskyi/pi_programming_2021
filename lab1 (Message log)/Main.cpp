@@ -614,9 +614,9 @@ short int RemoveElement(const int id_to_remove, vector<message>& Message_Log, co
 		cout << "It is this message:\n\n";
 		print(Message_Log[index_to_remove]);
 		cout << "\n\nAre you sure to remove this?   (0 - no, 1 - yes)\n\n";
-		bool next = true;
+		short int next;
 		cin >> next; Is_correct_value(next, 0, 1);
-		if (!next) { return 0; } // if no
+		if (next == 0) { return 0; } // if no
 	}
 	
 	Message_Log.erase(Message_Log.begin() + index_to_remove);
@@ -699,8 +699,8 @@ void ReadFromUser(vector<message>& Message_Log) {
 	if (Message_Log.size() == 0) { ReadFromTEXT("Messages log_TEXT.txt", Message_Log); }
 	message Message;
 	size_t begin = Message_Log.size();
-	bool next = true;
-	while (next == true) {
+	short int next = 1;
+	while (next == 1) {
 		Message = GetFromUser();
 		//Giving ID to each element
 		if (Message_Log.size() == 0) { Message.id = 0; }
