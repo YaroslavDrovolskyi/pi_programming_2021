@@ -99,6 +99,10 @@ struct PriorityQueue {
 		this->size = 0;
 	}
 
+	bool is_empty() {
+		return (this->begin == nullptr);
+	}
+
 
 private:
 	ListNode<DataType>* place_to_insert(std::size_t priority) {
@@ -147,7 +151,7 @@ int main() {
 	std::cout << "Hello!" << std::endl;
 	short int program_mode = 0;
 	while (true) {
-		std::cout << "\nChose program mode (1 - Interactive, 2 - Demonstration\n";
+		std::cout << "\nChose program mode (1 - Interactive, 2 - Demonstration)\n";
 		std::cin >> program_mode;
 		Is_correct_value(program_mode, 0, 2);
 		if (program_mode == Exit) { break; }
@@ -157,23 +161,46 @@ int main() {
 				print_menu();
 				std::cin >> next;
 				Is_correct_value(next, 0, 5);
-				if (next == 0) { break; }
+				if (next == 0) { 
+					MyQueue.clear();
+					break; }
 				switch (next) {
 				case 1: { // add item
 					MyQueue.insert(get_value(), get_priority());
 					std::cout << "\nItem inserted\n";
+					break;
 				}
 				case 2: { // pop
-
+					if (MyQueue.size == 0) {
+						std::cout << "\nQueue is empty\n";
+					}
+					else {
+						int result = MyQueue.dequeu();
+						std::cout << "\nYour item = " << result << std::endl;
+					}
+					break;
 				}
 				case 3: { // peek
-
+					if (MyQueue.size == 0) {
+						std::cout << "\nQueue is empty\n";
+					}
+					else {
+						std::cout << "\nYour item = " << MyQueue.peek() << std::endl;
+					}
+					break;
 				}
 				case 4: { // size
-
+					std::cout << "\nSize of queue = " << MyQueue.size << std::endl;
+					break;
 				}
 				case 5: { // clear
-
+					if (MyQueue.is_empty()) {
+						std::cout << "\nQueue is already empty\n";
+					}
+					else {
+						MyQueue.clear();
+						std::cout << "\nQueue is successfully cleared\n";
+					}
 				}
 				default:break;
 				}
@@ -245,7 +272,7 @@ int get_value() {
 }
 
 void print_menu() {
-	std::cout << "=====MENU=====" <<
+	std::cout << "=====MENU=====\n" <<
 		"0 \tchoose mode\n" <<
 		"1 \tadd item to queue\n" <<
 		"2 \tpop\n" <<
