@@ -32,7 +32,6 @@ struct PriorityQueue {
 	}
 
 
-
 	void insert(DataType data, int priority) {
 		ListNode<DataType>* new_node = new ListNode<DataType>(data, priority);
 		if (!this->begin) {
@@ -56,6 +55,7 @@ struct PriorityQueue {
 		}
 		this->size++;
 	}
+
 	DataType dequeu() {
 		assert(this->begin != nullptr && "Try get item from empty queue");
 
@@ -70,10 +70,12 @@ struct PriorityQueue {
 		this->size--;
 		return result;
 	}
+
 	DataType peek() {
 		assert(this->begin != nullptr && "Try get item from empty queue");
 		return this->begin->data;
 	}
+
 	void print() {
 		if (!this->begin) {
 			std::cout << "Queue is empty" << std::endl;
@@ -186,7 +188,7 @@ int main() {
 					}
 					break;
 				}
-				case 6: {
+				case 6: { // for testing, not for users
 					MyQueue.print();
 					break;
 				}
