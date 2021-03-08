@@ -7,7 +7,11 @@
 struct Time {
 	short int hour, minutes, seconds;
 };
+struct Date {
+	short int day, month, year;
+};
 struct Message {
+	Date date;
 	Time time;
 	std::string text;
 };
@@ -23,7 +27,12 @@ struct ListNode {
 		this->next = next;
 	}
 };
+
 void print_message(Message message);
+
+template <typename ElementType>
+void Is_correct_value(ElementType& value_to_check, const int floor_value = -1, const int ceiling_value = -1);
+
 struct MessageLog {
 	ListNode* begin;
 	ListNode* end;
@@ -146,6 +155,16 @@ struct MessageLog {
 
 int main() {
 	MessageLog MyLog(3);
+	/*
+	MyLog.push({ {23,23,23}, "Message_1" });
+	MyLog.push({ {20,20,20}, "Message_2" });
+	MyLog.push({ {10,23,23}, "Message_3" });
+	MyLog.push({ {23,23,23}, "Message_4" });
+	MyLog.push({ {23,23,23}, "Message_5" });
+	MyLog.print();
+	*/
+
+	/*
 	unsigned long int start_time = clock();
 	for (std::size_t i = 0; i < 10000; i++) {
 		MyLog.push({ {23,23,23}, "Message_1" });
@@ -176,7 +195,7 @@ int main() {
 	std::cout << "\nWith removing: " << (double)(clock() - start_time) / 1000 << std::endl << std::endl;
 	
 	MyLog.print();
-
+	*/
 
 
 
@@ -187,4 +206,76 @@ int main() {
 void print_message(Message message) {
 	std::cout << message.time.hour << ':' << message.time.minutes << ':' << message.time.seconds << '\t';
 	std::cout << message.text << std::endl;
+}
+
+Message get_message() {
+	Message new_message;
+	std::cout << "\nEneter a message:\n";
+	std::cin.ignore(256, '\n');
+	getline(std::cin, new_message.text);
+	
+
+	//cout << "Enter a date in format DD MM YY:  ";
+	std::cout << "Enter a day:  ";
+	std::cin >> new_message.date.day; Is_correct_value(new_message.date.day, 1, 31);
+
+	std::cout << "Enter a month:  ";
+	std::cin >> new_message.date.month; Is_correct_value(new_message.date.month, 1, 12);
+
+	std::cout << "Enter a year:  ";
+	std::cin >> new_message.date.year; Is_correct_value(new_message.date.year, 1);
+
+	std::cout << "Enter a time hours:  ";
+	std::cin >> new_message.time.hour; Is_correct_value(new_message.time.hour, 0, 23);
+
+	std::cout << "Enter a time minutes:  ";
+	std::cin >> new_message.time.minutes; Is_correct_value(new_message.time.minutes, 0, 59);
+
+	std::cout << "Enter a time seconds:  ";
+	std::cin >> new_message.time.seconds; Is_correct_value(new_message.time.seconds, 0, 59);
+
+	return (new_message);
+
+}
+
+template <typename ElementType>
+void Is_correct_value(ElementType& value_to_check, const int floor_value, const int ceiling_value) {
+	// ceiling value = -1 means that it is no ceil for value_to_check
+	// floor value = -1 means that it is no floor for value_to_check
+	if (ceiling_value == -1 && floor_value == -1) {
+		while (!std::cin.good()) {
+			std::cout << "Enter valid value: \n";
+			std::cin.clear();
+			std::cin.ignore(256, '\n');
+			std::cin >> value_to_check;
+		}
+	}
+	else {
+		if (ceiling_value == -1) {
+			while (value_to_check - floor_value < 0 || !std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
+		}
+		else if (floor_value == -1) {
+			while (!std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
+		}
+		else {
+			while (value_to_check - floor_value < 0 || value_to_check - ceiling_value > 0 || !std::cin.good()) {
+				std::cout << "Enter valid value: \n";
+				std::cin.clear();
+				std::cin.ignore(256, '\n');
+				std::cin >> value_to_check;
+			}
+		}
+	}
+
+	return;
 }
