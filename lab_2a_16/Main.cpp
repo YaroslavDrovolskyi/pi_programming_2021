@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <ctime>
 #include <cassert>
 
 //using namespace std;
@@ -144,7 +143,7 @@ struct MessageLog {
 		assert(number <= this->size && "Try to get more items, than exist");
 		Message* result = new Message[number];
 		ListNode* current = this->end;
-		for (std::size_t i = 1; i <= number; i++) {
+		for (std::size_t i = 1; i <= number; i++) { // fill container from the end
 			result[number - i] = current->data;
 			current = current->prev;
 		}
