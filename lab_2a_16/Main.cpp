@@ -40,6 +40,7 @@ void print_menu();
 Message get_message();
 int get_index();
 
+// this program realization based on cyclic list
 struct MessageLog {
 	ListNode* begin;
 	ListNode* end;
