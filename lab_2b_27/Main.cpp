@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 
 
 struct VListNode {
@@ -34,6 +35,20 @@ struct VListNode {
 
 	}
 
+	void insert(int data_to_insert, std::size_t index_to_insert, std::size_t size) {
+		if (this->size == this->capacity) {
+			for (std::size_t i = size - 1; i > index_to_insert; i--) {
+				this->array[i] = this->array[i - 1];
+			}
+		}
+		else {
+			for (std::size_t i = size; i > index_to_insert; i--) {
+				this->array[i] = this->array[i - 1];
+			}
+		}
+		
+		this->array[index_to_insert] = data_to_insert;
+	}
 };
 
 struct VList {
@@ -71,6 +86,53 @@ struct VList {
 		this->overall_size++;
 	}
 
+	VListNode* find_node(std::size_t index) {
+		assert(index < this->size && "No ListNode with this index in list"); // this->begin = nullptr included
+
+		VListNode* current = this->begin;
+		std::size_t i = 0;
+		while (i < index && current) {
+			i++;
+			current = current->next;
+		}
+		return current;
+	}
+
+	// unfinished
+	void push(VListNode* node_to_push, std::size_t index_in_array, int data_to_push) {
+		if (this->size == 0) { // is it necessary?
+			VListNode* new_node = new VListNode(2);
+			this->begin = this->end = new_node;
+			new_node->array[0] = data_to_push;
+			new_node->size++;
+			this->size++;
+		}
+		else {
+			assert(index_in_array < node_to_push->size);
+			if (node_to_push->size == node_to_push->capacity) {
+				VListNode* new_node = new VListNode(2 * node_to_push->capacity, node_to_push, node_to_push->next);
+				
+				if (node_to_push == this->end) {
+					this->end = new_node;
+				}
+				if (node_to_push->next) {
+					node_to_push->next->prev = new_node;
+				}
+				node_to_push->next = new_node;
+
+				new_node->array[0] = node_to_push->array[node_to_push->size - 1]; // Extra element drop int next node
+				node_to_push->insert(data_to_push, index_in_array, node_to_push->size);
+				new_node->size++;
+				this->size++;
+			}
+			else {
+				node_to_push->insert(data_to_push, index_in_array, node_to_push->size);
+				node_to_push->size++;
+			}
+			
+		}
+		this->overall_size++;
+	}
 	// bad way, because it is impossible to change this->end if it isn't enought space in array 
 	void append_and_push(int data) {
 		if (this->size == 0) {
@@ -115,6 +177,13 @@ int main() {
 	for (std::size_t i = 0; i < N; i++) {
 		List_1.append(i%10);
 	}
+	List_1.print();
+	std::cout << "\n\n\n";
+	//List_1.push(List_1.begin->next->next, 0, 101);
+	List_1.push(List_1.begin, 0, 100);
+	List_1.push(List_1.begin->next, 0, 101);
+	List_1.push(List_1.begin->next, 1, 95);
+	List_1.push(List_1.begin->next, 2, 99);
 	List_1.print();
 
 
