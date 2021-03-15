@@ -111,7 +111,7 @@ struct VList {
 	}
 
 	void insert(int data_to_insert, std::size_t index_to_insert) {
-		if (index_to_insert == this->overall_size) {
+		if (index_to_insert == this->overall_size) { // when list is empty included
 			append(data_to_insert);
 		}
 		else {
@@ -127,13 +127,23 @@ struct VList {
 	void insert_by_pointer(VListNode* node_to_push, std::size_t index_in_array, int data_to_push) {
 		assert(node_to_push != nullptr && "node_to_push is nullptr");
 		assert(index_in_array < node_to_push->size);
-		if (node_to_push->size == node_to_push->capacity) {
-			if (node_to_push->next) {
-				if (node_to_push->next->size < node_to_push->next->capacity && node_to_push->next->size <=50) {
-					node_to_push->next->insert_in_array(node_to_push->array[node_to_push->size - 1], 0);
-				}
+
+		// determination: create new node or not
+		bool is_enough_space_in_next = false;
+		if (node_to_push->next) {
+			if (node_to_push->next->size < node_to_push->next->capacity && node_to_push->next->size <= 10) {
+				is_enough_space_in_next = true;
 			}
 			else {
+				is_enough_space_in_next = false;
+			}
+		}
+		else {
+			is_enough_space_in_next = false;
+		}
+
+		if (node_to_push->size == node_to_push->capacity) {
+			if (is_enough_space_in_next == false) {
 				VListNode* new_node = new VListNode(2 * node_to_push->capacity, node_to_push, node_to_push->next);
 
 				if (node_to_push == this->end) {
@@ -144,18 +154,17 @@ struct VList {
 				}
 				node_to_push->next = new_node;
 
-
 				new_node->array[0] = node_to_push->array[node_to_push->size - 1]; // Extra element drop in next node
 				new_node->size++;
 			}
-			
-			node_to_push->insert_in_array(data_to_push, index_in_array);
+			else if (is_enough_space_in_next == true){
+				node_to_push->next->insert_in_array(node_to_push->array[node_to_push->size - 1], 0);
+			}
 			
 			this->size++;
 		}
-		else {
-			node_to_push->insert_in_array(data_to_push, index_in_array);
-		}
+		
+		node_to_push->insert_in_array(data_to_push, index_in_array);
 		this->overall_size++;
 	}
 	// bad way, because it is impossible to change this->end if it isn't enought space in array 
@@ -210,11 +219,26 @@ int main() {
 	//List_1.insert_by_pointer(List_1.begin->next, 0, 101);
 	//List_1.insert_by_pointer(List_1.begin->next, 1, 95);
 	//List_1.insert_by_pointer(List_1.begin->next, 2, 99);
-	List_1.insert(100, 0);
-	List_1.insert(100, 0);
-	List_1.insert(100, 0);
-	List_1.insert(100, 0);
-	List_1.insert(100, 0);
+	List_1.insert(95, 0);
+	List_1.print();
+	std::cout << "\n\n\n";
+
+	List_1.insert(96, 0);
+	List_1.print();
+	std::cout << "\n\n\n";
+
+	List_1.insert(97, 0);
+	List_1.print();
+	std::cout << "\n\n\n";
+
+	List_1.insert(98, 0);
+	List_1.print();
+	std::cout << "\n\n\n";
+
+	List_1.insert(99, 0);
+	List_1.print();
+	std::cout << "\n\n\n";
+
 //	List_1.insert(100, 0);
 	//List_1.insert(100, 27);
 	//List_1.insert(100, 0);
