@@ -221,9 +221,6 @@ int main() {
 			std::cout << "Queue was successfully cleared\n\n";
 			MyQueue.print();
 
-			std::size_t a = 0;
-			Is_correct_value(a, 1);
-
 			break;
 		}
 	}
