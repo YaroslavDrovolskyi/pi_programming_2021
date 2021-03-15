@@ -25,24 +25,6 @@ struct VListNode {
 		this->next = next;
 	}
 
-	// bad way, because it is impossible to change this->end if it isn't enought space in array 
-	void push_back(int data) {
-		if (this->size == this->capacity) {
-			VListNode* new_node = new VListNode(2*this->capacity, this, this->next);
-			if (this->next) {
-				this->next->prev = new_node;
-			}
-			this->next = new_node;
-			new_node->array[0] = data;
-			new_node->size++;
-		}
-		else {
-			this->array[this->size] = data;
-			this->size++;
-		}
-
-	}
-
 	void insert_in_array(int data_to_insert, std::size_t index_to_insert) {
 		if (this->size == this->capacity) {
 			for (std::size_t i = this->size - 1; i > index_to_insert; i--) {
@@ -98,8 +80,6 @@ struct VList {
 			this->end->array[this->end->size] = data;
 			this->end->size++;
 		}
-
-
 		this->overall_size++;
 	}
 
@@ -136,7 +116,7 @@ struct VList {
 
 		index_in_array = index - low_limit;
 
-		if (mode != removing) {
+		if (mode != removing) { // for oprimizing inserting
 			if (index_in_array == 0 && current->prev) {
 				if (current->prev->size != current->prev->capacity) {
 					current = current->prev;
@@ -144,7 +124,6 @@ struct VList {
 				}
 			}
 		}
-		
 		return current;
 	}
 
@@ -170,11 +149,11 @@ struct VList {
 				for (std::size_t i = 0; i < current->size; i++) {
 					std::cout << current->array[i] << ' ';
 				}
-				std::cout << std::endl;
+				//std::cout << std::endl;
 				current = current->next;
 			}
-			std::cout << "\nOverall size: " << this->overall_size << std::endl;
-			std::cout << "Number of nodes: " << this->size << std::endl;
+			std::cout << "\n\nSize: " << this->overall_size << std::endl;
+			//std::cout << "Number of nodes: " << this->size << std::endl;
 		}
 	}
 
@@ -192,8 +171,8 @@ struct VList {
 				//std::cout << std::endl;
 				current = current->prev;
 			}
-			std::cout << "\nOverall size: " << this->overall_size << std::endl;
-			std::cout << "Number of nodes: " << this->size << std::endl;
+			std::cout << "\n\nSize: " << this->overall_size << std::endl;
+			//std::cout << "Number of nodes: " << this->size << std::endl;
 		}
 	}
 
@@ -249,22 +228,6 @@ struct VList {
 	}
 
 private:
-
-	// bad way, because it is impossible to change this->end if it isn't enought space in array 
-	void append_and_push(int data) {
-		if (this->size == 0) {
-			VListNode* new_node = new VListNode(2);
-			this->begin = this->end = new_node;
-			new_node->array[0] = data;
-			new_node->size++;
-		}
-		else {
-			this->end->push_back(data);
-		}
-
-
-		this->size++;
-	}
 
 	void create_new(int data) {
 		VListNode* new_node = new VListNode(2);
@@ -333,8 +296,6 @@ private:
 
 };
 
-
-
 void print_search_result(std::vector<std::size_t> result) {
 	if (result.size() == 0) {
 		std::cout << "\nNothing was found\n";
@@ -358,45 +319,6 @@ std::size_t get_index(std::size_t max_index);
 int get_value();
 
 int main() {
-
-	/*
-	const int N = 25;
-	VList List_1, List_2;
-//	List_1.insert(0, 0);
-	for (std::size_t i = 0; i < N; i++) {
-		//List_1.append(i%10);
-		List_1.insert(i%6, i);
-	}
-	List_1.print();
-	std::cout << "\n\n\n";
-	
-	List_1.remove(2);
-	List_1.print();
-	std::cout << "\n\n\n";
-
-	List_1.remove(0);
-	List_1.print();
-	std::cout << "\n\n\n";
-
-	List_1.remove(0);
-	List_1.print();
-	std::cout << "\n\n\n";
-
-	std::cout << "List_1[21] = " << List_1.get(21) << std::endl;
-
-	std::cout << "\n\n\n";
-
-	std::vector<std::size_t> result = List_1.search(5);
-	print_search_result(result);
-	result.clear();
-	result.shrink_to_fit();
-	
-
-	List_1.clear();
-	List_1.print();
-	std::cout << "\n\n\n";
-	*/
-
 	VList List;
 	std::cout << "Hello!" << std::endl;
 	short int program_mode = 0;
@@ -444,7 +366,7 @@ int main() {
 					std::size_t index_to_change = get_index(List.overall_size - 1);
 
 					int* old_value = List.get_pointer(index_to_change);
-					std::cout << "\nDo you want to change this item? (0 - No, 1 - Yes): " << *old_value;
+					std::cout << "\nDo you want to change this item? (0 - No, 1 - Yes): " << *old_value << std::endl;
 					short int next = 0;
 					std::cin >> next;
 					Is_correct_value(next, 0, 1);
@@ -525,7 +447,7 @@ int main() {
 			List.remove(9);
 			List.print();
 
-			std::cout << "\n6. Remove item from beginning and from end\n";
+			std::cout << "\n6. Remove item from the beginning and from the end\n";
 			List.remove(0);
 			List.remove(List.overall_size - 1);
 			List.print();
@@ -615,7 +537,7 @@ void print_menu() {
 		"3 \tget item by index\n" <<
 		"4 \tchange item by index\n" <<
 		"5 \tremove item by index\n" <<
-		"6 \tseach by value\n" <<
+		"6 \tsearch by value\n" <<
 		"7 \tget size of list\n" <<
 		"8 \tprint list\n" <<
 		"9 \tprint reversed list\n" <<
@@ -624,7 +546,7 @@ void print_menu() {
 }
 
 std::size_t get_index(std::size_t max_index) {
-	std::cout << "Enter index (from 0 to " << max_index << "):";
+	std::cout << "Enter index (from 0 to " << max_index << "): ";
 	std::size_t index = 0;
 	std::cin >> index;
 	Is_correct_value(index, 0, max_index); // check to not call asserts
