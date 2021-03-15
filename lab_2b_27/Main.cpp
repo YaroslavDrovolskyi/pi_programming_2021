@@ -1,6 +1,10 @@
 #include <iostream>
 #include <cassert>
 
+enum find_node_mode {
+	removing, inserting
+};
+
 
 struct VListNode {
 	VListNode* prev;
@@ -50,6 +54,14 @@ struct VListNode {
 		
 		this->array[index_to_insert] = data_to_insert;
 	}
+
+	void remove_from_array(std::size_t index_to_remove) {
+		for (std::size_t i = index_to_remove; i < this->size - 1; i++) {
+			this->array[i] = this->array[i + 1];
+		}
+		this->size--;
+	}
+
 };
 
 struct VList {
@@ -64,13 +76,7 @@ struct VList {
 		this->overall_size = 0;
 	}
 	
-	void create_new(int data) {
-		VListNode* new_node = new VListNode(2);
-		this->begin = this->end = new_node;
-		new_node->array[0] = data;
-		new_node->size++;
-		this->size++;
-	}
+	
 	void append(int data) {
 		if (this->begin == nullptr) {
 			create_new(data);
@@ -97,14 +103,14 @@ struct VList {
 		}
 		else {
 			std::size_t index_in_array = 0;
-			VListNode* node_to_insert = find_node(index_to_insert, index_in_array);
+			VListNode* node_to_insert = find_node(index_to_insert, index_in_array, inserting);
 			insert_by_pointer(node_to_insert, index_in_array, data_to_insert);
 		}
 
 	}
 
 
-	VListNode* find_node(std::size_t index, std::size_t& index_in_array) {
+	VListNode* find_node(std::size_t index, std::size_t& index_in_array, std::size_t mode = removing) {
 		assert(index < this->overall_size &&  "No ListNode with this index in list"); // this->begin = nullptr included
 		std::size_t low_limit = 0, up_limit = this->begin->size;
 
@@ -120,17 +126,76 @@ struct VList {
 			}
 			
 		} 
+
 		index_in_array = index - low_limit;
-		if (index_in_array == 0 && current->prev) {
-			if (current->prev->size != current->prev->capacity) {
-				current = current->prev;
-				index_in_array = current->size;
+
+		if (mode != removing) {
+			if (index_in_array == 0 && current->prev) {
+				if (current->prev->size != current->prev->capacity) {
+					current = current->prev;
+					index_in_array = current->size;
+				}
 			}
 		}
+		
 		return current;
 	}
 
-	
+	void remove(std::size_t index_to_remove) {
+		assert(index_to_remove < this->overall_size);
+		std::size_t index_in_array;
+		VListNode* current = find_node(index_to_remove, index_in_array, removing);
+		current->remove_from_array(index_in_array);
+		if (current->size == 0) {
+			remove_node(current);
+		}
+		this->overall_size--;
+	}
+
+	void print() {
+		if (this->size == 0) {
+			std::cout << "\nList is empty\n";
+		}
+		else {
+			std::cout << "\nYour list:\n";
+			VListNode* current = this->begin;
+			while (current) {
+				for (std::size_t i = 0; i < current->size; i++) {
+					std::cout << current->array[i] << ' ';
+				}
+				std::cout << std::endl;
+				current = current->next;
+			}
+			std::cout << "\nOverall size: " << this->overall_size << std::endl << 
+				"Number of nodes: " << this->size << std::endl;
+		}
+	}
+
+private:
+
+	// bad way, because it is impossible to change this->end if it isn't enought space in array 
+	void append_and_push(int data) {
+		if (this->size == 0) {
+			VListNode* new_node = new VListNode(2);
+			this->begin = this->end = new_node;
+			new_node->array[0] = data;
+			new_node->size++;
+		}
+		else {
+			this->end->push_back(data);
+		}
+
+
+		this->size++;
+	}
+
+	void create_new(int data) {
+		VListNode* new_node = new VListNode(2);
+		this->begin = this->end = new_node;
+		new_node->array[0] = data;
+		new_node->size++;
+		this->size++;
+	}
 
 	void insert_by_pointer(VListNode* node_to_push, std::size_t index_in_array, int data_to_push) {
 		assert(node_to_push != nullptr && "node_to_push is nullptr");
@@ -160,55 +225,40 @@ struct VList {
 				new_node->size++;
 				this->size++;
 			}
-			else if (is_enough_space_in_next == true){
+			else if (is_enough_space_in_next == true) {
 				node_to_push->next->insert_in_array(node_to_push->array[node_to_push->size - 1], 0);
 			}
 		}
-		
+
 		node_to_push->insert_in_array(data_to_push, index_in_array);
 		this->overall_size++;
 	}
-	// bad way, because it is impossible to change this->end if it isn't enought space in array 
-	void append_and_push(int data) {
-		if (this->size == 0) {
-			VListNode* new_node = new VListNode(2);
-			this->begin = this->end = new_node;
-			new_node->array[0] = data;
-			new_node->size++;
+
+	void remove_node(VListNode* node_to_remove) {
+		if (!node_to_remove->next) {
+			this->end = node_to_remove->prev;
 		}
 		else {
-			this->end->push_back(data);
+			node_to_remove->next->prev = node_to_remove->prev;
 		}
-
-
-		this->size++;
+		if (!node_to_remove->prev) {
+			this->begin = node_to_remove->next;
+		}
+		else {
+			node_to_remove->prev->next = node_to_remove->next;
+		}
+		delete node_to_remove;
+		this->size--;
 	}
 
 
-	void print() {
-		if (this->size == 0) {
-			std::cout << "\nList is empty\n";
-		}
-		else {
-			std::cout << "\nYour list:\n";
-			VListNode* current = this->begin;
-			while (current) {
-				for (std::size_t i = 0; i < current->size; i++) {
-					std::cout << current->array[i] << ' ';
-				}
-				std::cout << std::endl;
-				current = current->next;
-			}
-			std::cout << "\nOverall size: " << this->overall_size << std::endl << 
-				"Number of nodes: " << this->size << std::endl;
-		}
-	}
+
 };
 
 
 
 int main() {
-	const int N = 25;
+	const int N = 3;
 	VList List_1, List_2;
 //	List_1.insert(0, 0);
 	for (std::size_t i = 0; i < N; i++) {
@@ -222,36 +272,18 @@ int main() {
 	//List_1.insert_by_pointer(List_1.begin->next, 0, 101);
 	//List_1.insert_by_pointer(List_1.begin->next, 1, 95);
 	//List_1.insert_by_pointer(List_1.begin->next, 2, 99);
-	List_1.insert(95, 0);
+	
+	List_1.remove(2);
 	List_1.print();
 	std::cout << "\n\n\n";
 
-	List_1.insert(96, 0);
+	List_1.remove(0);
 	List_1.print();
 	std::cout << "\n\n\n";
 
-	List_1.insert(97, 0);
+	List_1.remove(0);
 	List_1.print();
 	std::cout << "\n\n\n";
-
-	List_1.insert(98, 0);
-	List_1.print();
-	std::cout << "\n\n\n";
-
-	List_1.insert(99, 0);
-	List_1.print();
-	std::cout << "\n\n\n";
-
-	List_1.insert(100, 3);
-	List_1.print();
-	std::cout << "\n\n\n";
-
-
-//	List_1.insert(100, 0);
-	//List_1.insert(100, 27);
-	//List_1.insert(100, 0);
-
-
 
 	std::system("pause");
 	return 0;
