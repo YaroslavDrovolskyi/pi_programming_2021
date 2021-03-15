@@ -90,6 +90,20 @@ struct VList {
 		this->overall_size++;
 	}
 
+
+	void insert(int data_to_insert, std::size_t index_to_insert) {
+		if (index_to_insert == this->overall_size) { // when list is empty included
+			append(data_to_insert);
+		}
+		else {
+			std::size_t index_in_array = 0;
+			VListNode* node_to_insert = find_node(index_to_insert, index_in_array);
+			insert_by_pointer(node_to_insert, index_in_array, data_to_insert);
+		}
+
+	}
+
+
 	VListNode* find_node(std::size_t index, std::size_t& index_in_array) {
 		assert(index < this->overall_size &&  "No ListNode with this index in list"); // this->begin = nullptr included
 		std::size_t low_limit = 0, up_limit = this->begin->size;
@@ -107,26 +121,20 @@ struct VList {
 			
 		} 
 		index_in_array = index - low_limit;
+		if (index_in_array == 0 && current->prev) {
+			if (current->prev->size != current->prev->capacity) {
+				current = current->prev;
+				index_in_array = current->size;
+			}
+		}
 		return current;
 	}
 
-	void insert(int data_to_insert, std::size_t index_to_insert) {
-		if (index_to_insert == this->overall_size) { // when list is empty included
-			append(data_to_insert);
-		}
-		else {
-			std::size_t index_in_array = 0;
-			VListNode* node_to_insert = find_node(index_to_insert, index_in_array);
-			insert_by_pointer(node_to_insert, index_in_array, data_to_insert);
-		}
-		
-	}
+	
 
-
-	// unfinished
 	void insert_by_pointer(VListNode* node_to_push, std::size_t index_in_array, int data_to_push) {
 		assert(node_to_push != nullptr && "node_to_push is nullptr");
-		assert(index_in_array < node_to_push->size);
+		assert(index_in_array <= node_to_push->size);
 
 		// determination: create new node or not
 		bool is_enough_space_in_next = false;
@@ -134,12 +142,6 @@ struct VList {
 			if (node_to_push->next->size < node_to_push->next->capacity && node_to_push->next->size <= 10) {
 				is_enough_space_in_next = true;
 			}
-			else {
-				is_enough_space_in_next = false;
-			}
-		}
-		else {
-			is_enough_space_in_next = false;
 		}
 
 		if (node_to_push->size == node_to_push->capacity) {
@@ -156,12 +158,11 @@ struct VList {
 
 				new_node->array[0] = node_to_push->array[node_to_push->size - 1]; // Extra element drop in next node
 				new_node->size++;
+				this->size++;
 			}
 			else if (is_enough_space_in_next == true){
 				node_to_push->next->insert_in_array(node_to_push->array[node_to_push->size - 1], 0);
 			}
-			
-			this->size++;
 		}
 		
 		node_to_push->insert_in_array(data_to_push, index_in_array);
@@ -199,7 +200,7 @@ struct VList {
 				current = current->next;
 			}
 			std::cout << "\nOverall size: " << this->overall_size << std::endl << 
-				"Nunber of nodes: " << this->size << std::endl;
+				"Number of nodes: " << this->size << std::endl;
 		}
 	}
 };
@@ -209,8 +210,10 @@ struct VList {
 int main() {
 	const int N = 25;
 	VList List_1, List_2;
+//	List_1.insert(0, 0);
 	for (std::size_t i = 0; i < N; i++) {
-		List_1.append(i%10);
+		//List_1.append(i%10);
+		List_1.insert(i, i);
 	}
 	List_1.print();
 	std::cout << "\n\n\n";
@@ -239,10 +242,14 @@ int main() {
 	List_1.print();
 	std::cout << "\n\n\n";
 
+	List_1.insert(100, 3);
+	List_1.print();
+	std::cout << "\n\n\n";
+
+
 //	List_1.insert(100, 0);
 	//List_1.insert(100, 27);
 	//List_1.insert(100, 0);
-	List_1.print();
 
 
 
