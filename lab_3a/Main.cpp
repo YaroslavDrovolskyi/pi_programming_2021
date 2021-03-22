@@ -10,6 +10,9 @@ struct Time {
 	short int seconds;
 };
 
+
+void merge_array(Time* arr, Time* result, std::size_t left, std::size_t middle, std::size_t right);
+
 // time_1 > time_2 = true
 bool compare_time(Time time_1, Time time_2) {
 	if (time_1.year > time_2.year) { return true; }
@@ -111,68 +114,120 @@ void quick_sort(Time* arr, std::size_t low, std::size_t high) {
 	}
 }
 
-void merge_sort(Time* arr, std::size_t size) {
+void merge_sort(Time*& arr, std::size_t size) {
 	Time* extra_arr = new Time[size];
-}
+	std::size_t bucket_size = 1;
+	std::size_t count = 0;
+	
+	while (bucket_size < size) {
+		count++;
+		//std::size_t i = 0;
 
-void merge_array(Time* arr, Time*result, std::size_t bucket_size, std::size_t size) {
-	std::size_t left = 0, right = 0, i = 0, j = bucket_size , k = 0;
+		std::size_t left = 0;
+		std::size_t middle = bucket_size;
+		std::size_t right = 2 * bucket_size;
 
-	for (std::size_t step = 1; step < (size / (2 * bucket_size) + 1); step++) {
-		while (i < step * bucket_size && j < (step+1) * bucket_size && j < size) {
 
-			if (compare_time(arr[i], arr[j]) == false) {
-				result[k] = arr[i];
-				i++;
+		while (true) {
+			
+
+			left = (left < size) ? left : size;
+			middle = (middle < size) ? middle : size;
+			right = (right < size) ? right : size;
+
+			if (count % 2 != 0) {
+				merge_array(arr, extra_arr, left, middle, right);
 			}
 			else {
-				result[k] = arr[j];
-				j++;
+				merge_array(extra_arr, arr, left, middle, right);
 			}
-			k++;
+			
+			
+			left += 2 * bucket_size;
+			middle += 2 * bucket_size;
+			right += 2 * bucket_size;
+
+			if (left >= size) { break; }
 		}
-		while (j < (step + 1) * bucket_size && j < size) {
-			result[k] = arr[j];
-			j++;
-			k++;
-		}
-		while (i < step*bucket_size) {
+		
+		bucket_size *= 2;
+	}
+	if (count % 2 != 0) {
+		arr = extra_arr;
+		delete[]arr;
+	}
+	else {
+		delete[] extra_arr;
+	}
+}
+
+void merge_array(Time* arr, Time*result, std::size_t left, std::size_t middle, std::size_t right) {
+	std::size_t i = left, j = middle , k = left;
+
+	while (i < middle && j < right) {
+
+		if (compare_time(arr[i], arr[j]) == false) {
 			result[k] = arr[i];
 			i++;
-			k++;
 		}
+		else {
+			result[k] = arr[j];
+			j++;
+		}
+		k++;
+	}
+
+	while (i < middle) {
+		result[k] = arr[i];
+		i++;
+		k++;
+	}
+
+	while (j < right) {
+		result[k] = arr[j];
+		j++;
+		k++;
 	}
 	
 }
 
 int main() {
-	const std::size_t SIZE = 200;
-	//Time* array_1 = nullptr;
+	const std::size_t SIZE = 200000;
+	Time* array_1 = generate_new_array(SIZE);
 	Time* array_2 = generate_new_array(SIZE);
-	//print_array(array_2, SIZE);
-	//generate_new_array(array_1, SIZE);
+//	print_array(array_2, SIZE);
 
-//	for (std::size_t i = 0; i < SIZE; i++) {
-//		array_2[i] = array_1[i];
-//	}
+	for (std::size_t i = 0; i < SIZE; i++) {
+		array_2[i] = array_1[i];
+	}
+
+
+	std::cout << "\n\n\n\n";
 	unsigned int start_time = clock();
-	//selection_sort(array_1, SIZE);
-//	std::cout << std::endl << SIZE << " elements, selection sort =" << (float)(clock() - start_time) / 1000 << "\n\n";
-	//delete[]array_1;
+	merge_sort(array_1, SIZE);
+	std::cout << std::endl << SIZE << " elements, merge sort =" << (float)(clock() - start_time) / 1000 << "\n\n";
+//	delete[]array_1;
 
 
 
 	start_time = clock();
 	quick_sort(array_2,0, SIZE-1);
 	std::cout << std::endl << SIZE << " elements, quick sort =" << (float)(clock() - start_time) / 1000 << "\n\n";
-	//print_array(array_2, SIZE);
-	delete[] array_2;
+//	print_array(array_2, SIZE);
+//	delete[] array_2;
 
+	/*
 	std::cout << "\n\n\n\n";
-	Time* arr_1 = generate_new_array(8);
-	Time* arr_2 = generate_new_array(8);
-	merge_array(arr_1, arr_2, 1, 8);
-	print_array(arr_2, 8);
+	const std::size_t SIZE_2 = 9;
+//	Time* arr_1 = generate_new_array(SIZE_2);
+	Time* arr_2 = generate_new_array(SIZE_2);
+	print_array(arr_2, SIZE_2);
+	std::cout << "\n\n\n\n\n";
+	//merge_array(arr_2, arr_1, 0, 1, 2);
+	merge_sort(arr_2, SIZE_2);
+	print_array(arr_2, SIZE_2);
+
+	*/
 
 	std::system("pause");
 	return 0;
