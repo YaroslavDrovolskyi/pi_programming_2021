@@ -1,5 +1,7 @@
 #include <iostream>
 #include<ctime>
+#include<vector>
+#include<algorithm>
 
 struct Time {
 	short int day;
@@ -15,6 +17,7 @@ enum ProgramMode {
 };
 
 void merge_array(Time* arr, Time* result, std::size_t left, std::size_t middle, std::size_t right);
+void merge_sort(Time*& arr, std::size_t size, short int mode = Benchmark);
 
 // time_1 > time_2 = true
 bool compare_time(Time time_1, Time time_2) {
@@ -29,6 +32,31 @@ bool compare_time(Time time_1, Time time_2) {
 					if (time_1.minutes > time_2.minutes) { return true; }
 					else if (time_1.minutes == time_2.minutes) {
 						if (time_1.seconds > time_2.seconds) { return true; }
+						else if (time_1.seconds == time_2.seconds) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+// time_1 < time_2 = true
+bool compare_time_stl(Time time_1, Time time_2) {
+	if (time_1.year < time_2.year) { return true; }
+	else if (time_1.year == time_2.year) {
+		if (time_1.month < time_2.month) { return true; }
+		else if (time_1.month == time_2.month) {
+			if (time_1.day < time_2.day) { return true; }
+			else if (time_1.day == time_2.day) {
+				if (time_1.hours < time_2.hours) { return true; }
+				else if (time_1.hours == time_2.hours) {
+					if (time_1.minutes < time_2.minutes) { return true; }
+					else if (time_1.minutes == time_2.minutes) {
+						if (time_1.seconds < time_2.seconds) { return true; }
 						else if (time_1.seconds == time_2.seconds) {
 							return false;
 						}
@@ -87,6 +115,45 @@ Time* generate_new_array(std::size_t size) {
 	//arr[size - 1] = arr[size - 2];
 	return arr;
 }
+
+Time* generate_almost_sorted(std::size_t size, std::size_t probability) {
+	if (probability == 0) {
+		probability = 5;
+	}
+	Time* arr = generate_new_array(size);
+	merge_sort(arr, size);
+	for (std::size_t i = 0; i < size; i++) {
+		if (i % probability == 0) {
+			arr[i] = arr[size/2];
+		}
+	}
+	return arr;
+}
+
+Time* generate_almost_equal(std::size_t size, std::size_t probability = 10) { // probability - is probability of not equal elements
+	if (probability == 0) {
+		probability = 10;
+	}
+	Time* arr = generate_new_array(size);
+	for (std::size_t i = 0; i < size; i++) {
+		if (i % probability != 0) {
+			arr[i] = arr[0];
+		}
+	}
+	return arr;
+}
+
+Time* generate_reverse_sorted(std::size_t size) { // probability - is probability of not equal element
+	Time* arr = generate_new_array(size);
+	merge_sort(arr, size);
+	Time* result = new Time[size];
+	for (std::size_t i = 0; i < size; i++) {
+		result[i] = arr[size - i - 1];
+	}
+	delete[]arr;
+	return result;
+}
+
 
 void print_array(Time* arr, std::size_t low, std::size_t high) {
 	for (std::size_t i = low; i <= high; i++) {
@@ -170,19 +237,29 @@ void quick_sort(Time* arr, std::size_t low, std::size_t high, short int mode = B
 		while (is_equal_time(arr[left], arr[pi]) == true) {
 			left--;
 		}
+		left++;
 
-		if (pi == 0) { 
-			quick_sort(arr, pi + 1, high, mode);
+		std::size_t right = pi;
+		while (is_equal_time(arr[right], arr[pi]) == true) {
+			right++;
+		}
+		if (right != 0) {
+			right--;
+		}
+		
+
+		if (left == 0) { 
+			quick_sort(arr, right + 1, high, mode);
 		}
 		else {
-			quick_sort(arr, low, pi - 1, mode);
-			quick_sort(arr, pi + 1, high, mode);
+			quick_sort(arr, low, left - 1, mode);
+			quick_sort(arr, right + 1, high, mode);
 		}
 		
 	}
 }
 
-void merge_sort(Time*& arr, std::size_t size, short int mode = Benchmark) {
+void merge_sort(Time*& arr, std::size_t size, short int mode) {
 	Time* extra_arr = new Time[size];
 	std::size_t bucket_size = 1;
 	std::size_t count = 0;
@@ -222,8 +299,11 @@ void merge_sort(Time*& arr, std::size_t size, short int mode = Benchmark) {
 			if (left >= size) { break; }
 		}
 		
-		std::cout << "\n merging #" << count << std::endl;
-		print_array(current_array, 0, size-1);
+		if (mode == Demonstrative) {
+			std::cout << "\n merging #" << count << std::endl;
+			print_array(current_array, 0, size - 1);
+		}
+		
 
 
 		bucket_size *= 2;
@@ -285,19 +365,43 @@ void combine_sort(Time* arr, std::size_t low, std::size_t high, std::size_t bord
 
 			}
 
-			if (pi == 0) {
-				combine_sort(arr, pi + 1, high, border, mode);
+
+			std::size_t left = pi;
+			while (is_equal_time(arr[left], arr[pi]) == true) {
+				left--;
+			}
+			left++;
+
+			std::size_t right = pi;
+			while (is_equal_time(arr[right], arr[pi]) == true) {
+				right++;
+			}
+			if (right != 0) {
+				right--;
 			}
 
+
+			if (left == 0) {
+				quick_sort(arr, right + 1, high, mode);
+			}
 			else {
-				combine_sort(arr, low, pi - 1, border, mode);
-				combine_sort(arr, pi + 1, high, border, mode);
+				quick_sort(arr, low, left - 1, mode);
+				quick_sort(arr, right + 1, high, mode);
 			}
 		}
 		
 
 	}
 }
+
+
+
+
+
+
+
+
+
 
 int main() {
 	short int mode = 0;
@@ -310,6 +414,9 @@ int main() {
 		Time* array_3 = new Time[SIZE];
 		Time* array_4 = new Time[SIZE];
 		Time* array_5 = new Time[SIZE];
+		Time* array_6 = generate_almost_sorted(SIZE, 5);
+		Time* array_7 = generate_almost_equal(SIZE);
+		Time* array_8 = generate_reverse_sorted(SIZE);
 		for (std::size_t i = 0; i < SIZE; i++) {
 			array_5[i] = array_4[i] = array_3[i] = array_2[i] = array_1[i] = array_1[0];
 		}
@@ -330,14 +437,69 @@ int main() {
 		std::cout << "\nSorted array:\n";
 		print_array(array_4, 0, SIZE - 1);
 
+		std::cout << "\n5. Quick sort (almost sorted elements):\n";
+		quick_sort(array_5, 0, SIZE - 1, Demonstrative);
+		std::cout << "\nSorted array:\n";
+		print_array(array_5, 0, SIZE - 1);
+
+		std::cout << "\n6. Quick sort (almost equal elements):\n";
+		quick_sort(array_6, 0, SIZE - 1, Demonstrative);
+		std::cout << "\nSorted array:\n";
+		print_array(array_6, 0, SIZE - 1);
+
+		std::cout << "\n7. Quick sort (reverse sorted elements):\n";
+		quick_sort(array_7, 0, SIZE - 1, Demonstrative);
+		std::cout << "\nSorted array:\n";
+		print_array(array_7, 0, SIZE - 1);
+
+		std::cout << "\n7. STL sort:\n";
+		std::sort(array_8, array_8+SIZE, compare_time_stl);
+		print_array(array_8, 0, SIZE - 1);
+		
+
 
 		delete[]array_1;
 		delete[]array_2;
 		delete[]array_3;
 		delete[]array_4;
 		delete[]array_5;
+		delete[]array_6;
+		delete[]array_7;
+		delete[]array_8;
 	}
 	else if (mode == Benchmark) {
+		const std::size_t SIZE = 1000000;
+		Time* array_1 = generate_almost_sorted(SIZE, 5);
+	//	print_array(array_1, 0, SIZE - 1);
+		unsigned int start_time = clock();
+		quick_sort(array_1, 0, SIZE - 1, Benchmark);
+		std::cout << "Almost sorted array, quick sort, " << SIZE << " elements: " << (float)(clock() - start_time)/1000<< std::endl;
+		std::cout << "\n\n\n\n\n\n\n";
+	//	print_array(array_1, 0, SIZE - 1);
+
+		if (is_sorted(array_1, SIZE) == true) {
+			std::cout << "\n\n\n\n\nAlmost sorted array sort: YES\n\n\n";
+		}
+		else {
+			std::cout << "\n\n\n\n\nAlmost sorted array sort: NO\n\n\n";
+		}
+
+
+		Time* array_2 = generate_almost_equal(SIZE, 5);
+	//	print_array(array_2, 0, SIZE - 1);
+		start_time = clock();
+		quick_sort(array_2, 0, SIZE - 1, Benchmark);
+		std::cout << "Almost equal array, quick sort, " << SIZE << " elements: " << (float)(clock() - start_time) / 1000 << std::endl;
+		std::cout << "\n\n\n\n\n\n\n";
+	//	print_array(array_2, 0, SIZE - 1);
+
+		if (is_sorted(array_2, SIZE) == true) {
+			std::cout << "\n\n\n\n\Almost equal array sort: YES\n\n\n";
+		}
+		else {
+			std::cout << "\n\n\n\n\nAlmost equal array sort: NO\n\n\n";
+		}
+
 
 	}
 	else {
@@ -348,8 +510,7 @@ int main() {
 
 
 
-
-
+	
 
 
 
