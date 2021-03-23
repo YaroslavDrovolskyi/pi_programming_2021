@@ -1,0 +1,119 @@
+
+***Random array***
+
+size = 500
+Selection sort: 5 ms
+Quick sort: 1 ms
+Merge sort: 0 ms
+Combo sort (border = 31): 2 ms
+Combo sort (border = 62): 1 ms
+Combo sort (border = 93): 1 ms
+Combo sort (border = 124): 1 ms
+Optimal border is # 2
+STL sort: 0 ms
+
+size = 2000
+Selection sort: 88 ms
+Quick sort: 4 ms
+Merge sort: 1 ms
+Combo sort (border = 125): 7 ms
+Combo sort (border = 250): 5 ms
+Combo sort (border = 375): 6 ms
+Combo sort (border = 500): 5 ms
+Optimal border is # 2
+STL sort: 2 ms
+
+size = 8000
+Selection sort: 1402 ms
+Quick sort: 16 ms
+Merge sort: 5 ms
+Combo sort (border = 500): 17 ms
+Combo sort (border = 1000): 16 ms
+Combo sort (border = 1500): 16 ms
+Combo sort (border = 2000): 17 ms
+Optimal border is # 2
+STL sort: 10 ms
+
+size = 32000
+Selection sort: 22976 ms
+Quick sort: 83 ms
+Merge sort: 26 ms
+Combo sort (border = 2000): 95 ms
+Combo sort (border = 4000): 84 ms
+Combo sort (border = 6000): 84 ms
+Combo sort (border = 8000): 80 ms
+Optimal border is # 4
+STL sort: 49 ms
+
+size = 128000
+Selection sort: last test was >= 30 s
+Quick sort: 340 ms
+Merge sort: 116 ms
+Combo sort (border = 8000): 342 ms
+Combo sort (border = 16000): 330 ms
+Combo sort (border = 24000): 334 ms
+Combo sort (border = 32000): 365 ms
+Optimal border is # 2
+STL sort: 228 ms
+
+size = 512000
+Selection sort: last test was >= 30 s
+Quick sort: 1571 ms
+Merge sort: 517 ms
+Combo sort (border = 32000): 1594 ms
+Combo sort (border = 64000): 1579 ms
+Combo sort (border = 96000): 1597 ms
+Combo sort (border = 128000): 1561 ms
+Optimal border is # 4
+STL sort: 1092 ms
+
+size = 2048000
+Selection sort: last test was >= 30 s
+Quick sort: 10409 ms
+Merge sort: 3323 ms
+Combo sort (border = 128000): 13893 ms
+Combo sort (border = 256000): 12621 ms
+Combo sort (border = 384000): 8842 ms
+Combo sort (border = 512000): 8074 ms
+Optimal border is # 4
+STL sort: 4922 ms
+
+size = 2560000
+Selection sort: last test was >= 30 s
+Quick sort: 8953 ms
+Merge sort: 3159 ms
+Combo sort (border = 160000): 9264 ms
+Combo sort (border = 320000): 9189 ms
+Combo sort (border = 480000): 9310 ms
+Combo sort (border = 640000): 9031 ms
+Optimal border is # 4
+STL sort: 6687 ms
+
+size = 3072000
+Selection sort: last test was >= 30 s
+Quick sort: 10722 ms
+Merge sort: 4320 ms
+Combo sort (border = 192000): 10456 ms
+Combo sort (border = 384000): 10803 ms
+Combo sort (border = 576000): 10411 ms
+Combo sort (border = 768000): 10384 ms
+Optimal border is # 4
+STL sort: 7723 ms
+
+size = 3584000
+Selection sort: last test was >= 30 s
+Quick sort: 12369 ms
+Merge sort: 4244 ms
+Combo sort (border = 224000): 12485 ms
+Combo sort (border = 448000): 12311 ms
+Combo sort (border = 672000): 12956 ms
+Combo sort (border = 896000): 12301 ms
+Optimal border is # 4
+STL sort: 8844 ms
+
+size = 4096000
+Selection sort: last test was >= 30 s
+Quick sort: 15740 ms
+Merge sort: 4860 ms
+Combo sort (border = 256000): 15169 ms
+Combo sort (border = 512000): 15210 ms
