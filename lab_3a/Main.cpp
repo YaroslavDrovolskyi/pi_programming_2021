@@ -98,7 +98,7 @@ bool is_equal_time(Time time_1, Time time_2) {
 
 bool is_sorted(Time* arr, std::size_t size) {
 	for (std::size_t i = 0; i < size - 1; i++) {
-		if (compare_time(arr[i], arr[i + 1]) == true) {
+		if (compare_time(arr[i], arr[i + 1]) == true) { // if >
 			return false;
 		}
 	}
@@ -411,7 +411,7 @@ std::size_t min(std::vector<unsigned int>& borders) {
 
 
 void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size_t)) {
-	std::ofstream file("result.txt");
+	std::ofstream file("result.txt", std::ofstream::app);
 	file << std::endl << "***" << type_of_array << "***" << std::endl;
 
 	std::size_t begin_size = 500;
@@ -495,7 +495,7 @@ void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size
 
 
 	}
-	
+	file.close();
 }
 
 
@@ -569,6 +569,8 @@ int main() {
 		delete[]array_8;
 	}
 	else if (mode == Benchmark) {
+		std::ofstream file("result.txt");
+		file.close();
 
 		unsigned int start_time = clock();
 		Benchmark_mode("Random array", generate_new_array);
@@ -584,6 +586,26 @@ int main() {
 		std::cout << "Total time: " << (float)(clock() - start_time)/1000 << " s" << std::endl;
 	}
 	else {
+		// only for testing, not for user
+
+		const std::size_t SIZE = 3500000; // 3 500 000
+		Time * array = generate_new_array(SIZE);
+		std::cout << "SIZE = " << sizeof(array[0]) * SIZE << std::endl;
+
+		unsigned int start_time = clock();
+		quick_sort(array, 0, SIZE - 1);
+		//merge_sort(array, SIZE);
+		//combine_sort(array, 0, SIZE - 1, 224000);
+		std::cout << "TIME: " << clock() - start_time << " ms" << std::endl;
+		if (is_sorted(array, SIZE) == true) {
+			std::cout << "YES!" << std::endl;
+		}
+		else {
+			std::cout << "NO!" << std::endl;
+		}
+
+		std::cin >> start_time;
+
 
 	}
 	std::cout << "\n\nEND!\n\n";
