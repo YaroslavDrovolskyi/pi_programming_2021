@@ -19,6 +19,10 @@ enum ProgramMode {
 	Exit, Demonstrative, Benchmark
 };
 
+enum ArrayType {
+	random, almost_sorted, equal_items, reverse_sorted
+};
+
 void merge_array(Time* arr, Time* result, std::size_t left, std::size_t middle, std::size_t right);
 void merge_sort(Time*& arr, std::size_t size, short int mode = Benchmark);
 
@@ -410,22 +414,21 @@ std::size_t min(std::vector<unsigned int>& borders) {
 }
 
 
-void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size_t)) {
+void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size_t), std::size_t array_type) {
 	std::ofstream file("result.txt", std::ofstream::app);
 	file << std::endl << "***" << type_of_array << "***" << std::endl;
 
 	std::size_t begin_size = 500;
 	std::size_t size = begin_size;
-	unsigned int start_time = 0;
-	unsigned int selection_sort_time = 0;
-	unsigned int stl_sort_time = 0;
+	unsigned int start_time = 0, selection_sort_time = 0, quick_sort_time = 0, combo_sort_time = 0, stl_sort_time = 0;
+
 	while (stl_sort_time <= 4500) { // 4500 ms = 4.5s
 		file << std::endl << "size = " << size << std::endl;
 		Time* basic_array = generate_array(size);
 		Time* array_to_sort = new Time[size];
 
 		// selection sort
-		if (selection_sort_time < 20000) { // < 30s
+		if (selection_sort_time < 20000) { // < 20s
 			copy_array(basic_array, array_to_sort, size);
 			start_time = clock();
 			selection_sort(array_to_sort, 0, size - 1);
@@ -434,15 +437,24 @@ void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size
 			file << "Selection sort: " << selection_sort_time << " ms" << std::endl;
 		}
 		else {
-			file << "Selection sort: last test was >= 30 s" << std::endl;
+			file << "Selection sort: last test was >= 20 s" << std::endl;
 		}
 		
 
 		// quick sort
-		copy_array(basic_array, array_to_sort, size);
-		start_time = clock();
-		quick_sort(array_to_sort, 0, size - 1);
-		file << "Quick sort: " << clock() - start_time << " ms" << std::endl;
+		if (quick_sort_time < 8500) { // < 8.5s
+			copy_array(basic_array, array_to_sort, size);
+			start_time = clock();
+			quick_sort(array_to_sort, 0, size - 1);
+			quick_sort_time = clock() - start_time;
+
+			file << "Quick sort: " << quick_sort_time << " ms" << std::endl;
+		}
+		else {
+			file << "Quick sort: last test was >= 8.5 s" << std::endl;
+		}
+		
+		
 
 		// merge sort
 		copy_array(basic_array, array_to_sort, size);
@@ -458,21 +470,25 @@ void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size
 		
 		std::vector<std::size_t> borders;
 
-		while (border <= size / 4) {
-			copy_array(basic_array, array_to_sort, size);
-			start_time = clock();
-			combine_sort(array_to_sort, 0, size - 1, border);
-			unsigned int combo_sort_time = clock() - start_time;
-			borders.push_back(combo_sort_time);
-			file << "Combo sort (border = " << border << "): " << combo_sort_time << " ms" << std::endl;
-			border += begin_border;
+		if (combo_sort_time < 8500) {
+			while (border <= size / 4) {
+				copy_array(basic_array, array_to_sort, size);
+				start_time = clock();
+				combine_sort(array_to_sort, 0, size - 1, border);
+				combo_sort_time = clock() - start_time;
+				borders.push_back(combo_sort_time);
+				file << "Combo sort (border = " << border << "): " << combo_sort_time << " ms" << std::endl;
+				border += begin_border;
+			}
+
+			file << "Optimal border is # " << min(borders) + 1 << std::endl;
+			borders.clear();
+			borders.shrink_to_fit();
 		}
-
-
-		file << "Optimal border is # " << min(borders) + 1 << std::endl;
-		borders.clear();
-		borders.shrink_to_fit();
-
+		else {
+			file << "Combo sort: last test was >= 8.5 s" << std::endl;
+		}
+		
 
 
 		// STL sort
@@ -570,20 +586,23 @@ int main() {
 	}
 	else if (mode == Benchmark) {
 		std::ofstream file("result.txt");
-		file.close();
+		
 
 		unsigned int start_time = clock();
-		Benchmark_mode("Random array", generate_new_array);
+		Benchmark_mode("Random array", generate_new_array, random);
 		std::cout << "Time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
 
-		Benchmark_mode("Almost sorted array", generate_almost_sorted);
+		Benchmark_mode("Almost sorted array", generate_almost_sorted, almost_sorted);
 		std::cout << "Time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
 
-		Benchmark_mode("Almost equal elements", generate_almost_equal);
+		Benchmark_mode("Almost equal elements", generate_almost_equal, equal_items);
 		std::cout << "Time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
 
-		Benchmark_mode("Reverse-sorted array", generate_reverse_sorted);
+		Benchmark_mode("Reverse-sorted array", generate_reverse_sorted, reverse_sorted);
 		std::cout << "Total time: " << (float)(clock() - start_time)/1000 << " s" << std::endl;
+
+		file << "\n\n\nTotal time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
+		file.close();
 	}
 	else {
 		// only for testing, not for user
