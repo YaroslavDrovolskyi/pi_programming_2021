@@ -19,10 +19,6 @@ enum ProgramMode {
 	Exit, Demonstrative, Benchmark
 };
 
-enum ArrayType {
-	random, almost_sorted, equal_items, reverse_sorted
-};
-
 void merge_array(Time* arr, Time* result, std::size_t left, std::size_t middle, std::size_t right);
 void merge_sort(Time*& arr, std::size_t size, short int mode = Benchmark);
 
@@ -413,7 +409,7 @@ std::size_t min(std::vector<unsigned int>& borders) {
 }
 
 
-void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size_t), std::size_t array_type) {
+void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size_t)) {
 	std::ofstream file("result.txt", std::ofstream::app);
 	file << std::endl << "***" << type_of_array << "***" << std::endl;
 
@@ -610,16 +606,16 @@ int main() {
 		file.close();
 
 		unsigned int start_time = clock();
-		Benchmark_mode("Random array", generate_new_array, random);
+		Benchmark_mode("Random array", generate_new_array);
 		std::cout << "Time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
 
-		Benchmark_mode("Almost sorted array", generate_almost_sorted, almost_sorted);
+		Benchmark_mode("Almost sorted array", generate_almost_sorted);
 		std::cout << "Time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
 
-		Benchmark_mode("Almost equal elements", generate_almost_equal, equal_items);
+		Benchmark_mode("Almost equal elements", generate_almost_equal);
 		std::cout << "Time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
 
-		Benchmark_mode("Reverse-sorted array", generate_reverse_sorted, reverse_sorted);
+		Benchmark_mode("Reverse-sorted array", generate_reverse_sorted);
 		float total_time = (float)(clock() - start_time) / 1000;
 		std::cout << "Total time: " << total_time << " s" << std::endl;
 
