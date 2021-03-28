@@ -52,7 +52,7 @@ bool compare_time(Time time_1, Time time_2) {
 }
 
 // time_1 < time_2 = true
-bool compare_time_stl(Time time_1, Time time_2) {
+bool compare_time_stl(Time time_1, Time time_2) { // function for std::sort()
 	if (time_1.year < time_2.year) { return true; }
 	else if (time_1.year == time_2.year) {
 		if (time_1.month < time_2.month) { return true; }
@@ -146,7 +146,7 @@ Time* generate_almost_equal(std::size_t size) { // probability - is probability 
 	return arr;
 }
 
-Time* generate_reverse_sorted(std::size_t size) { // probability - is probability of not equal element
+Time* generate_reverse_sorted(std::size_t size) {
 	Time* arr = generate_new_array(size);
 	merge_sort(arr, size);
 	Time* result = new Time[size];
@@ -229,7 +229,7 @@ void quick_sort(Time* arr, std::size_t low, std::size_t high, short int mode = B
 		//print_array(arr, low, high);
 	}
 	if (low < high) {
-		std::size_t pi = partition(arr, low, high);
+		std::size_t pi = partition(arr, low, high); // pi - pivot index
 		if (mode == Demonstrative) {
 			std::cout << "\npivot index = " << (pi - low) << std::endl;
 			print_array(arr, low, high);
@@ -237,16 +237,18 @@ void quick_sort(Time* arr, std::size_t low, std::size_t high, short int mode = B
 		}
 		
 		std::size_t left = pi;
-		while (is_equal_time(arr[left], arr[pi]) == true) {
+		while (is_equal_time(arr[left], arr[pi]) == true && left != low) {
 			left--;
 		}
-		left++;
+		if (left != high && left != pi) {
+			left++;
+		}
 
 		std::size_t right = pi;
-		while (is_equal_time(arr[right], arr[pi]) == true) {
+		while (is_equal_time(arr[right], arr[pi]) == true && right != high) {
 			right++;
 		}
-		if (right != 0) {
+		if (right != low && right != pi) {
 			right--;
 		}
 		
@@ -265,7 +267,7 @@ void quick_sort(Time* arr, std::size_t low, std::size_t high, short int mode = B
 void merge_sort(Time*& arr, std::size_t size, short int mode) {
 	Time* extra_arr = new Time[size];
 	std::size_t bucket_size = 1;
-	std::size_t count = 0;
+	std::size_t count = 0; // counting number of merging for not to copy arrays
 	Time* current_array = nullptr;
 	
 	while (bucket_size < size) {
@@ -277,13 +279,8 @@ void merge_sort(Time*& arr, std::size_t size, short int mode) {
 		std::size_t right = 2 * bucket_size;
 
 		while (true) {
-			
-
-			//left = (left < size) ? left : size;
 			middle = (middle < size) ? middle : size;
 			right = (right < size) ? right : size;
-
-			
 
 			if (count % 2 != 0) {
 				current_array = extra_arr;
@@ -370,26 +367,28 @@ void combine_sort(Time* arr, std::size_t low, std::size_t high, std::size_t bord
 
 
 			std::size_t left = pi;
-			while (is_equal_time(arr[left], arr[pi]) == true) {
+			while (is_equal_time(arr[left], arr[pi]) == true && left != low) {
 				left--;
 			}
-			left++;
+			if (left != high && left != pi) {
+				left++;
+			}
 
 			std::size_t right = pi;
-			while (is_equal_time(arr[right], arr[pi]) == true) {
+			while (is_equal_time(arr[right], arr[pi]) == true && right != high) {
 				right++;
 			}
-			if (right != 0) {
+			if (right != low && right != pi) {
 				right--;
 			}
 
 
 			if (left == 0) {
-				quick_sort(arr, right + 1, high, mode);
+				combine_sort(arr, right + 1, high, border, mode);
 			}
 			else {
-				quick_sort(arr, low, left - 1, mode);
-				quick_sort(arr, right + 1, high, mode);
+				combine_sort(arr, low, left - 1, border, mode);
+				combine_sort(arr, right + 1, high, border, mode);
 			}
 		}
 		
@@ -471,7 +470,7 @@ void Benchmark_mode(std::string type_of_array, Time* (*generate_array)(std::size
 		std::vector<std::size_t> borders;
 
 		if (combo_sort_time < 8500) {
-			while (border <= size / 4) {
+			while (border <= size / 4 && combo_sort_time < 16500) {
 				copy_array(basic_array, array_to_sort, size);
 				start_time = clock();
 				combine_sort(array_to_sort, 0, size - 1, border);
@@ -524,53 +523,75 @@ int main() {
 	short int mode = 0;
 	std::cout << "\nHello, chose mode (0 - Exit, 1 - Demonstration, 2 - Benchmark)\n";
 	std::cin >> mode;
+	while (mode < 0 || mode > 3 || !std::cin.good()) {
+		std::cout << "Enter valid value ([0;2]): \n";
+		std::cin.clear();
+		std::cin.ignore(256, '\n');
+		std::cin >> mode;
+	}
+
 	if (mode == Demonstrative) {
 		std::size_t SIZE = 30;
 		Time* array_1 = generate_new_array(SIZE);
 		Time* array_2 = new Time[SIZE];
 		Time* array_3 = new Time[SIZE];
 		Time* array_4 = new Time[SIZE];
-		Time* array_5 = new Time[SIZE];
-		Time* array_6 = generate_almost_sorted(SIZE);
-		Time* array_7 = generate_almost_equal(SIZE);
-		Time* array_8 = generate_reverse_sorted(SIZE);
+		Time* array_5 = generate_almost_sorted(SIZE);
+		Time* array_6 = generate_almost_equal(SIZE);
+		Time* array_7 = generate_reverse_sorted(SIZE);
+		Time* array_8 = new Time[SIZE];
 		for (std::size_t i = 0; i < SIZE; i++) {
-			array_5[i] = array_4[i] = array_3[i] = array_2[i] = array_1[i];
+			array_8[i] = array_4[i] = array_3[i] = array_2[i] = array_1[i];
 		}
 
 		std::cout << "\n1. Selection sort:\n";
 		selection_sort(array_1, 0, SIZE - 1, Demonstrative);
 
 		std::cout << "\n2. Quick sort:\n";
+		std::cout << "\nInitial array:\n";
+		print_array(array_2, 0, SIZE - 1);
 		quick_sort(array_2, 0, SIZE - 1, Demonstrative);
 		std::cout << "\nSorted array:\n";
 		print_array(array_2, 0, SIZE - 1);
 
 		std::cout << "\n3. Merge sort:\n";
+		std::cout << "\nInitial array:\n";
+		print_array(array_3, 0, SIZE - 1);
 		merge_sort(array_3, SIZE, Demonstrative);
 
 		std::cout << "\n4. Combo sort (quick + selection):\n";
+		std::cout << "\nInitial array:\n";
+		print_array(array_4, 0, SIZE - 1);
 		combine_sort(array_4, 0, SIZE - 1, 10, Demonstrative);
 		std::cout << "\nSorted array:\n";
 		print_array(array_4, 0, SIZE - 1);
 
 		std::cout << "\n5. Quick sort (almost sorted elements):\n";
+		std::cout << "\nInitial array:\n";
+		print_array(array_5, 0, SIZE - 1);
 		quick_sort(array_5, 0, SIZE - 1, Demonstrative);
 		std::cout << "\nSorted array:\n";
 		print_array(array_5, 0, SIZE - 1);
 
 		std::cout << "\n6. Quick sort (almost equal elements):\n";
+		std::cout << "\nInitial array:\n";
+		print_array(array_6, 0, SIZE - 1);
 		quick_sort(array_6, 0, SIZE - 1, Demonstrative);
 		std::cout << "\nSorted array:\n";
 		print_array(array_6, 0, SIZE - 1);
 
 		std::cout << "\n7. Quick sort (reverse sorted elements):\n";
+		std::cout << "\nInitial array:\n";
+		print_array(array_7, 0, SIZE - 1);
 		quick_sort(array_7, 0, SIZE - 1, Demonstrative);
 		std::cout << "\nSorted array:\n";
 		print_array(array_7, 0, SIZE - 1);
 
-		std::cout << "\n7. STL sort:\n";
+		std::cout << "\n8. STL sort:\n";
+		std::cout << "\nInitial array:\n";
+		print_array(array_8, 0, SIZE - 1);
 		std::sort(array_8, array_8+SIZE, compare_time_stl);
+		std::cout << "\nSorted array:\n";
 		print_array(array_8, 0, SIZE - 1);
 		
 
@@ -586,7 +607,7 @@ int main() {
 	}
 	else if (mode == Benchmark) {
 		std::ofstream file("result.txt");
-		
+		file.close();
 
 		unsigned int start_time = clock();
 		Benchmark_mode("Random array", generate_new_array, random);
@@ -599,22 +620,22 @@ int main() {
 		std::cout << "Time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
 
 		Benchmark_mode("Reverse-sorted array", generate_reverse_sorted, reverse_sorted);
-		std::cout << "Total time: " << (float)(clock() - start_time)/1000 << " s" << std::endl;
+		float total_time = (float)(clock() - start_time) / 1000;
+		std::cout << "Total time: " << total_time << " s" << std::endl;
 
-		file << "\n\n\nTotal time: " << (float)(clock() - start_time) / 1000 << " s" << std::endl;
+		file.open("result.txt", std::ofstream::app);
+		file << "\n\n\nTotal time: " << total_time << " s" << std::endl;
 		file.close();
 	}
-	else {
-		// only for testing, not for user
-
+	else if (mode == 3){ // only for testing, not for user
 		const std::size_t SIZE = 3500000; // 3 500 000
 		Time * array = generate_new_array(SIZE);
-		std::cout << "SIZE = " << sizeof(array[0]) * SIZE << std::endl;
+		std::cout << "SIZE = " << sizeof(array[0]) * SIZE << " bytes" << std::endl;
 
 		unsigned int start_time = clock();
-		quick_sort(array, 0, SIZE - 1);
+		//quick_sort(array, 0, SIZE - 1);
 		//merge_sort(array, SIZE);
-		//combine_sort(array, 0, SIZE - 1, 224000);
+		combine_sort(array, 0, SIZE - 1, 100);
 		std::cout << "TIME: " << clock() - start_time << " ms" << std::endl;
 		if (is_sorted(array, SIZE) == true) {
 			std::cout << "YES!" << std::endl;
@@ -623,8 +644,8 @@ int main() {
 			std::cout << "NO!" << std::endl;
 		}
 
+		delete[] array;
 		std::cin >> start_time;
-
 
 	}
 	std::cout << "\n\nEND!\n\n";
