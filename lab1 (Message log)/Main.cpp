@@ -4,6 +4,7 @@
 #include <vector>
 #include <ctime>
 #include <cassert>
+#include <algorithm>
 
 using namespace std;
 
@@ -34,6 +35,10 @@ struct message {
 	int type; // debug, info, warning, error, fatal
 	short int priority; // [0;200]
 	float load_level; // [0;1]
+
+
+
+	
 
 };
 
@@ -228,7 +233,18 @@ bool Compare(message Message, int MessageType, float LoadLevel);
 bool Compare(message Message, string MessageStart);
 
 Time Get_MessageTime();
-bool CompareTime(Time time_1, Time time_2);
+short int CompareTime(Time time_1, Time time_2);
+short int compare_date(date date_1, date date_2);
+short int compare_text(string text_1, string text_2);
+bool comparator(message first, message second);
+
+namespace multisort_parameters {
+	vector<size_t> fields;
+}
+
+
+void multikey_sort(vector<message>& Message_Log);
+
 int Get_MessageType();
 float Get_LoadLevel();
 
@@ -297,9 +313,12 @@ int main() {
 					"5 \tchange something in DB\n" <<
 					"6 \tremove something from DB\n" <<
 					"7 \tsearch\n" <<
-					"8 \tprint DB\n" <<
-					"9 \tremove all from local storage\n" <<
-					"10 \tremove all DB\n" <<
+					"8 \tCounting sort by message type\n" <<
+					"9 \tRadix sort by message priority\n" <<
+					"10 \tMultikey sort\n" <<
+					"11 \tprint DB\n" <<
+					"12 \tremove all from local storage\n" <<
+					"13 \tremove all DB\n" <<
 					"================\n";
 				cin >> next; Is_correct_value(next, 0, 10);
 
@@ -408,9 +427,44 @@ int main() {
 
 				}
 				else if (next == 8) {
-					PrintDB(Message_Log);
+					if (Message_Log.size() == 0) {
+						cout << "\nLocal storage is empty\n";
+						}
+					else {
+						counting_sort(Message_Log);
+					}
 				}
 				else if (next == 9) {
+					if (Message_Log.size() == 0) {
+						cout << "\nLocal storage is empty\n";
+					}
+					else {
+						radix_sort(Message_Log);
+					}
+				}
+				else if (next == 10) {
+					if (Message_Log.size() == 0) {
+						cout << "\nLocal storage is empty\n";
+					}
+					else {
+						cout << "Enter numbers of fields (1-ID, 2 - text, 3 - date, 4 - time, 5 - type, 6 - priority, 7 - load_level), put -1 to stop\n";
+						short int input = 1;
+						while (true) {
+							cin >> input;
+							if (input > 0) {
+								multisort_parameters::fields.push_back(input);
+							}
+							else {
+								break;
+							}
+						}
+						multikey_sort(Message_Log);
+					}
+				}
+				else if (next == 11) {
+					PrintDB(Message_Log);
+				}
+				else if (next == 12) {
 					if (ClearLocalStorage(Message_Log) == 1) {
 						cout << "\nLocal storage successfully cleared\n";
 					}
@@ -418,7 +472,7 @@ int main() {
 						cout << "Local storage is already empty!\n";
 					}
 				}
-				else if (next == 10) {
+				else if (next == 13) {
 					ClearDB(Message_Log, BINfile, TEXTfile);
 					cout << "\nDB successfully cleared\n";
 				}
@@ -476,7 +530,31 @@ int main() {
 			PrintSearchResult(AutoSearch(Message_Log, 3, Demonstration));
 			cout << "\n\n\n=========\n\n\n\n";
 
-			cout << "9. Remove element with ID = 3\n\n\n";
+
+			cout << "9. Counting sort by message type:\n\n\n";
+			counting_sort(Message_Log);
+			PrintDB(Message_Log);
+			cout << "\n\n\n=========\n\n\n\n";
+
+
+			cout << "10. Radix sort by mesage priority:\n\n\n";
+			radix_sort(Message_Log);
+			PrintDB(Message_Log);
+			cout << "\n\n\n=========\n\n\n\n";
+
+
+			cout << "11. Multikey sort by load level (7), text (2) and date (3):\n\n\n";
+			multisort_parameters::fields.clear();
+			multisort_parameters::fields.push_back(7);
+			multisort_parameters::fields.push_back(2);
+			multisort_parameters::fields.push_back(3);
+			multikey_sort(Message_Log);
+			PrintDB(Message_Log);
+			cout << "\n\n\n=========\n\n\n\n";
+
+
+
+			cout << "12. Remove element with ID = 3\n\n\n";
 			if (RemoveElement(3, Message_Log, TEXTfile, BINfile, Demonstration) == 1) {
 				cout << "Data successfully removed\n";
 			}
@@ -484,7 +562,7 @@ int main() {
 			PrintDB(Message_Log);
 
 
-			cout << "10. Change message and priority of message with ID = 5\n";
+			cout << "13. Change message and priority of message with ID = 5\n";
 			if (ChangeElement(5, Message_Log, TEXTfile, BINfile, Demonstration) == 1) {
 				cout << "Data successfully changed\n";
 			}
@@ -492,7 +570,7 @@ int main() {
 			PrintDB(Message_Log);
 
 
-			cout << "11. Remove all from local storage:\n";
+			cout << "14. Remove all from local storage:\n";
 			if (ClearLocalStorage(Message_Log) == 1) {
 				cout << "\nLocal storage successfully cleared\n";
 			}
@@ -604,6 +682,8 @@ int main() {
 				Search_2.clear();
 				Search_3.clear();
 
+			//	vector<message> sort_vector;
+			//	copy(Message_Log, sort_vector);
 
 				// write results in file
 				ofstream file_for_results("results.txt", ofstream::app);
@@ -646,26 +726,49 @@ int main() {
 		}
 
 		else { 
+
 			int N = 100, a;
 			vector<message> Message_Log;
 			//ReadFromTEXT("ReadFrom.txt", Message_Log);
 			Generate_newDB(Message_Log, N);
-			cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
-			cin >> a;
+		//	cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
+			//cin >> a;
 			cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
 			//counting_sort(Message_Log);
-			unsigned int start_time = clock();
-			radix_sort(Message_Log);
-			cout << "\nRadix sort " << N << " items: " << clock() - start_time << " ms\n";
-			cin >> a;
-			PrintDB(Message_Log);
+		//	unsigned int start_time = clock();
+		//	radix_sort(Message_Log);
+		//	cout << "\nRadix sort " << N << " items: " << clock() - start_time << " ms\n";
+			//cin >> a;
+		//	PrintDB(Message_Log);
 			//PrintDB(Message_Log);
 			
+		//	string A[2];
+		//	A[1] = "array";
+		//	A[0] = "array!";
+		//	sort(A, A + 2);
+		//	cout << "\n\n\n\n" << A[0] << "   " << A[1] << "\n\n\n";
+
+			/*
+			cout << compare_text("abc", "abc") << endl;
+			cout << compare_text("123", "123") << endl;
+			cout << compare_text("123", "124") << endl;
+			cout << compare_text("0999999", "123") << endl;
+			cout << compare_text("123", "3") << endl;
+			cout << compare_text("1234", "123") << endl;
+			cout << compare_text("123", "1234") << endl;
+			*/
+
+			unsigned int start_time = clock();
+			multisort_parameters::fields.push_back(2);
+			multisort_parameters::fields.push_back(7);
+			multisort_parameters::fields.push_back(3);
+			//fields.push_back(1);
+
+			multikey_sort(Message_Log);
+
+			PrintDB(Message_Log);
 			
-			
-			
-			
-			
+			cout << "\n\n\n\n\nMultikey sort " << N << " items: " << clock() - start_time << " ms\n";
 		//	cout << "Something is wrong"; return -1; 
 		}
 	}
@@ -972,7 +1075,7 @@ vector <message> Search(vector<message>& Message_Log) {
 		StartTime = Get_MessageTime();
 		cout << "\nEnter the ending time:\n";
 		FinishTime = Get_MessageTime();
-		while (CompareTime(StartTime, FinishTime) == false) {
+		while (CompareTime(StartTime, FinishTime) != 1) {
 			cout << "\nEnter valid time (Begin time < Ending time):\n";
 			cout << "\nEnter the beginning time:\n";
 			StartTime = Get_MessageTime();
@@ -1035,7 +1138,7 @@ vector <message> AutoSearch(vector<message>& Message_Log, const short int search
 			FinishTime.min = rand() % 59;
 			FinishTime.second = rand() % 59;
 
-			while (CompareTime(StartTime, FinishTime) == false) {
+			while (CompareTime(StartTime, FinishTime) != 1) {
 				StartTime.hour = rand() % 23;
 				StartTime.min = rand() % 59;
 				StartTime.second = rand() % 59;
@@ -1107,17 +1210,17 @@ Time Get_MessageTime() {
 	return UserTime;
 }
 
-// time_1 > time_2 --> false
-bool CompareTime(Time time_1, Time time_2) {
-	if (time_1.hour < time_2.hour) { return true; }
+// time_1 > time_2 --> -1
+short int CompareTime(Time time_1, Time time_2) {
+	if (time_1.hour < time_2.hour) { return 1; }
 	else if (time_1.hour == time_2.hour) {
-		if (time_1.min < time_2.min) { return true; }
+		if (time_1.min < time_2.min) { return 1; }
 		else if (time_1.min == time_2.min) {
-			if (time_1.second < time_2.second) { return true; }
-			else if (time_1.second == time_2.second) { return true; }
+			if (time_1.second < time_2.second) { return 1; }
+			else if (time_1.second == time_2.second) { return 0; }
 		}
 	}
-	return false;
+	return -1;
 }
 
 
@@ -1139,7 +1242,7 @@ float Get_LoadLevel() {
 
 bool Compare(message Message, Time StartTime, Time FinishTime) {
 
-	if (CompareTime(StartTime, Message.time) && CompareTime(Message.time, FinishTime)) {
+	if (CompareTime(StartTime, Message.time) == 1 && CompareTime(Message.time, FinishTime) == 1) {
 		return true;
 	}
 
@@ -1331,4 +1434,101 @@ size_t get_grade(short int value, size_t number_of_grade) { // number of grade b
 	size_t result = value % 10;
 
 	return result;
+}
+
+void multikey_sort(vector<message>& Message_Log) {
+
+	sort(Message_Log.begin(), Message_Log.end(), comparator);
+	multisort_parameters::fields.clear();
+}
+
+bool comparator(message first, message second) {
+	short int result;
+	for (size_t i = 0; i < multisort_parameters::fields.size(); i++) {
+		switch (multisort_parameters::fields[i]) {
+		case 1:{
+			if (first.id != second.id) { return first.id < second.id; }
+			break;
+		}
+		case 2: {
+			result = compare_text(first.text, second.text);
+			if (result != 0) { 
+				if (result == 1) { return true; }
+				else { return false; }
+			}
+			break;
+		}
+
+		case 3: {
+			result = compare_date(first.date, second.date);
+			if (result != 0) {
+				if (result == 1) { return true; }
+				else { return false; }
+			}
+			break;
+		}
+
+		case 4: {
+			result = CompareTime(first.time, second.time);
+			if (result != 0) {
+				if (result == 1) { return true; }
+				else { return false; }
+			}
+			break;
+		}
+
+		case 5: {
+			if (first.type != second.type) { return first.type < second.type; }
+			break;
+		}
+
+		case 6: {
+			if (first.priority != second.priority) { return first.priority < second.priority; }
+			break;
+		}
+
+		case 7: {
+			if (first.load_level != second.load_level) { return first.load_level < second.load_level; }
+			break;
+		}
+
+		}
+	}
+	return false;
+}
+
+// text_1 < text_2 ==> 1
+// text_1 = text_2 ==> 0
+// text_1 > text_2 ==> -1
+short int compare_text(string text_1, string text_2) {
+	size_t i = 0;
+	while (i < text_1.size() && i < text_2.size() && text_1[i] == text_2[i]) {
+		i++;
+	}
+
+	if (text_1[i] < text_2[i]) { return 1; }
+	if (text_1[i] > text_2[i]) { return -1; }
+	if (text_1[i] == text_2[i]) { return 0; }
+}
+
+short int compare_date(date date_1, date date_2) {
+	if (date_1.year < date_2.year) { return 1; }
+	else if (date_1.year == date_2.year) {
+		if (date_1.month < date_2.month) { return 1;}
+		else if (date_1.month == date_2.month) {
+			if (date_1.day < date_2.day) { return 1; }
+			else if (date_1.day == date_2.day) {
+				return 0;
+			}
+		}
+	}
+
+	return -1;
+}
+
+void copy(vector<message>& from, vector<message> to) {
+	to.clear();
+	for (size_t i = 0; i < from.size(); i++) {
+		to.push_back(from[i]);
+	}
 }
