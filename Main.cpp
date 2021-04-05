@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 #include <ctime>
-#include <cassert>
 
 using namespace std;
 
@@ -36,167 +35,6 @@ struct message {
 	float load_level; // [0;1]
 
 };
-
-
-
-struct ListNode {
-	ListNode* prev;
-	ListNode* next;
-	message data;
-
-	ListNode(message data, ListNode* prev = nullptr, ListNode* next = nullptr) {
-		this->data = data;
-		this->prev = prev;
-		this->next = next;
-	}
-
-};
-
-
-struct List {
-	ListNode* begin;
-	ListNode* end;
-	std::size_t size;
-
-	List() {
-		this->begin = this->end = nullptr;
-		this->size = 0;
-	}
-
-	
-	void push(message data) {
-		ListNode* new_node = new ListNode(data, this->end);
-		if (this->end == nullptr) {
-			this->begin = new_node;
-		}
-		else {
-			this->end->next = new_node;
-		}
-		this->end = new_node;
-		this->size++;
-	}
-
-	void print(std::size_t print_mode = 0) {
-		if (this->begin == nullptr) {
-			std::cout << "\nList is empty\n";
-		}
-		else {
-			std::cout << "\nList:\n";
-			ListNode* current = this->begin;
-			while (current) {
-				//current->data.print();
-				if (print_mode == 1) { // with pointer
-					std::cout << ",  pointer = " << current;
-				}
-				std::cout << std::endl;
-				current = current->next;
-			}
-		}
-	}
-	
-	void remove() {
-		ListNode* current = this->begin;
-		while (this->begin) {
-			current = this->begin;
-			this->begin = this->begin->next;
-			delete current;
-		}
-		this->begin = this->end = nullptr;
-		this->size = 0;
-	}
-};
-
-
-
-
-struct List_of_Lists {
-	List** array;
-	std::size_t capacity;
-	std::size_t size; // number of buttons
-
-	List_of_Lists() {
-		this->size = 0;
-		this->capacity = 0;
-		this->array = nullptr;
-	}
-
-
-
-	List_of_Lists(std::size_t capacity) {
-		this->capacity = capacity;
-		this->size = 0;
-		this->array = new List * [capacity];
-		for (std::size_t i = 0; i < capacity; i++) {
-			array[i] = nullptr;
-		}
-	}
-
-	void add(message new_item, size_t index) {
-		assert(this->array != nullptr);
-
-		if (this->array[index] == nullptr) {
-			array[index] = new List;
-			this->size++;
-		}
-		array[index]->push(new_item);
-	}
-
-	void print() {
-		assert(this->array != nullptr);
-		if (this->array == nullptr) {
-			std::cout << "\nList of lists is empty\n";
-		}
-		for (std::size_t i = 0; i < this->capacity; i++) {
-			std::cout << "\nModule\n" << i << ": ";
-			if (this->array[i] == nullptr) {
-				std::cout << "List is empty\n";
-			}
-			else {
-				this->array[i]->print();
-			}
-		}
-	}
-
-	void remove() {
-		assert(this->array != nullptr);
-		for (size_t i = 0; i < this->capacity; i++) {
-			if (this->array[i] != nullptr) {
-				this->array[i]->remove();
-				delete this->array[i];
-				this->array[i] = nullptr;
-			}
-		}
-		delete[]this->array;
-		this->array = nullptr;
-		this->capacity = 0;
-		this->size = 0;
-	}
-
-	void clear() { // remove() without removing an array
-		assert(this->array != nullptr);
-		for (size_t i = 0; i < this->capacity; i++) {
-			if (this->array[i] != nullptr) {
-				this->array[i]->remove();
-				delete this->array[i];
-				this->array[i] = nullptr;
-			}
-		}
-		this->size = 0;
-	}
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -238,9 +76,6 @@ string Generate_Line();
 unsigned long int SizeOfFile(string filename);
 unsigned long int size_of_local_storage(vector<message>& Message_Log);
 
-void counting_sort(vector<message>& Message_Log);
-size_t get_grade(short int value, size_t number_of_grade);
-void radix_sort(vector<message>& Message_Log);
 
 template <typename ElementType>
 void Is_correct_value(ElementType& value_to_check, const int floor_value = 0, const int ceiling_value = -1) {
@@ -268,22 +103,22 @@ void Is_correct_value(ElementType& value_to_check, const int floor_value = 0, co
 
 
 int main() {
-
+	
 	cout << "Hello, dear user!\n Chose the mode, please:\n";
 	string BINfile = "Messages log_BIN.txt";
 	string TEXTfile = "Messages log_TEXT.txt";
 	vector<message> Message_Log;
 	short int Mode = -1, next = -1;
 	while (true) {
-		cout << "===== MENU =====\n" <<
+		cout << "===== MENU =====\n" << 
 			"0 \tEXIT\n" <<
 			"1 \tInteractive mode\n" <<
 			"2 \tDemonstration mode\n" <<
-			"3 \tBenchmark mode\n" <<
+			"3 \tBenchmark mode\n" << 
 			"================\n";
-		cin >> Mode; Is_correct_value(Mode, 0, 4);
-		if (Mode == Turn_Back) {
-
+		cin >> Mode; Is_correct_value(Mode, 0, 3);
+		if (Mode == Turn_Back) { 
+			
 			return 0;
 		}
 		else if (Mode == Interactive) {
@@ -304,7 +139,7 @@ int main() {
 				cin >> next; Is_correct_value(next, 0, 10);
 
 				if (next == 0) { break; }
-
+				
 				if (next == 1) {
 					ClearDB(Message_Log, BINfile, TEXTfile);
 					ReadFromUser(Message_Log);
@@ -314,7 +149,7 @@ int main() {
 					if (Message_Log.size() != 0) {
 						Message_Log.clear();
 					}
-
+					
 					short int result = ReadFromBIN(BINfile, Message_Log);
 					if (result == 1) {
 						cout << "\nBD successfully restored from BIN file\n";
@@ -341,8 +176,8 @@ int main() {
 					else {
 						cout << "\nSomething is wrong with TEXT file\n";
 					}
-
-
+					
+					
 				}
 				else if (next == 4) {
 					ReadFromUser(Message_Log);
@@ -379,16 +214,16 @@ int main() {
 					}
 					cout << "Enter ID of data, that you want to remove: ";
 					cin >> id_to_remove; Is_correct_value(id_to_remove, 0);
-
+					
 					short int result_of_removing;
 					result_of_removing = RemoveElement(id_to_remove, Message_Log, TEXTfile, BINfile);
 					if (result_of_removing == 1) {
 						cout << "Data successfully removed\n";
 					}
-					else if (result_of_removing == 0) {
+					else if (result_of_removing == 0){
 						cout << "Data wasn't removed\n";
 					}
-					else if (result_of_removing == -1) {
+					else if (result_of_removing == -1){
 						cout << "No data with this ID in DB\n";
 					}
 					if (Message_Log.size() == 0) { cout << "\nDB is empty!\n"; }
@@ -500,7 +335,7 @@ int main() {
 				cout << "Local storage is already empty!\n";
 			}
 
-
+			
 			cout << "\n\n\n\n\nDemonstration mode end\n\n\n\n";
 
 			break;
@@ -645,36 +480,14 @@ int main() {
 
 		}
 
-		else { 
-			int N = 100, a;
-			vector<message> Message_Log;
-			//ReadFromTEXT("ReadFrom.txt", Message_Log);
-			Generate_newDB(Message_Log, N);
-			cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
-			cin >> a;
-			cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
-			//counting_sort(Message_Log);
-			unsigned int start_time = clock();
-			radix_sort(Message_Log);
-			cout << "\nRadix sort " << N << " items: " << clock() - start_time << " ms\n";
-			cin >> a;
-			PrintDB(Message_Log);
-			//PrintDB(Message_Log);
-			
-			
-			
-			
-			
-			
-		//	cout << "Something is wrong"; return -1; 
-		}
+		else { cout << "Something is wrong"; return -1; }
 	}
 
 	system("pause");
 	return 0;
 }
 
-short int WriteInBIN(vector<message>& Message_Log, string FileName, const size_t begin, short int WriteMode) {
+short int WriteInBIN (vector<message>& Message_Log, string FileName, const size_t begin, short int WriteMode) {
 	ofstream OutputFile;
 	if (WriteMode == append_to_file) { OutputFile.open(FileName, ofstream::app | ios::binary); }
 	else if (WriteMode == file_as_new) { OutputFile.open(FileName, ios::binary | ofstream::trunc); }
@@ -684,7 +497,7 @@ short int WriteInBIN(vector<message>& Message_Log, string FileName, const size_t
 	}
 	for (size_t i = begin; i < Message_Log.size(); i++) {
 		OutputFile.write((char*)&(Message_Log[i].id), sizeof(int));
-
+		
 		size_t size = (Message_Log[i].text).size();
 		OutputFile.write((char*)&size, sizeof(size));
 		OutputFile.write(&((Message_Log[i]).text)[0], size);  //text
@@ -729,9 +542,9 @@ short int ReadFromBIN(string FileName, vector<message>& Message_Log) {
 
 short int WriteInTEXT(vector<message>& Message_Log, string FileName, const size_t begin, short int WriteMode) {
 	ofstream File;
-	if (WriteMode == append_to_file) { File.open(FileName, ofstream::app); }
-	else if (WriteMode == file_as_new) { File.open(FileName); }
-
+	if (WriteMode == append_to_file){ File.open(FileName, ofstream::app); }
+	else if (WriteMode == file_as_new){ File.open(FileName); }
+	
 	if (!File.is_open()) {
 		return -1;
 	}
@@ -761,7 +574,7 @@ short int ReadFromTEXT(string FileName, vector<message>& Message_Log) {
 		return -1;
 	}
 	if (File.peek() == EOF) { return 0; }
-
+	
 	while (!File.eof()) {
 		message Message;
 
@@ -775,15 +588,15 @@ short int ReadFromTEXT(string FileName, vector<message>& Message_Log) {
 		File >> Message.type;
 		File >> Message.priority;
 		File >> Message.load_level;
-		File.ignore(256, '\n');
+		File.ignore(256,'\n');
 		getline(File, Message.text);
-
+	
 		Message_Log.push_back(Message);
 	}
-
+	
 	File.close();
 	return 1;
-
+	
 }
 
 short int RemoveElement(const int id_to_remove, vector<message>& Message_Log, const string TEXTfile, const string BINfile, short int program_mode) {
@@ -795,7 +608,7 @@ short int RemoveElement(const int id_to_remove, vector<message>& Message_Log, co
 		}
 	}
 	if (index_to_remove == -1) { return -1; }
-
+	
 
 	if (program_mode == Interactive) {
 		cout << "It is this message:\n\n";
@@ -805,7 +618,7 @@ short int RemoveElement(const int id_to_remove, vector<message>& Message_Log, co
 		cin >> next; Is_correct_value(next, 0, 1);
 		if (next == 0) { return 0; } // if no
 	}
-
+	
 	Message_Log.erase(Message_Log.begin() + index_to_remove);
 	WriteInBIN(Message_Log, BINfile, 0, file_as_new);
 	WriteInTEXT(Message_Log, TEXTfile, 0, file_as_new);
@@ -821,7 +634,7 @@ short int ChangeElement(const int id_to_change, vector<message>& Message_Log, co
 		}
 	}
 	if (index_to_change == -1) { return 0; }
-	if (program_mode == Interactive) {
+	if (program_mode == Interactive){ 
 		cout << "It is this message:\n\n";
 		print(Message_Log[index_to_change]);
 		cout << "\nEnter a new values:\n\n";
@@ -832,7 +645,7 @@ short int ChangeElement(const int id_to_change, vector<message>& Message_Log, co
 		Message_Log[index_to_change].text = "Changed message";
 		Message_Log[index_to_change].priority = 200;
 	}
-
+	
 	WriteInBIN(Message_Log, BINfile, 0, file_as_new);
 	WriteInTEXT(Message_Log, TEXTfile, 0, file_as_new);
 	return 1;
@@ -844,11 +657,11 @@ short int ChangeElement(const int id_to_change, vector<message>& Message_Log, co
 
 message GetFromUser() {
 	message new_message;
-	cin.ignore(256, '\n');
+	cin.ignore(256,'\n');
 
 	cout << "Enter a Message:  ";
 	getline(cin, new_message.text);
-
+	
 
 	//cout << "Enter a date in format DD MM YY:  ";
 	cout << "Enter a day:  ";
@@ -891,9 +704,9 @@ void ReadFromUser(vector<message>& Message_Log) {
 		Message = GetFromUser();
 		//Giving ID to each element
 		if (Message_Log.size() == 0) { Message.id = 0; }
-		else { Message.id = Message_Log[Message_Log.size() - 1].id + 1; }
+		else {Message.id = Message_Log[Message_Log.size() - 1].id + 1;}
 		Message_Log.push_back(Message);
-
+		
 		cout << "0 -- finish, 1 -- continue\n";
 		cin >> next; Is_correct_value(next, 0, 1);
 	}
@@ -1012,8 +825,8 @@ vector <message> Search(vector<message>& Message_Log) {
 
 
 	return Message_Result;
-
-
+	
+	
 }
 
 vector <message> AutoSearch(vector<message>& Message_Log, const short int search_mode, const int program_mode) {
@@ -1046,7 +859,7 @@ vector <message> AutoSearch(vector<message>& Message_Log, const short int search
 			}
 		}
 
-
+		
 
 		for (size_t i = 0; i < Message_Log.size(); i++) {
 			if (Compare(Message_Log[i], StartTime, FinishTime) == true) {
@@ -1065,7 +878,7 @@ vector <message> AutoSearch(vector<message>& Message_Log, const short int search
 			MessageType = rand() % 4;
 			LoadLevel = (float)(rand() % 10000) / 10000;
 		}
-
+		
 
 		for (size_t i = 0; i < Message_Log.size(); i++) {
 			if (Compare(Message_Log[i], MessageType, LoadLevel) == true) {
@@ -1081,7 +894,7 @@ vector <message> AutoSearch(vector<message>& Message_Log, const short int search
 		else if (program_mode == Demonstration) {
 			MessageBegin = "Mess";
 		}
-
+		
 		for (size_t i = 0; i < Message_Log.size(); i++) {
 			if (Compare(Message_Log[i], MessageBegin) == true) {
 				Message_Result.push_back(Message_Log[i]);
@@ -1108,7 +921,7 @@ Time Get_MessageTime() {
 }
 
 // time_1 > time_2 --> false
-bool CompareTime(Time time_1, Time time_2) {
+bool CompareTime(Time time_1, Time time_2){
 	if (time_1.hour < time_2.hour) { return true; }
 	else if (time_1.hour == time_2.hour) {
 		if (time_1.min < time_2.min) { return true; }
@@ -1155,7 +968,7 @@ bool Compare(message Message, int MessageType, float LoadLevel) {
 
 bool Compare(message Message, string MessageStart) {
 	if ((Message.text).length() < MessageStart.length()) { return false; }
-	if (MessageStart == "") {
+	if (MessageStart == "") { 
 		if (Message.text != MessageStart) { return false; }
 	}
 	else if ((Message.text).find(MessageStart) != 0) { return false; }
@@ -1180,21 +993,21 @@ void Generate_newDB(vector<message>& Message_Log, const int SIZE) {
 	message new_Message;
 	for (size_t i = 0; i < SIZE; i++) {
 		new_Message.id = i;
-		new_Message.time.hour = rand() % 24; // from 0 to 23
-		new_Message.time.min = rand() % 60; // from 0 to 59
-		new_Message.time.second = rand() % 60; // from 0 to 59
-		new_Message.date.day = rand() % 30 + 1; // from 1 to 30
-		new_Message.date.month = rand() % 12 + 1; // from 1 to 12
+		new_Message.time.hour = rand() % 23;
+		new_Message.time.min = rand() % 59;
+		new_Message.time.second = rand() % 59;
+		new_Message.date.day = rand() % 30 + 1;
+		new_Message.date.month = rand() % 11 + 1;
 		new_Message.date.year = rand() % 15 + 2006;
-		new_Message.type = rand() % 5; // from 0 to 4
-		new_Message.priority = rand() % 201; // from 0 to 200
-		new_Message.load_level = (float)(rand() % 10001) / 10000;
+		new_Message.type = rand() % 4;
+		new_Message.priority = rand() % 200;
+		new_Message.load_level = (float)(rand() % 10000) / 10000;
 		new_Message.text = Generate_Line();
-
+		
 
 		Message_Log.push_back(new_Message);
 	}
-
+	
 }
 
 string Generate_Line() {
@@ -1204,7 +1017,7 @@ string Generate_Line() {
 
 	string new_line;
 	for (size_t i = 0; i < size - 1; i++) {
-		new_line += (char)(rand() % 79 + 47);
+		new_line+= (char)(rand() % 79 + 47);
 	}
 	return new_line;
 }
@@ -1230,105 +1043,4 @@ unsigned long int size_of_local_storage(vector<message>& Message_Log) {
 		Size += (Message_Log[i].text).capacity();
 	}
 	return Size;
-}
-
-
-
-void counting_sort(vector<message>& Message_Log) {
-	List_of_Lists sorting_list(4);
-	for (size_t i = 0; i < Message_Log.size(); i++) {
-		sorting_list.add(Message_Log[i], Message_Log[i].type);
-	}
-	Message_Log.clear();
-
-	for (size_t i = 0; i < sorting_list.capacity; i++) {
-		if (sorting_list.array[i] != nullptr) {
-			ListNode* current = sorting_list.array[i]->begin;
-			while (current) {
-				Message_Log.push_back(current->data);
-				current = current->next;
-			}
-		}
-	}
-	
-	sorting_list.remove();
-
-}
-
-void radix_sort(vector<message>& Message_Log) {
-	List_of_Lists first_list(10), second_list(10), current_list;
-	for (size_t i = 0; i < Message_Log.size(); i++) {
-		size_t index = get_grade(Message_Log[i].priority, 1);
-		first_list.add(Message_Log[i], index);
-	}
-	Message_Log.clear();
-
-	size_t step_number = 0;
-	current_list = first_list;
-	while (current_list.size > 1) {
-		step_number++;
-		for (size_t i = 0; i < current_list.capacity; i++) {
-			if (current_list.array[i] != nullptr) {
-				ListNode* current = current_list.array[i]->begin;
-				while (current) {
-					if (step_number % 2 == 1) {
-						second_list.add(current->data, get_grade(current->data.priority, step_number + 1));
-					}
-					else {
-						first_list.add(current->data, get_grade(current->data.priority, step_number + 1));
-					}
-
-					current = current->next;
-				}
-			}
-		}
-		current_list.clear();
-		if (step_number % 2 == 1) {
-			first_list.clear();
-			current_list = second_list;
-		}
-		else {
-			second_list.clear();
-			current_list = first_list;
-		}
-	}
-	
-
-
-	for (size_t i = 0; i < current_list.capacity; i++) {
-		if (current_list.array[i] != nullptr) {
-			ListNode* current = current_list.array[i]->begin;
-			while (current) {
-				Message_Log.push_back(current->data);
-				current = current->next;
-			}
-		}
-	}
-
-	current_list.remove();
-	if (step_number % 2 == 1) {
-		first_list.remove();
-	}
-	else {
-		second_list.remove();
-	}
-
-
-	
-	
-	
-
-
-
-
-}
-
-size_t get_grade(short int value, size_t number_of_grade) { // number of grade begins from right
-	for (size_t i = 0; i < number_of_grade - 1; i++) {
-		value /= 10;
-	}
-
-	size_t result = value % 10;
-
-	return result;
 }
