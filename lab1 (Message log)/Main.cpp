@@ -231,12 +231,17 @@ void PrintSearchResult(vector<message>Search_Result);
 bool Compare(message Message, Time StartTime, Time FinishTime);
 bool Compare(message Message, int MessageType, float LoadLevel);
 bool Compare(message Message, string MessageStart);
+bool comparator_type(message a, message b);
 
 Time Get_MessageTime();
 short int CompareTime(Time time_1, Time time_2);
 short int compare_date(date date_1, date date_2);
 short int compare_text(string text_1, string text_2);
 bool comparator(message first, message second);
+
+void type_priority_sort(vector <message>& Message_Log);
+
+void copy(vector<message>& from, vector<message>& to);
 
 namespace multisort_parameters {
 	vector<size_t> fields;
@@ -254,9 +259,9 @@ string Generate_Line();
 unsigned long int SizeOfFile(string filename);
 unsigned long int size_of_local_storage(vector<message>& Message_Log);
 
-void counting_sort(vector<message>& Message_Log);
+void counting_sort(vector<message>& Message_Log, size_t begin, size_t end);
 size_t get_grade(short int value, size_t number_of_grade);
-void radix_sort(vector<message>& Message_Log);
+void radix_sort(vector<message>& Message_Log, size_t begin, size_t end);
 
 template <typename ElementType>
 void Is_correct_value(ElementType& value_to_check, const int floor_value = 0, const int ceiling_value = -1) {
@@ -320,7 +325,7 @@ int main() {
 					"12 \tremove all from local storage\n" <<
 					"13 \tremove all DB\n" <<
 					"================\n";
-				cin >> next; Is_correct_value(next, 0, 10);
+				cin >> next; Is_correct_value(next, 0, 13);
 
 				if (next == 0) { break; }
 
@@ -431,7 +436,9 @@ int main() {
 						cout << "\nLocal storage is empty\n";
 						}
 					else {
-						counting_sort(Message_Log);
+						counting_sort(Message_Log, 0, Message_Log.size() - 1);
+
+						cout << "\nDB successfully sorted\n";
 					}
 				}
 				else if (next == 9) {
@@ -439,7 +446,9 @@ int main() {
 						cout << "\nLocal storage is empty\n";
 					}
 					else {
-						radix_sort(Message_Log);
+						radix_sort(Message_Log, 0, Message_Log.size() - 1);
+
+						cout << "\nDB successfully sorted\n";
 					}
 				}
 				else if (next == 10) {
@@ -459,6 +468,8 @@ int main() {
 							}
 						}
 						multikey_sort(Message_Log);
+
+						cout << "\nDB successfully sorted\n";
 					}
 				}
 				else if (next == 11) {
@@ -532,13 +543,13 @@ int main() {
 
 
 			cout << "9. Counting sort by message type:\n\n\n";
-			counting_sort(Message_Log);
+			counting_sort(Message_Log, 0, Message_Log.size() - 1);
 			PrintDB(Message_Log);
 			cout << "\n\n\n=========\n\n\n\n";
 
 
 			cout << "10. Radix sort by mesage priority:\n\n\n";
-			radix_sort(Message_Log);
+			radix_sort(Message_Log, 0, Message_Log.size() - 1);
 			PrintDB(Message_Log);
 			cout << "\n\n\n=========\n\n\n\n";
 
@@ -591,14 +602,15 @@ int main() {
 
 			unsigned int start_time, finish_time, gen_time_bin, gen_time_text, gen_time_vector,
 				write_time_text, write_time_bin, read_time_text, read_time_bin, search_time_text, search_time_bin,
-				search_time_vector;
+				search_time_vector, sort_type_time_1, sort_type_time_2, sort_priority_time_1, sort_priority_time_2,
+				sort_combo_time_1, sort_combo_time_2;
 			float TEXT_time, BIN_time;
 			vector<message> Search_1, Search_2, Search_3;
 
 			cout << "N = " << N;
 
 			// to clear file for results
-			ofstream file_for_results("results.txt");
+			ofstream file_for_results("results (with sort).txt");
 			file_for_results << "Results of benchmark mode\n";
 			file_for_results << "Testing all ways of saving until total time with binary files < 10s to deeper testing, because binary files is faster\n";
 			file_for_results << "Time in columns: generation, write in file, read from file, search, total time\n" <<
@@ -677,16 +689,63 @@ int main() {
 				search_time_vector = clock() - start_time;
 
 				long int vector_memory = size_of_local_storage(Message_Log);
-				Message_Log.clear();
+				//Message_Log.clear();
 				Search_1.clear();
 				Search_2.clear();
 				Search_3.clear();
 
-			//	vector<message> sort_vector;
-			//	copy(Message_Log, sort_vector);
+				vector<message> sort_vector;
+				
+				// sort by type (counting sort)
+				copy(Message_Log, sort_vector);
+				start_time = clock();
+				counting_sort(sort_vector, 0, sort_vector.size() - 1);
+				sort_type_time_1 = clock() - start_time;
+
+				// sort by type (comparison sort)
+				copy(Message_Log, sort_vector);
+				multisort_parameters::fields.push_back(5);
+				start_time = clock();
+				multikey_sort(sort_vector);
+				sort_type_time_2 = clock() - start_time;
+
+
+				// sort by priority (radix sort)
+				copy(Message_Log, sort_vector);
+				start_time = clock();
+				radix_sort(sort_vector, 0, sort_vector.size() - 1);
+				sort_priority_time_1 = clock() - start_time;
+
+				// sort by priority (comparison sort)
+				copy(Message_Log, sort_vector);
+				multisort_parameters::fields.push_back(6);
+				start_time = clock();
+				multikey_sort(sort_vector);
+				sort_priority_time_2 = clock() - start_time;
+
+
+
+				// multisort (type (counting) + priority(radix))
+				copy(Message_Log, sort_vector);
+				start_time = clock();
+				type_priority_sort(sort_vector);
+				sort_combo_time_1 = clock() - start_time;
+
+				// multisort (type + priority)
+				copy(Message_Log, sort_vector);
+				multisort_parameters::fields.push_back(5);
+				multisort_parameters::fields.push_back(6);
+				start_time = clock();
+				multikey_sort(sort_vector);
+				sort_combo_time_2 = clock() - start_time;
+
+
+				Message_Log.clear();
+				sort_vector.clear();
+
 
 				// write results in file
-				ofstream file_for_results("results.txt", ofstream::app);
+				ofstream file_for_results("results (with sort).txt", ofstream::app);
 				file_for_results << "N = " << N << '\n';
 
 				file_for_results << "TEXTfile: \t" << (float)gen_time_text / 1000 << "s\t" <<
@@ -698,7 +757,16 @@ int main() {
 					<< (float)search_time_bin / 1000 << "s\t" << BIN_time << "s\t" << SizeOfFile("Benchmark_BIN.txt") << " Bytes\n";
 
 				file_for_results << "VECTOR: \t" << (float)gen_time_vector / 1000 << "s\t" <<
-					(float)search_time_vector / 1000 << "s\t" << (float)(gen_time_vector + search_time_vector) / 1000 << "s\t\t\t" << vector_memory << " Bytes\n\n\n";
+					(float)search_time_vector / 1000 << "s\t" << (float)(gen_time_vector + search_time_vector) / 1000 << "s\t\t\t" << vector_memory << " Bytes\n\n";
+
+				file_for_results << "Sort by type (counting sort): " << sort_type_time_1 << " ms\n";
+				file_for_results << "Sort by type (comparison sort): " << sort_type_time_2 << " ms\n";
+
+				file_for_results << "Sort by priority (radix sort): " << sort_priority_time_1 << " ms\n";
+				file_for_results << "Sort by priority (comparison sort): " << sort_priority_time_2 << " ms\n";
+
+				file_for_results << "Sort by type priority (not comparison sort): " << sort_combo_time_1 << " ms\n";
+				file_for_results << "Sort by type priority (comparison sort): " << sort_combo_time_2 << " ms\n\n\n\n";
 
 				file_for_results.close();
 
@@ -727,10 +795,10 @@ int main() {
 
 		else { 
 
-			int N = 100, a;
+			int N = 100000, a;
 			vector<message> Message_Log;
 			//ReadFromTEXT("ReadFrom.txt", Message_Log);
-			Generate_newDB(Message_Log, N);
+			//Generate_newDB(Message_Log, N);
 		//	cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
 			//cin >> a;
 			cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
@@ -758,6 +826,21 @@ int main() {
 			cout << compare_text("123", "1234") << endl;
 			*/
 
+			vector<message> sort_vector;
+			Generate_newDB(sort_vector, N);
+
+			cout << "\n\n\n\nAfter sort:\n\n\n\n\n";
+
+			unsigned int start_time = clock();
+			type_priority_sort(sort_vector);
+			unsigned int sort_combo_time_1 = clock() - start_time;
+			//PrintDB(sort_vector);
+			cout << "\n\n\n\n\nMultikey sort " << N << " items: " << sort_combo_time_1 << " ms\n";
+			
+
+
+			/*
+
 			unsigned int start_time = clock();
 			multisort_parameters::fields.push_back(2);
 			multisort_parameters::fields.push_back(7);
@@ -765,10 +848,10 @@ int main() {
 			//fields.push_back(1);
 
 			multikey_sort(Message_Log);
-
-			PrintDB(Message_Log);
+			*/
+			//PrintDB(Message_Log);
 			
-			cout << "\n\n\n\n\nMultikey sort " << N << " items: " << clock() - start_time << " ms\n";
+		//	cout << "\n\n\n\n\nMultikey sort " << N << " items: " << clock() - start_time << " ms\n";
 		//	cout << "Something is wrong"; return -1; 
 		}
 	}
@@ -1337,19 +1420,23 @@ unsigned long int size_of_local_storage(vector<message>& Message_Log) {
 
 
 
-void counting_sort(vector<message>& Message_Log) {
-	List_of_Lists sorting_list(4);
-	for (size_t i = 0; i < Message_Log.size(); i++) {
+void counting_sort(vector<message>& Message_Log, size_t begin, size_t end) {
+	assert(begin <= end);
+	assert(end - begin < Message_Log.size());
+
+	List_of_Lists sorting_list(5);
+	for (size_t i = begin; i <= end; i++) {
 		sorting_list.add(Message_Log[i], Message_Log[i].type);
 	}
-	Message_Log.clear();
-
+	//Message_Log.clear();
+	size_t index_in_array = begin;
 	for (size_t i = 0; i < sorting_list.capacity; i++) {
 		if (sorting_list.array[i] != nullptr) {
 			ListNode* current = sorting_list.array[i]->begin;
 			while (current) {
-				Message_Log.push_back(current->data);
+				Message_Log[index_in_array] = current->data;
 				current = current->next;
+				index_in_array++;
 			}
 		}
 	}
@@ -1358,13 +1445,16 @@ void counting_sort(vector<message>& Message_Log) {
 
 }
 
-void radix_sort(vector<message>& Message_Log) {
+void radix_sort(vector<message>& Message_Log, size_t begin, size_t end) {
+	assert(begin <= end);
+	assert(end - begin < Message_Log.size());
+
 	List_of_Lists first_list(10), second_list(10), current_list;
-	for (size_t i = 0; i < Message_Log.size(); i++) {
+	for (size_t i = begin; i <= end; i++) {
 		size_t index = get_grade(Message_Log[i].priority, 1);
 		first_list.add(Message_Log[i], index);
 	}
-	Message_Log.clear();
+//	Message_Log.clear();
 
 	size_t step_number = 0;
 	current_list = first_list;
@@ -1397,13 +1487,14 @@ void radix_sort(vector<message>& Message_Log) {
 	}
 	
 
-
+	size_t index_in_array = begin;
 	for (size_t i = 0; i < current_list.capacity; i++) {
 		if (current_list.array[i] != nullptr) {
 			ListNode* current = current_list.array[i]->begin;
 			while (current) {
-				Message_Log.push_back(current->data);
+				Message_Log[index_in_array] = current->data;
 				current = current->next;
+				index_in_array++;
 			}
 		}
 	}
@@ -1526,9 +1617,42 @@ short int compare_date(date date_1, date date_2) {
 	return -1;
 }
 
-void copy(vector<message>& from, vector<message> to) {
+void copy(vector<message>& from, vector<message>& to) {
 	to.clear();
 	for (size_t i = 0; i < from.size(); i++) {
 		to.push_back(from[i]);
+	}
+}
+
+bool comparator_type(message a, message b) {
+	return a.type < b.type;
+}
+
+
+
+
+
+void type_priority_sort(vector <message>& Message_Log) {
+	counting_sort(Message_Log, 0, Message_Log.size() - 1);
+
+	for (size_t index = 0; index < Message_Log.size(); index++) {
+		size_t i = index + 1; // if Message_Log[index] is the last one
+		if (i == Message_Log.size()) {
+			i--;
+			break;
+		}
+		while (Message_Log[index].type == Message_Log[i].type && i < Message_Log.size()) {
+			i++;
+			if (i == Message_Log.size()) {
+				//i--;
+				break;
+			}
+
+		}
+
+		if (i > index) {
+			radix_sort(Message_Log, index, i - 1);
+			index = i - 1; // because on the next iteration of "for" index will increase 1
+		}
 	}
 }
