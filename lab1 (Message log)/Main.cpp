@@ -231,7 +231,6 @@ void PrintSearchResult(vector<message>Search_Result);
 bool Compare(message Message, Time StartTime, Time FinishTime);
 bool Compare(message Message, int MessageType, float LoadLevel);
 bool Compare(message Message, string MessageStart);
-bool comparator_type(message a, message b);
 
 Time Get_MessageTime();
 short int CompareTime(Time time_1, Time time_2);
@@ -1622,10 +1621,6 @@ void copy(vector<message>& from, vector<message>& to) {
 	for (size_t i = 0; i < from.size(); i++) {
 		to.push_back(from[i]);
 	}
-}
-
-bool comparator_type(message a, message b) {
-	return a.type < b.type;
 }
 
 
