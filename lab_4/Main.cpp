@@ -5,28 +5,31 @@
 #include <cassert>
 #include <ctime>
 
+enum Son { left_child, right_child };
 
 
 void print_path(std::vector<std::size_t> path, std::size_t max_length);
 std::size_t get_number_of_digits(int value);
 
+
 struct Tree;
 struct TreeNode;
 
-
+template <typename Datatype>
 struct ListNode {
 	ListNode* next;
-	TreeNode* data;
+	Datatype data;
 
-	ListNode(TreeNode* data, ListNode* next = nullptr) {
+	ListNode(Datatype data, ListNode* next = nullptr) {
 		this->data = data;
 		this->next = next;
 	}
 };
 
+template <typename Datatype>
 struct Queue {
-	ListNode* begin;
-	ListNode* end;
+	ListNode<Datatype>* begin;
+	ListNode<Datatype>* end;
 	std::size_t size;
 
 	Queue() {
@@ -34,8 +37,8 @@ struct Queue {
 		this->size = 0;
 	}
 
-	void enqueue(TreeNode* data) {
-		ListNode* new_node = new ListNode(data);
+	void enqueue(Datatype data) {
+		ListNode<Datatype>* new_node = new ListNode<Datatype>(data);
 		if (this->end) {
 			this->end->next = new_node;
 		}
@@ -47,11 +50,11 @@ struct Queue {
 		this->size++;
 	}
 
-	TreeNode* dequeue() {
+	Datatype dequeue() {
 		assert(this->begin != nullptr);
 
-		TreeNode* result = this->begin->data;
-		ListNode* current = this->begin;
+		Datatype result = this->begin->data;
+		ListNode<Datatype>* current = this->begin;
 
 		this->begin = this->begin->next;
 		if (!this->begin) {
@@ -387,7 +390,7 @@ struct Tree {
 		else {
 			std::cout << "\nTree by levels:\n";
 			TreeNode* const DELIMITER = nullptr;
-			Queue queue;
+			Queue<TreeNode*> queue;
 			queue.enqueue(this->root);
 			queue.enqueue(DELIMITER);
 			while (true) {
@@ -494,6 +497,149 @@ struct Tree {
 
 };
 
+
+
+struct BinaryTreeNode {
+	int data;
+	BinaryTreeNode* parent;
+	BinaryTreeNode* left;
+	BinaryTreeNode* right;
+
+	BinaryTreeNode(int data, BinaryTreeNode* parent = nullptr, BinaryTreeNode* left = nullptr, BinaryTreeNode* right = nullptr) {
+		this->data = data;
+		this->parent = parent;
+		this->left = left;
+		this->right = right;
+	}
+
+	void print() {
+
+		std::cout << this->data << "(";
+		if (this->left || this->right) {
+			if (this->left) {
+				this->left->print();
+			}
+			else {
+				std::cout << " ";
+			}
+
+			std::cout << ", ";
+			if (this->right) {
+				this->right->print();
+			}
+		}
+		std::cout << ")";
+	}
+
+
+};
+
+struct BinaryTree {
+	BinaryTreeNode* root;
+
+	BinaryTree() {
+		this->root = nullptr;
+	}
+
+	void add(int data) {
+		BinaryTreeNode* new_node = new BinaryTreeNode(data);
+
+		if (this->root == nullptr) {
+			this->root = new_node;
+		}
+		else {
+			int child = -1;
+			BinaryTreeNode* place = search_place(data, child);
+			assert(place != nullptr);
+
+			if (child == left_child) {
+				place->left = new_node;
+			}
+			else if (child == right_child) {
+				place->right = new_node;
+			}
+			new_node->parent = place;
+		}
+	}
+
+	BinaryTreeNode* search_place(int key, int& son, BinaryTreeNode* node = nullptr) {
+		assert(this->root != nullptr);
+		if (node == nullptr) {
+			node = this->root;
+		}
+		
+		if (key < node->data) {
+			if (node->left == nullptr) {
+				son = left_child;
+				return node;
+			}
+			else {
+				return search_place(key, son, node->left);
+			}
+			
+		}
+		else {
+			if (node->right == nullptr) {
+				son = right_child;
+				return node;
+			}
+			else {
+				return search_place(key, son, node->right);
+			}
+			
+		}
+	}
+
+
+	void print() {
+		if (this->root == nullptr) {
+			std::cout << "\nBinary tree is empty\n";
+		}
+		else {
+			std::cout << "\nBinary tree:\n";
+			this->root->print();
+			std::cout << std::endl;
+		}
+	}
+
+	void print_levels() {
+		if (this->root == nullptr) {
+			std::cout << "\nBinary tree is empty\n";
+		}
+		else {
+			std::cout << "\nBinary tree by levels:\n";
+			BinaryTreeNode* const DELIMITER = nullptr;
+			Queue<BinaryTreeNode*> queue;
+			queue.enqueue(this->root);
+			queue.enqueue(DELIMITER);
+			while (true) {
+				BinaryTreeNode* current = queue.dequeue();
+				if (current != DELIMITER) {
+					std::cout << current->data << " ";
+
+					if (current->left != nullptr) {
+						queue.enqueue(current->left);
+					}
+					if (current->right != nullptr) {
+						queue.enqueue(current->right);
+					}
+
+				}
+				else {
+					std::cout << std::endl;
+					if (queue.is_empty() == true) {
+						break;
+					}
+					else {
+						queue.enqueue(DELIMITER);
+					}
+				}
+
+			}
+		}
+	}
+
+};
 
 
 
@@ -701,6 +847,19 @@ int main() {
 	std::cin >> a;
 	
 	*/
+
+	std::cout << "\n\n\nBinary tree:\n\n";
+	BinaryTree bin_tree;
+	bin_tree.add(5);
+	bin_tree.add(6);
+	bin_tree.add(7);
+	bin_tree.add(3);
+	bin_tree.add(100);
+	bin_tree.add(-156);
+	bin_tree.add(4);
+	bin_tree.add(6);
+	bin_tree.print();
+	bin_tree.print_levels();
 
 	std::system("pause");
 	return 0;
