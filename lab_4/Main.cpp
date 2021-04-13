@@ -1,8 +1,9 @@
-// 1, 2, 3, 7, 9, 11, 12, 13
+// 1, 2, 3, 7, 9, 11, 12, 13, 14, 15
 
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <ctime>
 
 
 
@@ -58,6 +59,7 @@ struct Queue {
 		}
 		delete current;
 
+		this->size--;
 		return result;
 	}
 
@@ -172,6 +174,7 @@ struct TreeNode {
 			current = current->next;
 		}
 	}
+
 
 };
 
@@ -310,33 +313,72 @@ struct Tree {
 		
 	}
 
+	/*
 	Tree remove_by_path(std::vector<std::size_t>& path) {
 		assert(this->root != nullptr);
 		TreeNode* node_to_remove = get_by_path(path);
 		
-		return remove_in_tree(node_to_remove);
+		//return remove_in_tree(node_to_remove);
+	}
+	*/
+
+
+
+	void remove_all_by_value(int key, TreeNode* node = nullptr) {
+		assert(this->root != nullptr);
+
+		if (node == nullptr) {
+			node = this->root;
+		}
+		
+		if (node->data == key) {
+			remove_with_deleting(node); // delete node and all its children
+		}
+
+		else { // if it isn't key, we need to go on 
+			TreeNode* current = node->first_child;
+			TreeNode* next_child = (current != nullptr) ? current->next : nullptr;
+			
+			while (current) {
+				remove_all_by_value(key, current);
+				current = next_child;
+
+				if (next_child != nullptr) {
+					next_child = next_child->next;
+				}
+				
+			}
+		}
 	}
 
 
+	Tree remove_one_by_value(int key, TreeNode* node_to_start = nullptr) {
+		assert(this->root != nullptr);
+		Tree result;
+		TreeNode* node_to_remove = search_first_item(key, node_to_start);
 
-	Tree remove_in_tree(TreeNode* node_to_remove) {
+		if (node_to_remove){
+			std::vector<std::size_t> path = node_to_remove->get_path();
+			result = remove_in_tree(path);
+		}
+		return result; // if node_to_remove == null, then return empty tree
+	}
+
+
+	Tree remove_in_tree(std::vector<std::size_t>& path) {
+		assert(this->root != nullptr);
+		TreeNode* node_to_remove = get_by_path(path);
+
 		Tree new_tree;
 		new_tree.root = node_to_remove;
 
-		if (node_to_remove->parent) {
-			if (node_to_remove->next) {
-				node_to_remove->next->prev = node_to_remove->prev;
-			}
-			if (node_to_remove->prev) {
-				node_to_remove->prev->next = node_to_remove->next;
-			}
-			else {
-				node_to_remove->parent->first_child = node_to_remove->next;
-			}
-		}
+		disconnect_item(node_to_remove); // disconnect from parent and brothers but not from children
+
 		return new_tree;
 	}
 
+	
+	
 
 	void print_levels() {
 		if (this->root == nullptr) {
@@ -374,6 +416,82 @@ struct Tree {
 			}
 		}
 	}
+
+
+	void remove_with_deleting(TreeNode* node_to_remove) {
+		disconnect_item(node_to_remove);
+
+		while (node_to_remove->first_child) { // firstly remove children and then parent
+			remove_with_deleting(node_to_remove->first_child);
+		}
+
+		delete node_to_remove;
+	}
+
+
+
+	private:
+	void disconnect_item(TreeNode* node_to_remove) {
+		assert(node_to_remove != nullptr);
+		if (node_to_remove->parent) {
+			if (node_to_remove->next) {
+				node_to_remove->next->prev = node_to_remove->prev;
+			}
+			if (node_to_remove->prev) {
+				node_to_remove->prev->next = node_to_remove->next;
+			}
+			else { // if it is the first child
+				node_to_remove->parent->first_child = node_to_remove->next;
+			}
+		}
+		else { // it is root
+			assert(this->root == node_to_remove);
+			this->root = nullptr;
+		}
+
+	}
+
+
+
+	TreeNode* search_first_item(int key, TreeNode* node = nullptr) {
+		assert(this->root != nullptr);
+		if (node == nullptr) {
+			node = this->root;
+		}
+
+		TreeNode* result = nullptr;
+
+		if (node->data == key) {
+			result = node;
+		}
+
+		else {
+			TreeNode* current = node->first_child;
+			
+			while (current) { // if node isn't a key and have no children, result doesn't change, so nullptr return
+				TreeNode* current_result = nullptr;
+
+				current_result = search_first_item(key, current);
+
+				// chose not nullptr result
+				if (current_result != nullptr) {
+					result = current_result;
+				}
+				current = current->next;
+			}
+
+
+		}
+
+		return result;
+	}
+
+
+
+
+
+
+
 };
 
 
@@ -524,9 +642,66 @@ int main() {
 	path.push_back(0);
 	path.push_back(3); // 0, 3
 
-	Tree new_tree = tree.remove_by_path(path);
+	Tree new_tree = tree.remove_in_tree(path);
 	new_tree.print();
 	tree.print_levels();
+
+
+
+	std::cout << std::endl << "remove all by value:";
+	tree.root->first_child->next->first_child->first_child->next->data = 6;
+	tree.print();
+	tree.remove_all_by_value(1000);
+	tree.print();
+	tree.print_levels();
+
+	std::cout << std::endl << "remove one by value:";
+	Tree new_tree1 = tree.remove_one_by_value(6);
+	new_tree1.print();
+	tree.print();
+
+
+	/*
+	std::cout << "\n\nRemove a lot:";
+	int a = 0;
+	path[1] = 2; // 0, 2
+	TreeNode* item = tree.get_by_path(path);
+
+	std::cout << "\nStart to add items\n";
+	std::cin >> a;
+	unsigned int start_time = clock();
+	for (std::size_t i = 0; i < 1000; i++) {
+		tree.add_by_pointer(1001, item);
+	}
+
+	{
+		item = item->first_child;
+
+		while (item) {
+			for (std::size_t j = 0; j < 1000; j++) {
+				tree.add_by_pointer(j, item);
+			}
+			item = item->next;
+		}
+		
+	}
+	
+	std::cout << "\nadding time: " << clock() - start_time << std::endl;
+	//tree.print();
+
+	std::cout << "\nStart to remove items\n";
+	std::cin >> a;
+	start_time = clock();
+	tree.remove_with_deleting(tree.get_by_path(path));
+	tree.print();
+	std::cout << "\nremoving time: " << clock() - start_time << std::endl;
+
+
+	std::cout << "\nExit\n";
+	std::cin >> a;
+	
+	*/
+
 	std::system("pause");
 	return 0;
 }
