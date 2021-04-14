@@ -1,4 +1,4 @@
-// 1, 2, 3, 7, 9, 11, 12, 13, 14, 15
+// 1, 2, 3, 7, 9, 11, 12, 13, 14, 15, 18, 20
 
 #include <iostream>
 #include <vector>
@@ -639,6 +639,10 @@ struct BinaryTree {
 		}
 	}
 
+
+
+	
+
 };
 
 
@@ -698,6 +702,163 @@ std::size_t get_number_of_digits(int value) {
 	}
 	return i;
 }
+
+
+struct ThreadNode {
+	int data;
+	ThreadNode* parent;
+	ThreadNode* left;
+	ThreadNode* right;
+	bool is_treaded;
+
+	ThreadNode(int data, ThreadNode* parent = nullptr, ThreadNode* left = nullptr, ThreadNode* right = nullptr, bool is_threaded = false) {
+		this->data = data;
+		this->parent = parent;
+		this->left = left;
+		this->right = right;
+		this->is_treaded = is_threaded;
+	}
+
+	void print() {
+
+		std::cout << this->data << "(";
+		if (this->left || this->right) {
+			if (this->left) {
+				if (this->left->is_treaded == false) {
+					this->left->print();
+				}
+			}
+			else {
+				std::cout << " ";
+			}
+
+			std::cout << ", ";
+			if (this->right) {
+				if (this->right->is_treaded == false) {
+					this->right->print();
+				}
+				
+			}
+		}
+		std::cout << ")";
+	}
+
+	ThreadNode* get_leftmost() {
+		ThreadNode* current = this;
+	
+		while (current->left) {
+			current = current->left;
+		}
+		return current;
+	}
+
+};
+
+struct ThreadedTree {
+	ThreadNode* root;
+
+	ThreadedTree() {
+		this->root = nullptr;
+	}
+
+
+	void print() {
+		if (this->root == nullptr) {
+			std::cout << "\nThreaded Binary tree is empty\n";
+		}
+		else {
+			std::cout << "\nThreaded Binary tree:\n";
+			this->root->print();
+			std::cout << std::endl;
+		}
+	}
+
+	void print_in_line() {
+		if (this->root == nullptr) {
+			std::cout << "\nThreaded Binary tree is empty\n";
+		}
+		else {
+			ThreadNode* current = this->root->get_leftmost();
+
+			while (current) {
+				std::cout << current->data << " ";
+				if (current->is_treaded) {
+					current = current->right;
+				}
+				else {
+					if (current->right != nullptr) {
+						current = current->right->get_leftmost();
+					}
+					else {
+						current = nullptr;
+					}
+					
+				}
+			}
+		}
+	}
+
+};
+
+
+ThreadNode* copy_node(BinaryTreeNode* bin_root, ThreadNode* parent) {
+	ThreadNode*  thread_root = new ThreadNode(bin_root->data, parent);
+	if (bin_root->left != nullptr) {
+		thread_root->left = copy_node(bin_root->left, thread_root);
+	}
+	if (bin_root->right != nullptr) {
+		thread_root->right = copy_node(bin_root->right, thread_root);
+	}
+
+	return thread_root;
+
+}
+
+ThreadedTree copy_tree(BinaryTree& bin_tree) {
+	ThreadedTree new_tree;
+	if (bin_tree.root != nullptr) {
+		new_tree.root = copy_node(bin_tree.root, nullptr);
+	}
+	return new_tree;
+}
+
+
+ThreadNode* thread_node(ThreadNode* root) {
+	if (root == nullptr) {
+		return nullptr;
+	}
+	if (!root->left && !root->right) {
+		return root;
+	}
+
+	if (root->left) {
+		ThreadNode* left = thread_node(root->left);
+
+		// make thread (leftmost in this subtree -> root of this subtree)
+		left->right = root;
+		left->is_treaded = true;
+	}
+
+	// if root (current node) is rightmost child
+	if (root->right == nullptr) {
+		return root;
+	}
+
+	return thread_node(root->right);
+}
+
+// it is the main function (we call it in the program) of threading 
+ThreadedTree thread_bin_tree(BinaryTree& bin_tree) {
+	ThreadedTree new_tree = copy_tree(bin_tree); // firstly we need to create copy of binary tree
+
+	thread_node(new_tree.root);
+
+	return new_tree;
+}
+
+
+
+
 
 
 
@@ -860,6 +1021,26 @@ int main() {
 	bin_tree.add(6);
 	bin_tree.print();
 	bin_tree.print_levels();
+
+
+	std::cout << "\n\nBIN and threaded tree:\n\n";
+	copy_tree(bin_tree).print();
+	bin_tree.print();
+
+	std::cout << "\n\nAfter threating:\n\n";
+	bin_tree.add(-170);
+	bin_tree.add(5);
+	bin_tree.add(5);
+	bin_tree.add(93);
+	ThreadedTree th_tree = thread_bin_tree(bin_tree);
+	th_tree.print_in_line();
+
+
+	std::cout << "\n\nAfter threating:\n\n";
+
+	BinaryTree bin_empty;
+	thread_bin_tree(bin_empty).print_in_line();
+
 
 	std::system("pause");
 	return 0;
