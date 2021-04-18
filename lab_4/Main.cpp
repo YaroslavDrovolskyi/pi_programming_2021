@@ -4,16 +4,48 @@
 #include <vector>
 #include <cassert>
 #include <ctime>
+#include <string>
 
 enum Son { left_child, right_child };
+enum type { file, folder };
+//struct Directory;
+struct Time {
+	short int year;
+	short int month;
+	short int day;
+	short int hour;
+	short int minutes;
+	short int seconds;
+};
+
+struct Directory {
+	std::string name;
+	std::size_t size;
+	Time edit_time;
+	short int type;
+
+};
+std::ostream& operator<< (std::ostream& out, Directory& directory) {
+	out << directory.name << ", " << directory.size << " bytes, ";
+	if (directory.type == folder) {
+		out << "folder, ";
+	}
+	else {
+		out << "file, ";
+	}
+	out << directory.edit_time.hour << ":" << directory.edit_time.minutes << ":" << directory.edit_time.seconds << "  "
+		<< directory.edit_time.day << "." << directory.edit_time.month << "." << directory.edit_time.year << std::endl;
+
+	return out;
+}
 
 
 void print_path(std::vector<std::size_t> path, std::size_t max_length);
 std::size_t get_number_of_digits(int value);
 
 
-struct Tree;
-struct TreeNode;
+template <typename T> struct Tree;
+template <typename T> struct TreeNode;
 
 template <typename Datatype>
 struct ListNode {
@@ -73,14 +105,16 @@ struct Queue {
 };
 
 
+
+template <typename T>
 struct TreeNode {
-	int data;
+	T data;
 	TreeNode* parent;
 	TreeNode* first_child;
 	TreeNode* next;
 	TreeNode* prev;
 
-	TreeNode(int data, TreeNode* parent = nullptr, TreeNode* first_child = nullptr, TreeNode* next = nullptr, TreeNode* prev = nullptr) {
+	TreeNode(T data, TreeNode* parent = nullptr, TreeNode* first_child = nullptr, TreeNode* next = nullptr, TreeNode* prev = nullptr) {
 		this->data = data;
 		this->parent = parent;
 		this->first_child = first_child;
@@ -127,7 +161,7 @@ struct TreeNode {
 			}
 		}
 
-		std::cout << "\nInteractive print ended\n";
+		//std::cout << "\nInteractive print ended\n";
 	}
 
 
@@ -181,18 +215,19 @@ struct TreeNode {
 
 };
 
+template <typename T>
 struct Tree {
-	TreeNode* root;
+	TreeNode<T>* root;
 
 	Tree() {
 		this->root = nullptr;
 	}
 
 
-	TreeNode* get_by_path(std::vector<std::size_t>& path) {
+	TreeNode<T>* get_by_path(std::vector<std::size_t>& path) {
 		assert(this->root != nullptr);
 		if (path.size() == 0) { return this->root; }
-		TreeNode* current = this->root;
+		TreeNode<T>* current = this->root;
 		for (std::size_t i = 0; i < path.size(); i++) {
 			assert(current != nullptr);
 			current = current->first_child;
@@ -215,7 +250,7 @@ struct Tree {
 		std::cout << std::endl;
 	}
 
-	void add_by_path(int data, std::vector<std::size_t>& path) {
+	void add_by_path(T data, std::vector<std::size_t>& path) {
 		if (path.size() == 0) {
 			add_by_pointer(data, nullptr);
 		}
@@ -229,13 +264,13 @@ struct Tree {
 
 	//private:
 
-	void add_by_pointer(int data, TreeNode* parent = nullptr) {
-		TreeNode* new_node = new TreeNode(data, parent);
+	void add_by_pointer(T data, TreeNode<T>* parent = nullptr) {
+		TreeNode<T>* new_node = new TreeNode<T>(data, parent);
 		if (parent == nullptr && this->root == nullptr) {
 			this->root = new_node;
 		}
 		else {
-			TreeNode* current = parent->first_child;
+			TreeNode<T>* current = parent->first_child;
 
 			if (current) {
 				while (current->next) {
@@ -251,7 +286,7 @@ struct Tree {
 		}
 	}
 
-	std::vector<std::size_t> get_path(TreeNode* node) {
+	std::vector<std::size_t> get_path(TreeNode<T>* node) {
 		assert(node != nullptr);
 		return node->get_path();
 	}
@@ -327,7 +362,7 @@ struct Tree {
 
 
 
-	void remove_all_by_value(int key, TreeNode* node = nullptr) {
+	void remove_all_by_value(T key, TreeNode<T>* node = nullptr) {
 		assert(this->root != nullptr);
 
 		if (node == nullptr) {
@@ -339,8 +374,8 @@ struct Tree {
 		}
 
 		else { // if it isn't key, we need to go on 
-			TreeNode* current = node->first_child;
-			TreeNode* next_child = (current != nullptr) ? current->next : nullptr;
+			TreeNode<T>* current = node->first_child;
+			TreeNode<T>* next_child = (current != nullptr) ? current->next : nullptr;
 			
 			while (current) {
 				remove_all_by_value(key, current);
@@ -355,10 +390,10 @@ struct Tree {
 	}
 
 
-	Tree remove_one_by_value(int key, TreeNode* node_to_start = nullptr) {
+	Tree remove_one_by_value(T key, TreeNode<T>* node_to_start = nullptr) {
 		assert(this->root != nullptr);
 		Tree result;
-		TreeNode* node_to_remove = search_first_item(key, node_to_start);
+		TreeNode<T>* node_to_remove = search_first_item(key, node_to_start);
 
 		if (node_to_remove){
 			std::vector<std::size_t> path = node_to_remove->get_path();
@@ -370,7 +405,7 @@ struct Tree {
 
 	Tree remove_in_tree(std::vector<std::size_t>& path) {
 		assert(this->root != nullptr);
-		TreeNode* node_to_remove = get_by_path(path);
+		TreeNode<T>* node_to_remove = get_by_path(path);
 
 		Tree new_tree;
 		new_tree.root = node_to_remove;
@@ -389,16 +424,16 @@ struct Tree {
 		}
 		else {
 			std::cout << "\nTree by levels:\n";
-			TreeNode* const DELIMITER = nullptr;
-			Queue<TreeNode*> queue;
+			TreeNode<T>* const DELIMITER = nullptr;
+			Queue<TreeNode<T>*> queue;
 			queue.enqueue(this->root);
 			queue.enqueue(DELIMITER);
 			while (true) {
-				TreeNode* current = queue.dequeue();
+				TreeNode<T>* current = queue.dequeue();
 				if (current != DELIMITER) {
 					std::cout << current->data << " ";
 
-					TreeNode* current_child = current->first_child;
+					TreeNode<T>* current_child = current->first_child;
 					while (current_child) {
 						queue.enqueue(current_child);
 
@@ -421,7 +456,7 @@ struct Tree {
 	}
 
 
-	void remove_with_deleting(TreeNode* node_to_remove) {
+	void remove_with_deleting(TreeNode<T>* node_to_remove) {
 		disconnect_item(node_to_remove);
 
 		while (node_to_remove->first_child) { // firstly remove children and then parent
@@ -434,7 +469,7 @@ struct Tree {
 
 
 	private:
-	void disconnect_item(TreeNode* node_to_remove) {
+	void disconnect_item(TreeNode<T>* node_to_remove) {
 		assert(node_to_remove != nullptr);
 		if (node_to_remove->parent) {
 			if (node_to_remove->next) {
@@ -456,23 +491,23 @@ struct Tree {
 
 
 
-	TreeNode* search_first_item(int key, TreeNode* node = nullptr) {
+	TreeNode<T>* search_first_item(T key, TreeNode<T>* node = nullptr) {
 		assert(this->root != nullptr);
 		if (node == nullptr) {
 			node = this->root;
 		}
 
-		TreeNode* result = nullptr;
+		TreeNode<T>* result = nullptr;
 
 		if (node->data == key) {
 			result = node;
 		}
 
 		else {
-			TreeNode* current = node->first_child;
+			TreeNode<T>* current = node->first_child;
 			
 			while (current) { // if node isn't a key and have no children, result doesn't change, so nullptr return
-				TreeNode* current_result = nullptr;
+				TreeNode<T>* current_result = nullptr;
 
 				current_result = search_first_item(key, current);
 
@@ -861,6 +896,33 @@ ThreadedTree thread_bin_tree(BinaryTree& bin_tree) {
 
 
 
+struct DirectoryNode {
+	short int type;
+	DirectoryNode* parent;
+	DirectoryNode* first_child;
+	DirectoryNode* next;
+	DirectoryNode* prev;
+	
+
+
+
+};
+
+
+struct DirectoryTree {
+	DirectoryNode* root;
+
+	DirectoryTree() {
+		this->root = nullptr;
+	}
+
+};
+
+
+
+
+
+
 
 
 
@@ -872,7 +934,7 @@ ThreadedTree thread_bin_tree(BinaryTree& bin_tree) {
 
 
 int main() {
-	Tree tree;
+	Tree<int> tree;
 	tree.add_by_pointer(5);
 	tree.add_by_pointer(6, tree.root);
 	//tree.add_by_pointer(7, tree.root->first_child);
@@ -925,6 +987,7 @@ int main() {
 
 	//std::cout << "\n\n\n" << tree.get_by_path(path)->data << std::endl;
 	tree.print();
+	//tree.interactive_print();
 
 	std::cout << std::endl;
 	print_path(tree.get_path(tree.root->first_child->first_child->parent->parent->first_child->next));
@@ -949,7 +1012,7 @@ int main() {
 	path.push_back(0);
 	path.push_back(3); // 0, 3
 
-	Tree new_tree = tree.remove_in_tree(path);
+	Tree<int> new_tree = tree.remove_in_tree(path);
 	new_tree.print();
 	tree.print_levels();
 
@@ -963,7 +1026,7 @@ int main() {
 	tree.print_levels();
 
 	std::cout << std::endl << "remove one by value:";
-	Tree new_tree1 = tree.remove_one_by_value(6);
+	Tree<int> new_tree1 = tree.remove_one_by_value(6);
 	new_tree1.print();
 	tree.print();
 
@@ -1040,6 +1103,30 @@ int main() {
 
 	BinaryTree bin_empty;
 	thread_bin_tree(bin_empty).print_in_line();
+
+
+
+	Tree<Directory> tree_dir;
+	Directory arr[10];
+	for (std::size_t i = 0; i < 10; i++) {
+		arr[i].name = "Name " + std::to_string(i);
+		arr[i].size = i * 10;
+		arr[i].type = (i % 5 == 0) ? folder : file;
+		arr[i].edit_time.day = i + 10;
+		arr[i].edit_time.month = i + 1;
+		arr[i].edit_time.year = i + 2010;
+		arr[i].edit_time.hour = i + 10;
+		arr[i].edit_time.minutes = i + 15;
+		arr[i].edit_time.seconds = i + 55;
+
+		std::cout << arr[i];
+	}
+
+	tree_dir.add_by_pointer(arr[0]);
+	tree_dir.add_by_pointer(arr[1], tree_dir.root);
+
+	tree_dir.print();
+	
 
 
 	std::system("pause");
