@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
-#include <ctime>
 #include <string>
 
 enum Son { left_child, right_child };
