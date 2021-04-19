@@ -1,4 +1,4 @@
-// 1, 2, 3, 7, 9, 11, 12, 13, 14, 15, 18, 20
+// 1, 2, 3, 7, 9, 11, 12, 13, 14, 15, 18, 20, 26
 
 #include <iostream>
 #include <vector>
@@ -9,8 +9,6 @@
 enum Son { left_child, right_child };
 enum type { file, folder };
 
-
-//struct Directory;
 struct Time {
 	short int year;
 	short int month;
@@ -28,10 +26,6 @@ struct Directory {
 
 };
 
-namespace criterion_params {
-	Time time;
-}
-
 std::ostream& operator<< (std::ostream& out, Directory& directory) {
 	out << directory.name << ", " << directory.size << " bytes, ";
 	if (directory.type == folder) {
@@ -41,7 +35,7 @@ std::ostream& operator<< (std::ostream& out, Directory& directory) {
 		out << "file, ";
 	}
 	out << directory.edit_time.hour << ":" << directory.edit_time.minutes << ":" << directory.edit_time.seconds << "  "
-		<< directory.edit_time.day << "." << directory.edit_time.month << "." << directory.edit_time.year << std::endl;
+		<< directory.edit_time.day << "." << directory.edit_time.month << "." << directory.edit_time.year << "   ";
 
 	return out;
 }
@@ -107,8 +101,8 @@ template <typename T> struct Tree;
 template <typename T> struct TreeNode;
 
 
-template<typename T>
-void filtration_node(TreeNode<T>* head, Tree<T>& new_tree, bool (*criterion)(TreeNode<T>));
+//template<typename T>
+// void filtration_node(TreeNode<T>* head, Tree<T>& new_tree, bool (*criterion)(TreeNode<T>));
 
 
 template <typename Datatype>
@@ -315,8 +309,11 @@ struct Tree {
 	}
 
 	void add_by_path(T data, std::vector<std::size_t>& path) {
-		if (path.size() == 0) {
+		if (path.size() == 0 && !this->root) {
 			add_by_pointer(data, nullptr);
+		}
+		else if (path.size() == 0 && this->root) {
+			add_by_pointer(data, this->root);
 		}
 		else {
 			add_by_pointer(data, get_by_path(path));
@@ -324,9 +321,6 @@ struct Tree {
 
 	}
 
-
-
-	//private:
 
 	void add_by_pointer(T data, TreeNode<T>* parent = nullptr) {
 		TreeNode<T>* new_node = new TreeNode<T>(data, parent);
@@ -364,7 +358,7 @@ struct Tree {
 		}
 		short int next = -1;
 		//std::cout << this->root;
-		TreeNode* current = this->root;
+		TreeNode<T>* current = this->root;
 		while (next > -2) {
 			current->print_with_childs();
 			std::cout << "\nWhat is the next: (-2 - exit, -1 - to parent, >= 0 - index of child)\n";
@@ -383,7 +377,7 @@ struct Tree {
 				}
 				else {
 					bool flag = false;
-					TreeNode* current_child = current->first_child;
+					TreeNode<T>* current_child = current->first_child;
 					for (std::size_t i = 0; i < next; i++) {
 						current_child = current_child->next;
 						if (current_child->next == nullptr && i < next - 1) {
@@ -415,15 +409,6 @@ struct Tree {
 		}
 		
 	}
-
-	/*
-	Tree remove_by_path(std::vector<std::size_t>& path) {
-		assert(this->root != nullptr);
-		TreeNode* node_to_remove = get_by_path(path);
-		
-		//return remove_in_tree(node_to_remove);
-	}
-	*/
 
 
 
@@ -544,7 +529,7 @@ struct Tree {
 
 	private:
 	void disconnect_item(TreeNode<T>* node_to_remove) {
-		assert(node_to_remove != nullptr);
+		assert(node_to_remove != nullptr && "Try to disconnect nullptr item");
 		if (node_to_remove->parent) {
 			if (node_to_remove->next) {
 				node_to_remove->next->prev = node_to_remove->prev;
@@ -597,14 +582,6 @@ struct Tree {
 
 		return result;
 	}
-
-
-	
-
-
-
-
-
 
 };
 
@@ -749,11 +726,6 @@ struct BinaryTree {
 			}
 		}
 	}
-
-
-
-	
-
 };
 
 
@@ -1025,9 +997,9 @@ void get_max_min_time(TreeNode<Directory>* head, Time& min_time, Time& max_time)
 
 Time get_time() {
 	Time time;
-	std::cout << "Enter time (hh mm ss, dd mm yy):";
+	std::cout << "Enter changing time (hh mm ss, dd mm yy):";
 	std::cin >> time.hour >> time.minutes >> time.seconds
-		>> time.day >> time.minutes >> time.seconds;
+		>> time.day >> time.month >> time.year;
 
 	return time;
 }
@@ -1037,6 +1009,7 @@ Time get_time() {
 Directory get_directory_item() {
 	Directory new_item;
 	std::cout << "Enter name of folder or file\n";
+	std::cin.ignore(256, '\n');
 	getline(std::cin, new_item.name);
 	std::cout << "Enter size: ";
 	std::cin >> new_item.size;
@@ -1051,7 +1024,7 @@ Directory get_directory_item() {
 
 std::vector<std::size_t> get_path() {
 	std::vector<std::size_t> path;
-	std::cout << "\nEnter path (-1 to stop): \n";
+	std::cout << "\nEnter path (-1 to stop) (empty - to add in root (if tree is empty) and as a child of root (if tree is not empty)): \n";
 	int current = 1;
 	while (current >= 0) {
 		std::cin >> current;
@@ -1080,53 +1053,237 @@ bool time_criterion(TreeNode<Directory>* node, Time time) {
 	return node->data.edit_time > time;
 }
 
-struct DirectoryNode {
-	short int type;
-	DirectoryNode* parent;
-	DirectoryNode* first_child;
-	DirectoryNode* next;
-	DirectoryNode* prev;
-	
+bool type_criterion(TreeNode<Directory>* node, short int type) {
+	return node->data.type == type;
+}
+
+bool size_criterion(TreeNode<Directory>* node, unsigned int size) {
+	return node->data.size > size;
+}
 
 
-
-};
-
-
-struct DirectoryTree {
-	DirectoryNode* root;
-
-	DirectoryTree() {
-		this->root = nullptr;
+void add_in_directory(Tree<Directory>& tree, Directory new_item, std::vector<std::size_t> path) {
+	if (tree.root == nullptr && path.size() == 0 && new_item.type != file) { // it is only one possible variant to add item in empty directory tree
+		tree.add_by_path(new_item, path);
+	}
+	else if (tree.root == nullptr && path.size() == 0 && new_item.type == file) {
+		std::cout << "\nImpossible to put file into a root of directory\n";
+	}
+	else {
+		TreeNode<Directory>* place = tree.get_by_path(path);
+		assert(place != nullptr);
+		assert(place->data.type != file && "Try to add directory in file");
+		tree.add_by_pointer(new_item, place);
 	}
 
-};
+}
 
+// function for more readable outpu of directory tree in demonstrative mode
+void print_inorder(TreeNode<Directory>* head) {
+	if (head == nullptr) {
+		return;
+	}
+	std::cout << head->data << std::endl;
+	TreeNode<Directory>* current = head->first_child;
+	while (current) {
+		print_inorder(current);
+		current = current->next;
+	}
 
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-int main() {
+// can't demonstrate function of getting path by pointer for user, because user can't enter the pointer 
+void interactive() {
 	Tree<int> tree;
-	tree.add_by_pointer(5);
-	tree.add_by_pointer(6, tree.root);
-	//tree.add_by_pointer(7, tree.root->first_child);
-	tree.add_by_pointer(45, tree.root);
+	BinaryTree bin_tree;
+	ThreadedTree threaded_tree;
+	Tree<Directory> directory_tree;
+	//std::vector<std::size_t> path;
+	short int next = 1;
+	std::cout << "\nHello!\n";
+	while (next > 0) {
+		std::cout << "\n============\n" <<
+			"0\t exit\n" <<
+			"1\t add item by path\n" <<
+			"2\t get item by path\n" <<
+			"3\t print tree with brackets\n" <<
+			"4\t print tree by levels\n" <<
+			"5\t print tree with paths of items\n" <<
+			"6\t interactive print of tree\n" <<
+			"7\t remove item by path and return its subtree\n" <<
+			"8\t remove item by value and return its subtree\n" <<
+			"9\t remove all items by value and clear a memory\n\n" <<
+			"10\t add items to a binary tree\n" <<
+			"11\t print binary tree with brackets\n" <<
+			"12\t print binary tree by levels\n" <<
+			"13\t build threaded binary tree according to symmetrical order\n\n" <<
+			"14\t add item in directory by path\n" <<
+			"15\t interactive print\n" <<
+			"16\t remove directory and return it\n" <<
+			"17\t get directory size\n" <<
+			"18\t get number of files and folders\n" <<
+			"19\t get min and max changing time\n" <<
+			"20\t filtration directory by time (> fixed time)\n" <<
+			"21\t filtration directory (folders ot files)\n" <<
+			"22\t filtration directory by size (> fixed size)\n" <<
+			"========================\n\n\n";
+		std::cin >> next;
+		switch (next) {
+			case 1: {
+				int data;
+				std::cout << "Enter a data: ";
+				std::cin >> data;
+				std::vector<std::size_t> path = get_path();
+				tree.add_by_path(data, path);
+				std::cout << "Item succesfully added\n";
+				break;
+			}
+			case 2: {
+				std::vector<std::size_t> path = get_path();
+				std::cout << "Item is: " << tree.get_by_path(path)->data << std::endl;
+				break;
+			}
+			case 3: {
+				tree.print();
+				break;
+			}
+			case 4: {
+				tree.print_levels();
+				break;
+			}
+			case 5: {
+				tree.print_with_path();
+				break;
+			}
+			case 6: {
+				tree.interactive_print();
+				break;
+			}
+			case 7: {
+				std::vector<std::size_t> path = get_path();
+				std::cout << "\nRemoved subtree:\n";
+				tree.remove_in_tree(path).print();
+				break;
+			}
+			case 8: {
+				int value = 0;
+				std::cout << "\nEnter a value: ";
+				std::cin >> value;
+				std::cout << "\nRemoved subtree (if it is empty, so no your value in tree):\n";
+				tree.remove_one_by_value(value).print();
+				break;
+			}
+			case 9: {
+				int value = 0;
+				std::cout << "\nEnter a value: ";
+				std::cin >> value;
+				tree.remove_all_by_value(value);
+				std::cout << "\nItems removed (if they were in tree)!\n";
+				break;
+			}
+			case 10: {
+				int value = 0;
+				std::cout << "\nEnter a value: ";
+				std::cin >> value;
+				bin_tree.add(value);
+				std::cout << "\nItem successfully added\n";
+				break;
+			}
+			case 11: {
+				bin_tree.print();
+				break;
+			}
+			case 12: {
+				bin_tree.print_levels();
+				break;
+			}
+			case 13: {
+				thread_bin_tree(bin_tree).print_in_line();
+				break;
+			}
+			case 14: {
+				Directory new_item = get_directory_item();
+				std::vector<std::size_t> path = get_path();
+				add_in_directory(directory_tree, new_item, path);
+				break;
+			}
+			case 15: {
+				directory_tree.interactive_print();
+				break;
+			}
+			case 16: {
+				std::vector<std::size_t> path = get_path();
+				std::cout << "\nRemoved directory:\n";
+				directory_tree.remove_in_tree(path).interactive_print();
+				break;
+			}
+			case 17: {
+				std::cout << "\nsize of directory: " << get_directory_size(directory_tree.root) << std::endl;
+				break;
+			}
+			case 18: {
+				std::size_t folders = 0, files = 0;
+				get_folders_number(directory_tree.root, folders, files);
+				std::cout << "\nfolders: " << folders << std::endl <<
+					"files: " << files << std::endl;
+				break;
+			}
+			case 19: {
+				
+				if (directory_tree.root == nullptr) {
+					std::cout << "\nDirectory is empty\n";
+				}
+				else {
+					Time min = directory_tree.root->data.edit_time, max = min;
+					get_max_min_time(directory_tree.root, min, max);
+					std::cout << "\nmin time: " << min << std::endl <<
+						"max time: " << max << std::endl;
+				}
+				break;
+			}
+			case 20: {
+				Time time = get_time();
+				Tree<Directory> tree_filtrated = directory_tree.filtration([time](TreeNode<Directory>* node) { return time_criterion(node, time); });
+				tree_filtrated.print_levels();
+				break;
+			}
+			case 21: {
+				short int type;
+				std::cout << "Enter type (0 - files, 1 - folders): ";
+				std::cin >> type;
+				Tree<Directory> tree_filtrated = directory_tree.filtration([type](TreeNode<Directory>* node) { return type_criterion(node, type); });
+				tree_filtrated.print_levels();
+				break;
+			}
+			case 22: {
+				unsigned int size;
+				std::cout << "Enter size (in bytes): ";
+				std::cin >> size;
+				Tree<Directory> tree_filtrated = directory_tree.filtration([size](TreeNode<Directory>* node) { return size_criterion(node, size); });
+				tree_filtrated.print_levels();
+				break;
+			}
+			default: {
+				break;
+			}
+		}
+	}
+	return;
+}
 
-	tree.print();
+
+void demonstrative() {
 
 	std::vector<std::size_t> path;
+
+	std::cout << "\n====== Tree ======\n\n";
+	Tree<int> tree;
+	
+	std::cout << "\n1. Add some items by path\n";
+	tree.add_by_path(5, path);
+	tree.add_by_path(6, path);
+	tree.add_by_path(45, path);
+	
 	path.push_back(0);
 	tree.add_by_path(100, path); // 0
 	tree.add_by_path(92, path);
@@ -1151,9 +1308,9 @@ int main() {
 	tree.add_by_path(68, path);
 
 	path.clear();
-	path.push_back(1); // 1 
+	path.push_back(1); // 1
 	tree.add_by_path(56, path);
-	tree.add_by_path(79, path);
+	tree.add_by_path(92, path);
 
 	path.push_back(0); // 1, 0
 	tree.add_by_path(71, path);
@@ -1166,176 +1323,141 @@ int main() {
 
 	path.clear();
 	path.push_back(1);
-	path.push_back(1); // 1, 1 
+	path.push_back(1); // 1, 1
 	tree.add_by_path(33, path);
 
-	//std::cout << "\n\n\n" << tree.get_by_path(path)->data << std::endl;
+
+	path[1] = 0;
+	std::cout << "\n2. Item by path (1, 0) = " << tree.get_by_path(path)->data << std::endl;
+	
+
+	std::cout << "\n3. Print tree with brackets:\n";
 	tree.print();
-	//tree.interactive_print();
 
-	std::cout << std::endl;
-	print_path(tree.get_path(tree.root->first_child->first_child->parent->parent->first_child->next));
-//	tree.interactive_print();
 
-	std::size_t max_childs = 0;
-	tree.root->get_max_childs(max_childs);
-	std::cout << std::endl << "max childs = " << max_childs << std::endl;
-	std::cout << std::endl << "number of digits of 1535 = " << get_number_of_digits(1535) << std::endl;
-	std::cout << std::endl << "print with path:" << std::endl;
+	std::cout << "\n4. Print tree by level:\n";
+	tree.print_levels();
+
+	std::cout << "\n5. Print tree with paths:\n";
 	tree.print_with_path();
 
+	std::cout << "\n6. remove item by path (1, 0) and return its subtree:\n";
+	tree.remove_in_tree(path).print();
+
+	std::cout << "\n8. remove item by value = 95 and return its subtree:\n";
+	tree.remove_one_by_value(95).print();
 
 
-//	Tree new_tree = tree.remove_by_path(path);
-//	new_tree.print();
-//	tree.print();
-	tree.print_levels();
+	std::cout << "\n9. remove all items by value = 92 and clear a memory:\n";
+	tree.remove_all_by_value(92);
+	tree.print();
 
+	std::cout << "\n\n\n====== Binary tree ======\n\n";
+	BinaryTree bin_tree;
+	std::cout << "\n10. Add some items to binary tree:\n";
+	bin_tree.add(5);
+	bin_tree.add(3);
+	bin_tree.add(6);
+	bin_tree.add(4);
+	bin_tree.add(-156);
+	bin_tree.add(-170);
+	bin_tree.add(7);
+	bin_tree.add(6);
+	bin_tree.add(100);
+
+	std::cout << "\n11. print binary tree with brackets:\n";
+	bin_tree.print();
+	std::cout << "\n12. print binary tree by levels:\n";
+	bin_tree.print_levels();
+	std::cout << "\n13. build threaded binary tree according to symmetrical order and print it in line:\n";
+	thread_bin_tree(bin_tree).print_in_line();
+
+	std::cout << "\n\n\n====== Directory tree ======\n\n";
+	Tree<Directory> directory_tree;
+	std::cout << "14. add items in directory by path and print it by inorder:\n";
+	path.clear();
+	directory_tree.add_by_path({ "name_1", 100, {2020, 1, 21, 15, 35, 59}, folder }, path);
+	directory_tree.add_by_path({ "name_2", 150, {2021, 1, 24, 15, 45, 01}, folder }, path);
+	directory_tree.add_by_path({ "name_3", 120, {2014, 1, 24, 15, 33, 59}, file }, path);
+	directory_tree.add_by_path({ "name_4", 200, {2016, 1, 24, 15, 31, 58}, folder }, path);
+
+	path.push_back(0); // 0
+	directory_tree.add_by_path({ "name_5", 100, {2020, 1, 21, 15, 35, 45}, folder }, path);
+	directory_tree.add_by_path({ "name_6", 150, {2001, 1, 24, 16, 59, 01}, folder }, path);
+	directory_tree.add_by_path({ "name_7", 120, {2015, 1, 24, 01, 56, 06}, file }, path);
+
+	path.push_back(1); // 0, 1
+	directory_tree.add_by_path({ "name_8", 300, {2015, 1, 24, 22, 51, 07}, file }, path);
 
 	path.clear();
-	path.push_back(0);
-	path.push_back(3); // 0, 3
+	path.push_back(2); // 1
+	directory_tree.add_by_path({ "name_9", 200, {2017, 1, 24, 18, 46, 33}, folder }, path);
+	directory_tree.add_by_path({ "name_10", 200, {2014, 1, 24, 12, 55, 34}, file }, path);
 
-	Tree<int> new_tree = tree.remove_in_tree(path);
-	new_tree.print();
-	tree.print_levels();
+	//directory_tree.print_levels();
+	print_inorder(directory_tree.root);
+	std::cout << "\n15. remove directory by path (1) and return it:\n";
+	directory_tree.remove_in_tree(path).print_levels();
 
+	std::cout << "\n16. Directory size = " << get_directory_size(directory_tree.root) << std::endl;
 
+	std::cout << "\n17. get number of files and folders:\n";
+	std::size_t folders = 0, files = 0;
+	get_folders_number(directory_tree.root, folders, files);
+	std::cout << "\nfolders: " << folders << std::endl <<
+		"files: " << files << std::endl;
 
-	std::cout << std::endl << "remove all by value:";
-	tree.root->first_child->next->first_child->first_child->next->data = 6;
-	tree.print();
-	tree.remove_all_by_value(1000);
-	tree.print();
-	tree.print_levels();
-
-	std::cout << std::endl << "remove one by value:";
-	Tree<int> new_tree1 = tree.remove_one_by_value(6);
-	new_tree1.print();
-	tree.print();
-
-
-	/*
-	std::cout << "\n\nRemove a lot:";
-	int a = 0;
-	path[1] = 2; // 0, 2
-	TreeNode* item = tree.get_by_path(path);
-
-	std::cout << "\nStart to add items\n";
-	std::cin >> a;
-	unsigned int start_time = clock();
-	for (std::size_t i = 0; i < 1000; i++) {
-		tree.add_by_pointer(1001, item);
+	std::cout << "\n18. get min and max changing time:\n";
+	if (directory_tree.root == nullptr) {
+		std::cout << "\nDirectory is empty\n";
+	}
+	else {
+		Time min = directory_tree.root->data.edit_time, max = min;
+		get_max_min_time(directory_tree.root, min, max);
+		std::cout << "\nmin time: " << min << std::endl <<
+			"max time: " << max << std::endl;
 	}
 
-	{
-		item = item->first_child;
+	std::cout << "\n19. filtration directory by time (> fixed time = 18:46:33, 24.01.2015):\n";
+	Time time{ 2015, 1, 24, 18, 46, 33 };
+	Tree<Directory> tree_filtrated = directory_tree.filtration([time](TreeNode<Directory>* node) { return time_criterion(node, time); });
+	//tree_filtrated.print_levels();
+	print_inorder(tree_filtrated.root);
 
-		while (item) {
-			for (std::size_t j = 0; j < 1000; j++) {
-				tree.add_by_pointer(j, item);
-			}
-			item = item->next;
-		}
-		
+	std::cout << "\n20. filtration directory (folders):\n";
+	short int type = 1;
+	tree_filtrated = directory_tree.filtration([type](TreeNode<Directory>* node) { return type_criterion(node, type); });
+	print_inorder(tree_filtrated.root);
+
+
+
+	std::cout << "\n21. filtration directory by size (> fixed size = 100 bytes):\n";
+
+	unsigned int size = 100;
+	tree_filtrated = directory_tree.filtration([size](TreeNode<Directory>* node) { return size_criterion(node, size); });
+	//tree_filtrated.print_levels();
+	print_inorder(tree_filtrated.root);
+
+	std::cout << "\n\n\n Demonstrative mode ended\n\n\n\n";
+
+}
+
+
+
+
+int main() {
+	short int next = 0;
+	std::cout << "\nHello!\n0 - exit, 1 - interactive mode, 2 - demonstrative mode\n";
+	std::cin >> next;
+	if (next == 0) {
+		return 0;
 	}
-	
-	std::cout << "\nadding time: " << clock() - start_time << std::endl;
-	//tree.print();
-
-	std::cout << "\nStart to remove items\n";
-	std::cin >> a;
-	start_time = clock();
-	tree.remove_with_deleting(tree.get_by_path(path));
-	tree.print();
-	std::cout << "\nremoving time: " << clock() - start_time << std::endl;
-
-
-	std::cout << "\nExit\n";
-	std::cin >> a;
-	
-	*/
-
-	std::cout << "\n\n\nBinary tree:\n\n";
-	BinaryTree bin_tree;
-	bin_tree.add(5);
-	bin_tree.add(6);
-	bin_tree.add(7);
-	bin_tree.add(3);
-	bin_tree.add(100);
-	bin_tree.add(-156);
-	bin_tree.add(4);
-	bin_tree.add(6);
-	bin_tree.print();
-	bin_tree.print_levels();
-
-
-	std::cout << "\n\nBIN and threaded tree:\n\n";
-	copy_tree(bin_tree).print();
-	bin_tree.print();
-
-	std::cout << "\n\nAfter threating:\n\n";
-	bin_tree.add(-170);
-	bin_tree.add(5);
-	bin_tree.add(5);
-	bin_tree.add(93);
-	ThreadedTree th_tree = thread_bin_tree(bin_tree);
-	th_tree.print_in_line();
-
-
-	std::cout << "\n\nAfter threating:\n\n";
-
-	BinaryTree bin_empty;
-	thread_bin_tree(bin_empty).print_in_line();
-
-
-
-	Tree<Directory> tree_dir;
-	Directory arr[10];
-	for (std::size_t i = 0; i < 10; i++) {
-		arr[i].name = "Name " + std::to_string(i);
-		arr[i].size = i * 10;
-		arr[i].type = (i % 5 == 0) ? folder : file;
-		arr[i].edit_time.day = i + 10;
-		arr[i].edit_time.month = i + 1;
-		arr[i].edit_time.year = i + 2010;
-		arr[i].edit_time.hour = i + 10;
-		arr[i].edit_time.minutes = i + 15;
-		arr[i].edit_time.seconds = i + 55;
-
-		std::cout << arr[i];
+	else if (next == 1) {
+		interactive();
 	}
-	std::swap(arr[8], arr[1]);
-	std::swap(arr[3], arr[6]);
-	std::swap(arr[0], arr[9]);
-	tree_dir.add_by_pointer(arr[0]);
-	tree_dir.add_by_pointer(arr[1], tree_dir.root);
-	tree_dir.add_by_pointer(arr[2], tree_dir.root);
-	tree_dir.add_by_pointer(arr[3], tree_dir.root);
-	tree_dir.add_by_pointer(arr[4], tree_dir.root->first_child);
-	tree_dir.add_by_pointer(arr[5], tree_dir.root->first_child->next);
-	tree_dir.add_by_pointer(arr[6], tree_dir.root->first_child->next);
-	tree_dir.add_by_pointer(arr[7], tree_dir.root->first_child->next->first_child);
-	tree_dir.add_by_pointer(arr[8], tree_dir.root->first_child->next->first_child->next);
-	tree_dir.add_by_pointer(arr[9], tree_dir.root);
-
-	tree_dir.print();
-	std::cout << get_directory_size(tree_dir.root) << " bytes" << std::endl;
-
-	std::size_t folders_number = 0, files_number = 0;
-	get_folders_number(tree_dir.root, folders_number, files_number);
-	std::cout << folders_number << " " << files_number << std::endl;
-	
-	Time min_time = tree_dir.root->data.edit_time, max_time = tree_dir.root->data.edit_time;
-	get_max_min_time(tree_dir.root, min_time, max_time);
-	std::cout << "min time = " << min_time << ", max time = " << max_time << std::endl;
-
-	
-	//criterion_params::time = time_1;{
-		Time time_1{ 2014, 06, 05, 12, 34, 00 };
-		tree_dir.filtration([time_1](TreeNode<Directory>* node) { return time_criterion(node, time_1); }).print_with_path();
-	
-	//tree_dir.filtration(time_criterion).print_with_path();
+	else if (next == 2) {
+		demonstrative();
+	}
 	std::system("pause");
 	return 0;
 }
