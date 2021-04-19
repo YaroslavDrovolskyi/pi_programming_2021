@@ -8,6 +8,8 @@
 
 enum Son { left_child, right_child };
 enum type { file, folder };
+
+
 //struct Directory;
 struct Time {
 	short int year;
@@ -25,6 +27,11 @@ struct Directory {
 	short int type;
 
 };
+
+namespace criterion_params {
+	Time time;
+}
+
 std::ostream& operator<< (std::ostream& out, Directory& directory) {
 	out << directory.name << ", " << directory.size << " bytes, ";
 	if (directory.type == folder) {
@@ -39,13 +46,70 @@ std::ostream& operator<< (std::ostream& out, Directory& directory) {
 	return out;
 }
 
+std::ostream& operator << (std::ostream& out, Time& time) {
+	out << time.hour << ":" << time.minutes << ":" << time.seconds << "  "
+		<< time.day << "." << time.month << "." << time.year;
+
+	return out;
+}
+
+bool operator < (Time& time_1, Time& time_2) {
+	if (time_1.year < time_2.year) { return true; }
+	else if (time_1.year == time_2.year) {
+		if (time_1.month < time_2.month) { return true; }
+		else if (time_1.month == time_2.month) {
+			if (time_1.day < time_2.day) { return true; }
+			else if (time_1.day == time_2.day) {
+				if (time_1.hour < time_2.hour) { return true; }
+				else if (time_1.hour == time_2.hour) {
+					if (time_1.minutes < time_2.minutes) { return true; }
+					else if (time_1.minutes == time_2.minutes) {
+						if (time_1.seconds < time_2.seconds) { return true; }
+						else if (time_1.seconds == time_2.seconds) { return false; }
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
+bool operator > (Time& time_1, Time& time_2) {
+	if (time_1.year > time_2.year) { return true; }
+	else if (time_1.year == time_2.year) {
+		if (time_1.month > time_2.month) { return true; }
+		else if (time_1.month == time_2.month) {
+			if (time_1.day > time_2.day) { return true; }
+			else if (time_1.day == time_2.day) {
+				if (time_1.hour > time_2.hour) { return true; }
+				else if (time_1.hour == time_2.hour) {
+					if (time_1.minutes > time_2.minutes) { return true; }
+					else if (time_1.minutes == time_2.minutes) {
+						if (time_1.seconds > time_2.seconds) { return true; }
+						else if (time_1.seconds == time_2.seconds) { return false; }
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 
 void print_path(std::vector<std::size_t> path, std::size_t max_length);
 std::size_t get_number_of_digits(int value);
 
 
+
 template <typename T> struct Tree;
 template <typename T> struct TreeNode;
+
+
+template<typename T>
+void filtration_node(TreeNode<T>* head, Tree<T>& new_tree, bool (*criterion)(TreeNode<T>));
+
 
 template <typename Datatype>
 struct ListNode {
@@ -266,11 +330,12 @@ struct Tree {
 
 	void add_by_pointer(T data, TreeNode<T>* parent = nullptr) {
 		TreeNode<T>* new_node = new TreeNode<T>(data, parent);
-		if (parent == nullptr && this->root == nullptr) {
+		if (parent == nullptr) {
+			assert(this->root == nullptr);
 			this->root = new_node;
 		}
 		else {
-			TreeNode<T>* current = parent->first_child;
+			TreeNode<T>* current = parent->first_child; // parent won't be NULL
 
 			if (current) {
 				while (current->next) {
@@ -466,6 +531,15 @@ struct Tree {
 		delete node_to_remove;
 	}
 
+	template <typename Callable>
+	/*   bool (*criterion)(TreeNode<T>*)   */
+	Tree<T> filtration(Callable criterion) {
+		Tree<T> new_tree;
+		filtration_node <T, Callable>(this->root, new_tree, criterion);
+
+		return new_tree;
+	}
+
 
 
 	private:
@@ -524,6 +598,8 @@ struct Tree {
 		return result;
 	}
 
+
+	
 
 
 
@@ -892,9 +968,117 @@ ThreadedTree thread_bin_tree(BinaryTree& bin_tree) {
 }
 
 
+unsigned int get_directory_size(TreeNode<Directory>* head) {
+	if (head == nullptr) { return 0; }
+
+	unsigned int size = head->data.size;
+	TreeNode<Directory>* current = head->first_child;
+	while (current) {
+		size += get_directory_size(current);
+		current = current->next;
+	}
+
+	return size;
+}
+
+// for using neccessary to create folders_number, files_number and initialize it by 0
+void get_folders_number(TreeNode<Directory>* head, std::size_t& folders_number, std::size_t& files_number) {
+	if (head == nullptr) {
+		return;
+	}
+
+	if (head->data.type == folder) {
+		folders_number++;
+	}
+	else {
+		files_number++;
+	}
+
+	TreeNode<Directory>* current = head->first_child;
+	while (current) {
+		get_folders_number(current, folders_number, files_number);
+		current = current->next;
+	}
+
+
+}
+
+
+// for using neccessary to create min_time, max_time and initialize it by root->data.edit_time
+void get_max_min_time(TreeNode<Directory>* head, Time& min_time, Time& max_time) {
+	if (head == nullptr) { return; }
+
+	if (head->data.edit_time < min_time) {
+		min_time = head->data.edit_time;
+	}
+
+	if (head->data.edit_time > max_time) {
+		max_time = head->data.edit_time;
+	}
+
+	TreeNode<Directory>* current = head->first_child;
+	while (current) {
+		get_max_min_time(current, min_time, max_time);
+		current = current->next;
+	}
+}
+
+Time get_time() {
+	Time time;
+	std::cout << "Enter time (hh mm ss, dd mm yy):";
+	std::cin >> time.hour >> time.minutes >> time.seconds
+		>> time.day >> time.minutes >> time.seconds;
+
+	return time;
+}
 
 
 
+Directory get_directory_item() {
+	Directory new_item;
+	std::cout << "Enter name of folder or file\n";
+	getline(std::cin, new_item.name);
+	std::cout << "Enter size: ";
+	std::cin >> new_item.size;
+	std::cout << "Enter type (0 - file, 1 - folder): ";
+	std::cin >> new_item.type;
+	
+	new_item.edit_time = get_time();
+
+	return new_item;
+}
+
+
+std::vector<std::size_t> get_path() {
+	std::vector<std::size_t> path;
+	std::cout << "\nEnter path (-1 to stop): \n";
+	int current = 1;
+	while (current >= 0) {
+		std::cin >> current;
+		if (current >= 0) {
+			path.push_back(current);
+		}
+	}
+	return path;
+}
+
+template<typename T, typename Callable>
+/*   bool (*criterion)(TreeNode<T>* node)   */
+void filtration_node(TreeNode<T>* head, Tree<T>& new_tree, Callable criterion) {
+	if (head == nullptr) { return; }
+	if (criterion(head) == true) {
+		new_tree.add_by_pointer(head->data, new_tree.root);
+	}
+	TreeNode<T>* current = head->first_child;
+	while (current) {
+		filtration_node(current, new_tree, criterion);
+		current = current->next;
+	}
+}
+
+bool time_criterion(TreeNode<Directory>* node, Time time) {
+	return node->data.edit_time > time;
+}
 
 struct DirectoryNode {
 	short int type;
@@ -1121,14 +1305,37 @@ int main() {
 
 		std::cout << arr[i];
 	}
-
+	std::swap(arr[8], arr[1]);
+	std::swap(arr[3], arr[6]);
+	std::swap(arr[0], arr[9]);
 	tree_dir.add_by_pointer(arr[0]);
 	tree_dir.add_by_pointer(arr[1], tree_dir.root);
+	tree_dir.add_by_pointer(arr[2], tree_dir.root);
+	tree_dir.add_by_pointer(arr[3], tree_dir.root);
+	tree_dir.add_by_pointer(arr[4], tree_dir.root->first_child);
+	tree_dir.add_by_pointer(arr[5], tree_dir.root->first_child->next);
+	tree_dir.add_by_pointer(arr[6], tree_dir.root->first_child->next);
+	tree_dir.add_by_pointer(arr[7], tree_dir.root->first_child->next->first_child);
+	tree_dir.add_by_pointer(arr[8], tree_dir.root->first_child->next->first_child->next);
+	tree_dir.add_by_pointer(arr[9], tree_dir.root);
 
 	tree_dir.print();
+	std::cout << get_directory_size(tree_dir.root) << " bytes" << std::endl;
+
+	std::size_t folders_number = 0, files_number = 0;
+	get_folders_number(tree_dir.root, folders_number, files_number);
+	std::cout << folders_number << " " << files_number << std::endl;
 	
+	Time min_time = tree_dir.root->data.edit_time, max_time = tree_dir.root->data.edit_time;
+	get_max_min_time(tree_dir.root, min_time, max_time);
+	std::cout << "min time = " << min_time << ", max time = " << max_time << std::endl;
 
-
+	
+	//criterion_params::time = time_1;{
+		Time time_1{ 2014, 06, 05, 12, 34, 00 };
+		tree_dir.filtration([time_1](TreeNode<Directory>* node) { return time_criterion(node, time_1); }).print_with_path();
+	
+	//tree_dir.filtration(time_criterion).print_with_path();
 	std::system("pause");
 	return 0;
 }
