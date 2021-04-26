@@ -58,6 +58,7 @@ struct AdjMatrix {
 		}
 	}
 
+	/*
 	~AdjMatrix() {
 		this->size = 0;
 		for (std::size_t i = 0; i < size; i++) {
@@ -65,9 +66,38 @@ struct AdjMatrix {
 		}
 		delete []this->matrix;
 	}
-
-
+	*/
 };
+
+
+AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0) {
+	assert(size > 0);
+	assert(edge_number <= (size * (size - 1)) / 2);
+	AdjMatrix new_matrix(size);
+	{
+		for (std::size_t i = 0; i < edge_number; i++) {
+			std::size_t start_vertex;
+			std::size_t end_vertex;
+			int edge_weight;
+
+			do {
+				edge_weight = rand() % 15;
+				start_vertex = rand() % size;
+				end_vertex = rand() % size;
+			} while (start_vertex == end_vertex || new_matrix.matrix[start_vertex][end_vertex] != 0 || edge_weight == 0);
+
+			new_matrix.matrix[start_vertex][end_vertex] = edge_weight;
+
+		}
+
+		return new_matrix;
+
+
+
+	}
+
+	
+}
 
 
 int main() {
@@ -80,7 +110,11 @@ int main() {
 	graph1.remove_edge(1, 3);
 	graph1.print_matrix();
 	graph1.print_edges();
-
+	std::cout << "\nGenerate random graph:\n";
+	AdjMatrix graph2 = generate_random_matrix(6, 5);
+	graph2.print_matrix();
+	graph2.print_edges();
+	
 
 
 
