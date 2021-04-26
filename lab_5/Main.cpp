@@ -95,9 +95,81 @@ AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0) 
 
 
 	}
-
-	
 }
+
+struct GraphNode {
+	GraphNode* next;
+	std::size_t end_vertex;
+	int weight;
+
+	GraphNode(std::size_t end_vertex, int weight, GraphNode* next = nullptr) {
+		this->next = next;
+		this->end_vertex = end_vertex;
+		this->weight = weight;
+	}
+
+};
+
+struct AdjStruct {
+	GraphNode** vertex;
+	std::size_t size;
+
+	AdjStruct(std::size_t size){
+		this->size = size;
+		this->vertex = new GraphNode * [size];
+		for (std::size_t i = 0; i < size; i++) {
+			this->vertex[i] = nullptr;
+		}
+	}
+
+	void add_edge(std::size_t start_vertex, std::size_t end_vertex, int weight) {
+		assert(start_vertex < this->size);
+		assert(end_vertex < this->size);
+
+		if (this->vertex[start_vertex] == nullptr || end_vertex < this->vertex[start_vertex]->end_vertex) {
+			GraphNode* next = this->vertex[start_vertex];
+			GraphNode* new_node = new GraphNode(end_vertex, weight, next);
+			this->vertex[start_vertex] = new_node;
+		}
+		else if (end_vertex != this->vertex[start_vertex]->end_vertex){
+			//GraphNode* previous = this->vertex[start_vertex];
+			GraphNode* current = this->vertex[start_vertex];
+			while (current->next && end_vertex < current->next->end_vertex) {
+
+				//previous = current;
+				current = current->next;
+			}
+			if (current->next && current->next->end_vertex == end_vertex) {
+				; // nothing to do
+			}
+			else {
+				GraphNode* new_node = new GraphNode(end_vertex, weight, current->next);
+				current->next = new_node;
+			}
+		}
+	}
+
+	void print() {
+		bool is_empty = true;
+		for (std::size_t i = 0; i < this->size; i++) {
+			GraphNode* current = this->vertex[i];
+			if (current) {
+				is_empty = false;
+				while (current) {
+					std::cout << i << "->" << current->end_vertex << " (" << current->weight << "), ";
+					current = current->next;
+				}
+				std::cout << std::endl;
+			}
+		}
+		if (is_empty) {
+			std::cout << "No edges" << std::endl;
+		}
+	}
+
+
+
+};
 
 
 int main() {
@@ -114,9 +186,19 @@ int main() {
 	AdjMatrix graph2 = generate_random_matrix(6, 5);
 	graph2.print_matrix();
 	graph2.print_edges();
-	
-
-
+	std::cout << "\nAdj struct:\n";
+	AdjStruct graph3(5);
+	graph3.add_edge(1, 4, 6);
+	graph3.add_edge(1, 2, 6);
+	graph3.add_edge(1, 1, 6);
+	graph3.add_edge(1, 2, 6);
+	graph3.add_edge(1, 2, 6);
+	graph3.add_edge(1, 2, 6);
+	graph3.add_edge(1, 2, 6);
+	graph3.add_edge(1, 2, 6);
+	graph3.add_edge(2, 1, 6);
+	graph3.add_edge(2, 1, 6);
+	graph3.print();
 
 	std::system("pause");
 	return 0;
