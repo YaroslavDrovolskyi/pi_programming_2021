@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 
+
 struct AdjMatrix {
 	int** matrix;
 	std::size_t size;
@@ -20,7 +21,10 @@ struct AdjMatrix {
 	void add_edge(std::size_t start, std::size_t end, int weight) {
 		assert(start < this->size);
 		assert(end < this->size);
-		this->matrix[start][end] = weight;
+		if (this->matrix[start][end] == 0) {
+			this->matrix[start][end] = weight;
+		}
+		
 	}
 
 	void remove_edge(std::size_t start, std::size_t end) {
@@ -58,6 +62,7 @@ struct AdjMatrix {
 		}
 	}
 
+	
 	/*
 	~AdjMatrix() {
 		this->size = 0;
@@ -176,22 +181,7 @@ struct AdjStruct {
 
 	}
 
-	AdjMatrix convert_in_matrix() {
-		AdjMatrix new_matrix(this->size);
-		for (std::size_t i = 0; i < this->size; i++) {
-			GraphNode* current = this->vertex[i];
-			for (std::size_t j = 0; j < this->size; j++) {
-				if (current) {
-					if (current->end_vertex == j) {
-						new_matrix.matrix[i][j] = current->weight;
-						current = current->next;
-					}
-				}
-				else { break; }
-			}
-		}
-		return new_matrix;
-	}
+	
 
 	void print() {
 		bool is_empty = true;
@@ -214,6 +204,36 @@ struct AdjStruct {
 
 
 };
+
+AdjMatrix convert_in_matrix(AdjStruct& adj_struct) {
+	AdjMatrix new_matrix(adj_struct.size);
+	for (std::size_t i = 0; i < adj_struct.size; i++) {
+		GraphNode* current = adj_struct.vertex[i];
+		for (std::size_t j = 0; j < adj_struct.size; j++) {
+			if (current) {
+				if (current->end_vertex == j) {
+					new_matrix.matrix[i][j] = current->weight;
+					current = current->next;
+				}
+			}
+			else { break; }
+		}
+	}
+	return new_matrix;
+}
+
+AdjStruct convert_in_struct(AdjMatrix& adj_matrix) {
+	AdjStruct new_struct(adj_matrix.size);
+	for (std::size_t i = 0; i < adj_matrix.size; i++) {
+		for (std::size_t j = 0; j < adj_matrix.size; j++) {
+			if (adj_matrix.matrix[i][j] != 0) {
+				new_struct.add_edge(i, j, adj_matrix.matrix[i][j]);
+			}
+		}
+	}
+	return new_struct;
+}
+
 
 
 int main() {
@@ -267,10 +287,29 @@ int main() {
 
 	graph4.print();
 	std::cout << "\nCopied struct:\n";
-	AdjMatrix graph4_copy = graph4.convert_in_matrix();
+	AdjMatrix graph4_copy = convert_in_matrix(graph4);
 	graph4_copy.print_edges();
 	std::cout << std::endl;
 	graph4_copy.print_matrix();
+
+
+	std::cout << "\nConvert from Adj matrix to struct:\n";
+	std::cout << "Adj matrix:\n";
+	AdjMatrix graph5(5);
+	graph5.add_edge(0, 4, 6);
+	graph5.add_edge(0, 2, 7);
+	graph5.add_edge(3, 0, 8);
+	graph5.add_edge(2, 1, 9);
+	graph5.add_edge(4, 3, 3);
+	graph5.add_edge(2, 0, 5);
+
+	graph5.add_edge(0, 2, 8);
+
+	graph5.print_matrix();
+	graph5.print_edges();
+	std::cout << "\nCopied matrix:\n";
+	AdjStruct graph5_copy = convert_in_struct(graph5);
+	graph5_copy.print();
 
 	std::system("pause");
 	return 0;
