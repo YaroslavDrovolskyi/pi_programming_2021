@@ -149,6 +149,33 @@ struct AdjStruct {
 		}
 	}
 
+	void remove_edge(std::size_t start_vertex, std::size_t end_vertex) {
+		assert(start_vertex < this->size);
+		assert(end_vertex < this->size);
+
+		GraphNode* current = this->vertex[start_vertex];
+		if (!current) { return; }
+		if (current->end_vertex == end_vertex) { // if this vertex is the firat in adjacent list
+			this->vertex[start_vertex] = current->next;
+			delete current;
+		}
+		else {
+			GraphNode* previous = current;
+			current = current->next;
+			while (current && end_vertex <= current->end_vertex) {
+				if (current->end_vertex == end_vertex) {
+					previous->next = current->next;
+					delete current;
+					break;
+				}
+				previous = previous->next;
+				current = current->next;
+			}
+		}
+		
+
+	}
+
 	void print() {
 		bool is_empty = true;
 		for (std::size_t i = 0; i < this->size; i++) {
@@ -198,6 +225,15 @@ int main() {
 	graph3.add_edge(1, 2, 6);
 	graph3.add_edge(2, 1, 6);
 	graph3.add_edge(2, 1, 6);
+	graph3.print();
+
+	std::cout << "\nRemove edge 1->2\n";
+	graph3.remove_edge(1, 1);
+	graph3.remove_edge(2, 1);
+	graph3.remove_edge(3, 1);
+	graph3.remove_edge(1, 2);
+	graph3.remove_edge(1, 4);
+	graph3.remove_edge(1, 4);
 	graph3.print();
 
 	std::system("pause");
