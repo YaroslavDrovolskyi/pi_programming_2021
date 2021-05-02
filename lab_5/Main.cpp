@@ -86,7 +86,7 @@ AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0) 
 			int edge_weight;
 
 			do {
-				edge_weight = rand() % 15;
+				edge_weight = rand() % 20;
 				start_vertex = rand() % size;
 				end_vertex = rand() % size;
 			} while (start_vertex == end_vertex || new_matrix.matrix[start_vertex][end_vertex] != 0 || edge_weight == 0);
@@ -203,8 +203,11 @@ struct AdjStruct {
 		assert(end_vertex < this->size);
 
 		GraphNode* current = this->vertex[start_vertex];
-		while (current && current->end_vertex < end_vertex) {
-
+		while (current && current->end_vertex <= end_vertex) {
+			if (current->end_vertex == end_vertex) {
+				return true;
+			}
+			current = current->next;
 		}
 
 		return false;
@@ -242,14 +245,26 @@ AdjStruct convert_in_struct(AdjMatrix& adj_matrix) {
 	return new_struct;
 }
 
-/*
-AdjStruct generate_random_structure(std::size_t vertex_number, std::size_t edge_number) {
-	assert(vertex_number > 0);
-	assert(edge_number <= (vertex_number * (vertex_number - 1)) / 2);
-	AdjStruct new_struct(vertex_number);
-}
 
-*/
+AdjStruct generate_random_structure(std::size_t size, std::size_t edge_number) {
+	assert(size > 0);
+	assert(edge_number <= (size * (size - 1)) / 2);
+	AdjStruct new_struct(size);
+	for (std::size_t i = 0; i < edge_number; i++) {
+		std::size_t start_vertex;
+		std::size_t end_vertex;
+		int edge_weight;
+
+		do {
+			edge_weight = rand() % 20;
+			start_vertex = rand() % size;
+			end_vertex = rand() % size;
+		} while (start_vertex == end_vertex || new_struct.is_edge(start_vertex, end_vertex) == true || edge_weight == 0);
+
+		new_struct.add_edge(start_vertex, end_vertex, edge_weight);
+	}
+	return new_struct;
+}
 
 int main() {
 	AdjMatrix graph1(5);
@@ -325,6 +340,10 @@ int main() {
 	std::cout << "\nCopied matrix:\n";
 	AdjStruct graph5_copy = convert_in_struct(graph5);
 	graph5_copy.print();
+
+	std::cout << "\nGenerate random AdjStruct:\n";
+	AdjStruct graph6 = generate_random_structure(5, 6);
+	graph6.print();
 
 	std::system("pause");
 	return 0;
