@@ -62,6 +62,19 @@ struct AdjMatrix {
 		}
 	}
 
+	void transitive_closure() {
+		for (std::size_t k = 0; k < this->size; k++) {
+			for (std::size_t i = 0; i < this->size; i++) {
+				for (std::size_t j = 0; j < this->size; j++) {
+					if (this->matrix[i][k] && this->matrix[k][j]) {
+						if (i != j) {
+							this->matrix[i][j] = rand() % 9 + 1;
+						}
+					}
+				}
+			}
+		}
+	}
 	
 	/*
 	~AdjMatrix() {
@@ -344,7 +357,17 @@ int main() {
 	std::cout << "\nGenerate random AdjStruct:\n";
 	AdjStruct graph6 = generate_random_structure(5, 6);
 	graph6.print();
-
+	
+	std::cout <<"\nTransitive closure of AdjMatrix:\n";
+	AdjMatrix graph7(4);
+	graph7.add_edge(0, 1, 1);
+	graph7.add_edge(1, 2, 1);
+	graph7.add_edge(2, 3, 1);
+	//graph7.add_edge(3, 0, 5);
+	graph7.print_matrix();
+	std::cout << "\nAfter transitive closure of AdjMatrix:\n";
+	graph7.transitive_closure();
+	graph7.print_matrix();
 	std::system("pause");
 	return 0;
 }
