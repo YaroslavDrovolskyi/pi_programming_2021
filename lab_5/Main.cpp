@@ -226,6 +226,25 @@ struct AdjStruct {
 		return false;
 	}
 
+	void transitive_closure() {
+		for (std::size_t i = 0; i < this->size; i++) {
+			bool is_end = true;
+			
+			GraphNode* current = this->vertex[i];
+			while (current) {
+				GraphNode* j = this->vertex[current->end_vertex];
+				while (j) {
+					if (this->is_edge(i, j->end_vertex) == false && i != j->end_vertex) {
+						add_edge(i, j->end_vertex, rand() % 9 + 1);
+						is_end = false;
+					}
+					j = j->next;
+				}
+				current = current->next;
+			}
+			
+		}
+	}
 
 };
 
@@ -368,6 +387,20 @@ int main() {
 	std::cout << "\nAfter transitive closure of AdjMatrix:\n";
 	graph7.transitive_closure();
 	graph7.print_matrix();
+
+	std::cout << "\nTransitive closure of AdjStruct:\n";
+	AdjStruct graph8(4);
+	graph8.add_edge(0, 1, 1);
+	graph8.add_edge(1, 2, 1);
+	graph8.add_edge(2, 3, 1);
+	graph8.add_edge(0, 2, 1);
+	//graph7.add_edge(3, 0, 5);
+	convert_in_matrix(graph8).print_matrix();
+	std::cout << "\nAfter transitive closure of AdjStruct:\n";
+	graph8.transitive_closure();
+	graph8.print();
+	convert_in_matrix(graph8).print_matrix();
+
 	std::system("pause");
 	return 0;
 }
