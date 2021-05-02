@@ -96,9 +96,6 @@ AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0) 
 		}
 
 		return new_matrix;
-
-
-
 	}
 }
 
@@ -160,14 +157,14 @@ struct AdjStruct {
 
 		GraphNode* current = this->vertex[start_vertex];
 		if (!current) { return; }
-		if (current->end_vertex == end_vertex) { // if this vertex is the firat in adjacent list
+		if (current->end_vertex == end_vertex) { // if this vertex is the first in adjacent list
 			this->vertex[start_vertex] = current->next;
 			delete current;
 		}
 		else {
 			GraphNode* previous = current;
 			current = current->next;
-			while (current && end_vertex <= current->end_vertex) {
+			while (current && current->end_vertex <= end_vertex) { // current->end_vertex < end_vertex (???) // end_vertex <= current->end_vertex
 				if (current->end_vertex == end_vertex) {
 					previous->next = current->next;
 					delete current;
@@ -201,6 +198,17 @@ struct AdjStruct {
 		}
 	}
 
+	bool is_edge(std::size_t start_vertex, std::size_t end_vertex) {
+		assert(start_vertex < this->size);
+		assert(end_vertex < this->size);
+
+		GraphNode* current = this->vertex[start_vertex];
+		while (current && current->end_vertex < end_vertex) {
+
+		}
+
+		return false;
+	}
 
 
 };
@@ -234,7 +242,14 @@ AdjStruct convert_in_struct(AdjMatrix& adj_matrix) {
 	return new_struct;
 }
 
+/*
+AdjStruct generate_random_structure(std::size_t vertex_number, std::size_t edge_number) {
+	assert(vertex_number > 0);
+	assert(edge_number <= (vertex_number * (vertex_number - 1)) / 2);
+	AdjStruct new_struct(vertex_number);
+}
 
+*/
 
 int main() {
 	AdjMatrix graph1(5);
@@ -265,12 +280,12 @@ int main() {
 	graph3.print();
 
 	std::cout << "\nRemove edge 1->2\n";
-	graph3.remove_edge(1, 1);
-	graph3.remove_edge(2, 1);
-	graph3.remove_edge(3, 1);
-	graph3.remove_edge(1, 2);
 	graph3.remove_edge(1, 4);
-	graph3.remove_edge(1, 4);
+//	graph3.remove_edge(2, 1);
+//	graph3.remove_edge(3, 1);
+///	graph3.remove_edge(1, 2);
+//	graph3.remove_edge(1, 4);
+//	graph3.remove_edge(1, 4);
 	graph3.print();
 
 	std::cout << "\nConvert from Adj struct to matrix:\n";
