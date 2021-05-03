@@ -249,6 +249,62 @@ struct AdjStruct {
 		}
 	}
 
+	bool is_connected() {
+		for (std::size_t i = 0; i < this->size; i++) {
+			std::size_t visited_vertex = 0;
+			depth_search_one_component(i, [&visited_vertex](std::size_t vertex) {visited_vertex++; });
+			if (visited_vertex != this->size) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+
+	template <typename Callable>
+	void depth_search_all(Callable process) {
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		for (std::size_t i = 0; i < this->size; i++) {
+			if (already_visited[i] == false) {
+				depth_search_impl(i, already_visited, process);
+			}
+		}
+		delete[]already_visited;
+	}
+
+	template <typename Callable>
+	void depth_search_one_component(std::size_t start_vertex, Callable process) {
+		assert(start_vertex < this->size);
+
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+		
+		depth_search_impl(start_vertex, already_visited, process);
+		delete[]already_visited;
+	}
+
+	private:
+
+		template <typename Callable>
+		void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process) {
+			process(start_vertex);
+			already_visited[start_vertex] = true;
+
+			GraphNode* current = this->vertex[start_vertex];
+			while (current) {
+				if (already_visited[current->end_vertex] == false) {
+					depth_search_impl(current->end_vertex, already_visited, process);
+				}
+				current = current->next;
+			}
+		}
+
 };
 
 AdjMatrix convert_in_matrix(AdjStruct& adj_struct) {
@@ -299,6 +355,10 @@ AdjStruct generate_random_structure(std::size_t size, std::size_t edge_number) {
 		new_struct.add_edge(start_vertex, end_vertex, edge_weight);
 	}
 	return new_struct;
+}
+
+void process_print(std::size_t vertex) {
+	std::cout << vertex << " ";
 }
 
 int main() {
@@ -393,8 +453,8 @@ int main() {
 
 	std::cout << "\nTransitive closure of AdjStruct:\n";
 	AdjStruct graph8(4);
-	graph8.add_edge(3, 0, 1);
 	graph8.add_edge(0, 1, 1);
+	graph8.add_edge(1, 2, 1);
 	graph8.add_edge(2, 3, 1);
 	//graph8.add_edge(0, 2, 1);
 	graph8.print();
@@ -405,6 +465,25 @@ int main() {
 	graph8.print();
 	convert_in_matrix(graph8).print_matrix();
 
+	std::cout << "\nDepth search in AdjStruct from vertex 0:\n";
+	AdjStruct graph9(4);
+	graph9.add_edge(0, 1, 1);
+	graph9.add_edge(1, 0, 1);
+	graph9.add_edge(2, 3, 1);
+	graph9.add_edge(3, 2, 1);
+	graph9.add_edge(2, 0, 1);
+	graph9.add_edge(0, 2, 1);
+	graph9.print();
+
+	graph9.depth_search_one_component(2, process_print);
+
+	if (graph9.is_connected()) {
+		std::cout << "\nYES\n";
+	}
+	else {
+		std::cout << "\nNO\n";
+	}
+	std::cout << std::endl;
 	std::system("pause");
 	return 0;
 }
