@@ -1,3 +1,5 @@
+// 1, 2, 10
+
 #include <iostream>
 #include <cassert>
 
@@ -149,13 +151,12 @@ struct AdjStruct {
 		else if (end_vertex != this->vertex[start_vertex]->end_vertex){
 			//GraphNode* previous = this->vertex[start_vertex];
 			GraphNode* current = this->vertex[start_vertex];
-			while (current->next && end_vertex < current->next->end_vertex) {
 
-				//previous = current;
+			while (current->next && current->next->end_vertex < end_vertex) {
 				current = current->next;
 			}
 			if (current->next && current->next->end_vertex == end_vertex) {
-				; // nothing to do
+				return; // nothing to do
 			}
 			else {
 				GraphNode* new_node = new GraphNode(end_vertex, weight, current->next);
@@ -227,9 +228,8 @@ struct AdjStruct {
 	}
 
 	void transitive_closure() {
-		for (std::size_t i = 0; i < this->size; i++) {
+		for (std::size_t i = 0; i < this->size; ) {
 			bool is_end = true;
-			
 			GraphNode* current = this->vertex[i];
 			while (current) {
 				GraphNode* j = this->vertex[current->end_vertex];
@@ -242,7 +242,10 @@ struct AdjStruct {
 				}
 				current = current->next;
 			}
-			
+
+			if (is_end == true) { // checking is we have added something new in this loop. If, then we are on the same vertex and process it
+				i++; // else we go to the next vertex
+			}
 		}
 	}
 
@@ -390,10 +393,11 @@ int main() {
 
 	std::cout << "\nTransitive closure of AdjStruct:\n";
 	AdjStruct graph8(4);
+	graph8.add_edge(3, 0, 1);
 	graph8.add_edge(0, 1, 1);
-	graph8.add_edge(1, 2, 1);
 	graph8.add_edge(2, 3, 1);
-	graph8.add_edge(0, 2, 1);
+	//graph8.add_edge(0, 2, 1);
+	graph8.print();
 	//graph7.add_edge(3, 0, 5);
 	convert_in_matrix(graph8).print_matrix();
 	std::cout << "\nAfter transitive closure of AdjStruct:\n";
