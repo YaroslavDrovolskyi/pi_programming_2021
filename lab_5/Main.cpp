@@ -1,5 +1,6 @@
-// 1, 2, 10
+// 1, 2, 5, 7, 8, 10, 11
 
+#include "queue.h"
 #include <iostream>
 #include <cassert>
 #include <vector>
@@ -104,7 +105,7 @@ struct AdjMatrix {
 	*/
 
 	template <typename Callable>
-	void depth_search_all(Callable process, bool (*compare_vertixes)(GraphNode, GraphNode) = nullptr) {
+	void depth_search_all(Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		bool* already_visited = new bool[this->size];
 		for (std::size_t i = 0; i < this->size; i++) {
 			already_visited[i] = false;
@@ -119,7 +120,7 @@ struct AdjMatrix {
 	}
 
 	template <typename Callable>
-	void depth_search_one_component(std::size_t start_vertex, Callable process, bool (*compare_vertixes)(GraphNode, GraphNode) = nullptr) {
+	void depth_search_one_component(std::size_t start_vertex, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		assert(start_vertex < this->size);
 
 		bool* already_visited = new bool[this->size];
@@ -168,7 +169,7 @@ struct AdjMatrix {
 
 private:
 	template <typename Callable>
-	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode, GraphNode) = nullptr) {
+	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		process(start_vertex);
 		already_visited[start_vertex] = true;
 
@@ -180,7 +181,7 @@ private:
 			}
 		}
 
-		if (to_visit.size() > 0 && compare_vertixes != nullptr) {
+		if (to_visit.size() > 0 && compare_vertixes != nullptr) { // second condition is when  we go in order of number of vertixes
 			std::sort(to_visit.begin(), to_visit.end(), compare_vertixes);
 		}
 
@@ -426,6 +427,34 @@ struct AdjStruct {
 		delete[]already_visited;
 	}
 
+
+	template <typename Callable>
+	void breadth_search_all(Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		for (std::size_t i = 0; i < this->size; i++) {
+			if (already_visited[i] == false) {
+				breadth_search_impl(i, already_visited, process, compare_vertixes);
+			}
+		}
+		delete[]already_visited;
+	}
+
+	template <typename Callable>
+	void breadth_search_one_component(std::size_t start_vertex, Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
+		assert(start_vertex < this->size);
+
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		breadth_search_impl(start_vertex, already_visited, process, compare_vertixes);
+		delete[]already_visited;
+	}
 	private:
 
 		template <typename Callable>
@@ -440,7 +469,7 @@ struct AdjStruct {
 				current = current->next;
 			}
 
-			if (to_visit.size() > 0 && compare_vertixes != nullptr) {
+			if (to_visit.size() > 0 && compare_vertixes != nullptr) { // second condition is when  we go in order of number of vertixes
 				std::sort(to_visit.begin(), to_visit.end(), compare_vertixes);
 			}
 			
@@ -468,6 +497,36 @@ struct AdjStruct {
 				current = current->next;
 			}
 			return false;
+		}
+
+		template <typename Callable>
+		void breadth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
+			Queue<std::size_t> to_visit;
+			to_visit.enqueue(start_vertex);
+			already_visited[start_vertex] = true;
+
+			while (!to_visit.is_empty()) {
+				std::size_t current_vertex = to_visit.dequeue();
+				process(current_vertex);
+
+				std::vector<GraphNode*> neighbors;
+				GraphNode* current = this->vertex[current_vertex];
+				while(current) { // put all neighbors of vertex in vector to sort according to compare_vertixes
+					neighbors.push_back(current);
+					current = current->next;
+				}
+				if (neighbors.size() != 0 && compare_vertixes != nullptr) {
+					std::sort(neighbors.begin(), neighbors.end(), compare_vertixes);
+				}
+
+				for (std::size_t i = 0; i < neighbors.size(); i++) {
+					if (already_visited[neighbors[i]->end_vertex] == false) {
+						to_visit.enqueue(neighbors[i]->end_vertex);
+						already_visited[neighbors[i]->end_vertex] = true;
+					}
+				}
+				neighbors.clear();
+			}
 		}
 
 };
@@ -529,20 +588,20 @@ void process_print(std::size_t vertex) {
 void process_nothing(std::size_t vertex) {}
 
 
-bool compare_weight(GraphNode* node_1, GraphNode* node_2) {
-	return node_1->weight > node_2->weight;
+bool compare_weight_struct(GraphNode* node_1, GraphNode* node_2) {
+	return node_1->weight < node_2->weight;
 }
 
-bool compare_number(GraphNode* node_1, GraphNode* node_2) {
-	return node_1->end_vertex > node_2->end_vertex;
+bool compare_number_struct(GraphNode* node_1, GraphNode* node_2) {
+	return node_1->end_vertex < node_2->end_vertex;
 }
 
-bool compare_weight(GraphNode node_1, GraphNode node_2) {
-	return node_1.weight > node_2.weight;
+bool compare_weight_matrix(GraphNode& node_1, GraphNode& node_2) {
+	return node_1.weight < node_2.weight;
 }
 
-bool compare_number(GraphNode node_1, GraphNode node_2) {
-	return node_1.end_vertex > node_2.end_vertex;
+bool compare_number_matrix(GraphNode& node_1, GraphNode& node_2) {
+	return node_1.end_vertex < node_2.end_vertex;
 }
 
 
@@ -663,7 +722,9 @@ int main() {
 	graph9.add_edge(0, 2, 2);
 	graph9.print();
 
-	graph9.depth_search_one_component(0, process_print, compare_weight);
+	graph9.depth_search_one_component(0, process_print, compare_number_struct);
+	std::cout << "\nBreadth search in AdjStruct from vertex 2:\n";
+	graph9.breadth_search_one_component(2, process_print, compare_number_struct);
 
 	if (graph9.is_connected()) {
 		std::cout << "\nConnected: YES\n";
@@ -703,7 +764,7 @@ int main() {
 	graph10.print_edges();
 	std::cout << std::endl;
 
-	graph10.depth_search_one_component(0, process_print, compare_weight);
+	graph10.depth_search_one_component(1, process_print, compare_number_matrix);
 
 	if (graph10.is_connected()) {
 		std::cout << "\nConnected: YES\n";
