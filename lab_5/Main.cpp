@@ -6,6 +6,19 @@
 #include <algorithm>
 
 
+struct GraphNode {
+	GraphNode* next;
+	std::size_t end_vertex;
+	int weight;
+
+	GraphNode(std::size_t end_vertex, int weight, GraphNode* next = nullptr) {
+		this->next = next;
+		this->end_vertex = end_vertex;
+		this->weight = weight;
+	}
+
+};
+
 struct AdjMatrix {
 	int** matrix;
 	std::size_t size;
@@ -89,6 +102,118 @@ struct AdjMatrix {
 		delete []this->matrix;
 	}
 	*/
+
+	template <typename Callable>
+	void depth_search_all(Callable process, bool (*compare_vertixes)(GraphNode, GraphNode) = nullptr) {
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		for (std::size_t i = 0; i < this->size; i++) {
+			if (already_visited[i] == false) {
+				depth_search_impl(i, already_visited, process, compare_vertixes);
+			}
+		}
+		delete[]already_visited;
+	}
+
+	template <typename Callable>
+	void depth_search_one_component(std::size_t start_vertex, Callable process, bool (*compare_vertixes)(GraphNode, GraphNode) = nullptr) {
+		assert(start_vertex < this->size);
+
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		depth_search_impl(start_vertex, already_visited, process, compare_vertixes);
+		delete[]already_visited;
+	}
+
+	bool is_connected() {
+		for (std::size_t i = 0; i < this->size; i++) {
+			std::size_t vertex_number = 0;
+			depth_search_one_component(i, [&vertex_number](std::size_t vertex) {vertex_number++; });
+			if (vertex_number < this->size) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool is_cycles() {
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		for (std::size_t i = 0; i < this->size; i++) {
+			if (already_visited[i] == false) {
+				if (depth_search_impl_parent(i, -1, already_visited) == true) {
+					return true;
+				}
+			}
+		}
+		delete[]already_visited;
+		return false;
+	}
+
+	bool is_tree() {
+		return !is_cycles() && is_connected();
+	}
+
+
+
+
+private:
+	template <typename Callable>
+	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode, GraphNode) = nullptr) {
+		process(start_vertex);
+		already_visited[start_vertex] = true;
+
+		std::vector<GraphNode> to_visit;
+		for (std::size_t i = 0; i < this->size; i++) {
+			if (this->matrix[start_vertex][i] != 0) {
+				GraphNode new_node(i, this->matrix[start_vertex][i]);
+				to_visit.push_back(new_node);
+			}
+		}
+
+		if (to_visit.size() > 0 && compare_vertixes != nullptr) {
+			std::sort(to_visit.begin(), to_visit.end(), compare_vertixes);
+		}
+
+		for (std::size_t i = 0; i < to_visit.size(); i++) {
+			if (already_visited[to_visit[i].end_vertex] == false) {
+				depth_search_impl(to_visit[i].end_vertex, already_visited, process, compare_vertixes);
+			}
+		}
+
+		to_visit.clear();
+	}
+
+	bool depth_search_impl_parent(int start_vertex, int parent_vertex, bool* already_visited) {
+		//process(start_vertex);
+		already_visited[start_vertex] = true;
+		bool result = false;
+		
+		for (std::size_t i = 0; i < this->size; i++) {
+			if (this->matrix[start_vertex][i] != 0) {
+				if (already_visited[i] == false) {
+					result = depth_search_impl_parent(i, start_vertex, already_visited);
+				}
+				else if (i != parent_vertex && parent_vertex != -1 ||start_vertex == i) {
+					result = true;
+				}
+
+				if (result == true) { return true; }
+			}
+		}
+		return false;
+	}
+
+
 };
 
 
@@ -116,18 +241,7 @@ AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0) 
 	}
 }
 
-struct GraphNode {
-	GraphNode* next;
-	std::size_t end_vertex;
-	int weight;
 
-	GraphNode(std::size_t end_vertex, int weight, GraphNode* next = nullptr) {
-		this->next = next;
-		this->end_vertex = end_vertex;
-		this->weight = weight;
-	}
-
-};
 
 struct AdjStruct {
 	GraphNode** vertex;
@@ -423,6 +537,14 @@ bool compare_number(GraphNode* node_1, GraphNode* node_2) {
 	return node_1->end_vertex > node_2->end_vertex;
 }
 
+bool compare_weight(GraphNode node_1, GraphNode node_2) {
+	return node_1.weight > node_2.weight;
+}
+
+bool compare_number(GraphNode node_1, GraphNode node_2) {
+	return node_1.end_vertex > node_2.end_vertex;
+}
+
 
 int main() {
 	AdjMatrix graph1(5);
@@ -533,7 +655,7 @@ int main() {
 	graph9.add_edge(0, 1, 1);
 	graph9.add_edge(1, 0, 2);
 	graph9.add_edge(2, 3, 3);
-	//graph9.add_edge(1, 3, 1);
+	graph9.add_edge(1, 3, 1);
 	graph9.add_edge(3, 2, 5);
 	graph9.add_edge(2, 0, 6);
 	graph9.add_edge(0, 3, 10);
@@ -563,6 +685,48 @@ int main() {
 	else {
 		std::cout << "\nTree: NO\n";
 	}
+	std::cout << std::endl;
+
+
+	std::cout << "\nDepth search in AdjMatrix from vertex 0:\n";
+	AdjMatrix graph10(4);
+	graph10.add_edge(0, 1, 1);
+	graph10.add_edge(1, 0, 2);
+	graph10.add_edge(2, 3, 3);
+	//graph10.add_edge(1, 3, 1);
+	graph10.add_edge(3, 2, 5);
+	graph10.add_edge(2, 0, 6);
+	//graph10.add_edge(0, 3, 10);
+//	graph10.add_edge(2, 1, 6);
+	graph10.add_edge(0, 2, 2);
+	graph10.print_matrix();
+	graph10.print_edges();
+	std::cout << std::endl;
+
+	graph10.depth_search_one_component(0, process_print, compare_weight);
+
+	if (graph10.is_connected()) {
+		std::cout << "\nConnected: YES\n";
+	}
+	else {
+		std::cout << "\nConnected: NO\n";
+	}
+
+	if (graph10.is_cycles()) {
+		std::cout << "\nCycles: YES\n";
+	}
+	else {
+		std::cout << "\nCycles: NO\n";
+	}
+
+	if (graph10.is_tree()) {
+		std::cout << "\nTree: YES\n";
+	}
+	else {
+		std::cout << "\nTree: NO\n";
+	}
+	std::cout << std::endl;
+
 	std::cout << std::endl;
 	std::system("pause");
 	return 0;
