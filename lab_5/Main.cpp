@@ -164,6 +164,35 @@ struct AdjMatrix {
 		return !is_cycles() && is_connected();
 	}
 
+	template <typename Callable>
+	void breadth_search_all(Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		for (std::size_t i = 0; i < this->size; i++) {
+			if (already_visited[i] == false) {
+				breadth_search_impl(i, already_visited, process, compare_vertixes);
+			}
+		}
+		delete[]already_visited;
+	}
+
+	template <typename Callable>
+	void breadth_search_one_component(std::size_t start_vertex, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
+		assert(start_vertex < this->size);
+
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		breadth_search_impl(start_vertex, already_visited, process, compare_vertixes);
+		delete[]already_visited;
+	}
+
+
 
 
 
@@ -212,6 +241,41 @@ private:
 			}
 		}
 		return false;
+	}
+
+
+	template <typename Callable>
+	void breadth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
+		Queue<std::size_t> to_visit;
+		to_visit.enqueue(start_vertex);
+		already_visited[start_vertex] = true;
+
+		while (!to_visit.is_empty()) {
+			std::size_t current_vertex = to_visit.dequeue();
+			process(current_vertex);
+
+			std::vector<GraphNode> neighbors;
+
+			for (std::size_t j = 0; j < this->size; j++) { // put all neighbors of vertex in vector to sort according to compare_vertixes
+				if (this->matrix[current_vertex][j] != 0) {
+					GraphNode new_node(j, this->matrix[current_vertex][j]);
+					neighbors.push_back(new_node);
+				}
+				
+			}
+
+			if (neighbors.size() != 0 && compare_vertixes != nullptr) {
+				std::sort(neighbors.begin(), neighbors.end(), compare_vertixes);
+			}
+
+			for (std::size_t i = 0; i < neighbors.size(); i++) {
+				if (already_visited[neighbors[i].end_vertex] == false) {
+					to_visit.enqueue(neighbors[i].end_vertex);
+					already_visited[neighbors[i].end_vertex] = true;
+				}
+			}
+			neighbors.clear();
+		}
 	}
 
 
@@ -709,22 +773,49 @@ int main() {
 	graph8.print();
 	convert_in_matrix(graph8).print_matrix();
 
-	std::cout << "\nDepth search in AdjStruct from vertex 0:\n";
-	AdjStruct graph9(4);
-	graph9.add_edge(0, 1, 1);
-	graph9.add_edge(1, 0, 2);
-	graph9.add_edge(2, 3, 3);
-	graph9.add_edge(1, 3, 1);
-	graph9.add_edge(3, 2, 5);
-	graph9.add_edge(2, 0, 6);
-	graph9.add_edge(0, 3, 10);
-	graph9.add_edge(2, 1, 6);
-	graph9.add_edge(0, 2, 2);
-	graph9.print();
 
-	graph9.depth_search_one_component(0, process_print, compare_number_struct);
-	std::cout << "\nBreadth search in AdjStruct from vertex 2:\n";
-	graph9.breadth_search_one_component(2, process_print, compare_number_struct);
+
+
+	std::cout << "\n\n\n\n====================SEARCH===========\n\n\n";
+	std::cout << "\nDepth search in AdjStruct from vertex 0:\n";
+	AdjStruct graph9(7);
+	graph9.add_edge(0, 1, 1);
+	graph9.add_edge(0, 4, 1);
+	graph9.add_edge(4, 0, 1);
+	graph9.add_edge(2, 1, 1);
+	graph9.add_edge(2, 3, 1);
+	graph9.add_edge(2, 5, 1);
+	graph9.add_edge(6, 2, 1);
+	graph9.print();
+	std::cout << std::endl;
+	AdjMatrix graph10(7);
+	graph10.add_edge(0, 1, 1);
+	graph10.add_edge(0, 4, 1);
+	graph10.add_edge(4, 0, 8);
+	graph10.add_edge(2, 1, 5);
+	graph10.add_edge(2, 3, 1);
+	graph10.add_edge(2, 5, 12);
+	graph10.add_edge(6, 2, 18);
+	graph10.print_edges();
+	graph10.print_matrix();
+
+	std::size_t I = 6;
+
+	std::cout << "\nDepth search in AdjStruct from vertex " << I << ": \n";
+	graph9.depth_search_one_component(I, process_print, compare_number_struct);
+
+	std::cout << "\nDepth search in AdjMatrix from vertex " << I << ": \n";
+	graph10.depth_search_one_component(I, process_print, compare_number_matrix);
+
+
+	std::cout << "\nBreadth search in AdjStruct from vertex " << I << ": \n";
+	graph9.breadth_search_one_component(I, process_print, compare_number_struct);
+
+	std::cout << "\nBreadth search in AdjMatrix from vertex " << I << ": \n";
+	graph10.breadth_search_one_component(I, process_print, compare_weight_matrix);
+
+
+	std::cout << "\n\nAdjStruct:\n";
 
 	if (graph9.is_connected()) {
 		std::cout << "\nConnected: YES\n";
@@ -734,37 +825,22 @@ int main() {
 	}
 
 	if (graph9.is_cycles()) {
-		std::cout << "\nCycles: YES\n";
+		std::cout << "Cycles: YES\n";
 	}
 	else {
-		std::cout << "\nCycles: NO\n";
+		std::cout << "Cycles: NO\n";
 	}
 
 	if (graph9.is_tree()) {
-		std::cout << "\nTree: YES\n";
+		std::cout << "Tree: YES\n";
 	}
 	else {
-		std::cout << "\nTree: NO\n";
+		std::cout << "Tree: NO\n";
 	}
 	std::cout << std::endl;
 
 
-	std::cout << "\nDepth search in AdjMatrix from vertex 0:\n";
-	AdjMatrix graph10(4);
-	graph10.add_edge(0, 1, 1);
-	graph10.add_edge(1, 0, 2);
-	graph10.add_edge(2, 3, 3);
-	//graph10.add_edge(1, 3, 1);
-	graph10.add_edge(3, 2, 5);
-	graph10.add_edge(2, 0, 6);
-	//graph10.add_edge(0, 3, 10);
-//	graph10.add_edge(2, 1, 6);
-	graph10.add_edge(0, 2, 2);
-	graph10.print_matrix();
-	graph10.print_edges();
-	std::cout << std::endl;
-
-	graph10.depth_search_one_component(1, process_print, compare_number_matrix);
+	std::cout << "\n\nAdjMatrix:";
 
 	if (graph10.is_connected()) {
 		std::cout << "\nConnected: YES\n";
@@ -774,17 +850,17 @@ int main() {
 	}
 
 	if (graph10.is_cycles()) {
-		std::cout << "\nCycles: YES\n";
+		std::cout << "Cycles: YES\n";
 	}
 	else {
-		std::cout << "\nCycles: NO\n";
+		std::cout << "Cycles: NO\n";
 	}
 
 	if (graph10.is_tree()) {
-		std::cout << "\nTree: YES\n";
+		std::cout << "Tree: YES\n";
 	}
 	else {
-		std::cout << "\nTree: NO\n";
+		std::cout << "Tree: NO\n";
 	}
 	std::cout << std::endl;
 
