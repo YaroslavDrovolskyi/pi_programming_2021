@@ -1,4 +1,4 @@
-// 1, 2, 5, 7, 8, 10, 11
+// 1, 2, 5, 7, 8, 10, 11, 13
 
 #include "queue.h"
 #include <iostream>
@@ -6,7 +6,7 @@
 #include <vector>
 #include <algorithm>
 
-
+enum generate_mode{directed, undirected};
 struct GraphNode {
 	GraphNode* next;
 	std::size_t end_vertex;
@@ -39,15 +39,14 @@ struct AdjMatrix {
 	void add_edge(std::size_t start, std::size_t end, int weight) {
 		assert(start < this->size);
 		assert(end < this->size);
-		if (this->matrix[start][end] == 0) {
-			this->matrix[start][end] = weight;
-		}
-		
+		assert(this->matrix[start][end] == 0 && "Try to replace existing edge");
+		this->matrix[start][end] = weight;
 	}
 
 	void remove_edge(std::size_t start, std::size_t end) {
 		assert(start < this->size);
 		assert(end < this->size);
+		assert(this->matrix[start][end] != 0 && "Try to remove unexisting edge");
 		this->matrix[start][end] = 0;
 	}
 	void print_matrix() {
@@ -57,6 +56,29 @@ struct AdjMatrix {
 			}
 			std::cout << std::endl;
 		}
+	}
+
+	void add_undirected_edge(std::size_t start, std::size_t end, int weight) {
+		assert(start < this->size);
+		assert(end < this->size);
+
+		assert(this->matrix[start][end] == 0 && "Try to replace existing edge");
+		assert(this->matrix[end][start] == 0 && "Try to replace existing edge");
+
+		add_edge(start, end, weight);
+		add_edge(end, start, weight);
+	}
+
+	void remove_undirected_edge(std::size_t start, std::size_t end) {
+		assert(start < this->size);
+		assert(end < this->size);
+
+		assert(this->matrix[start][end] != 0 && "Try to remove unexisting edge");
+		assert(this->matrix[end][start] != 0 && "Try to remove unexisting edge");
+		assert(this->matrix[start][end] == this->matrix[end][start] && "Try to remove two different directed edges");
+
+		remove_edge(start, end);
+		remove_edge(end, start);
 	}
 
 	void print_edges() {
@@ -282,9 +304,15 @@ private:
 };
 
 
-AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0) {
+AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0, std::size_t mode = directed) {
 	assert(size > 0);
-	assert(edge_number <= (size * (size - 1)) / 2);
+	if (mode == directed) {
+		assert(edge_number <= size * (size - 1));
+	}
+	else if (mode == undirected) {
+		assert(edge_number <= (size * (size - 1))/2);
+	}
+	
 	AdjMatrix new_matrix(size);
 	{
 		for (std::size_t i = 0; i < edge_number; i++) {
@@ -298,7 +326,13 @@ AdjMatrix generate_random_matrix(std::size_t size, std::size_t edge_number = 0) 
 				end_vertex = rand() % size;
 			} while (start_vertex == end_vertex || new_matrix.matrix[start_vertex][end_vertex] != 0 || edge_weight == 0);
 
-			new_matrix.matrix[start_vertex][end_vertex] = edge_weight;
+			if (mode == directed) {
+				new_matrix.add_edge(start_vertex, end_vertex, edge_weight);
+			}
+			else if (mode == undirected) {
+				new_matrix.add_undirected_edge(start_vertex, end_vertex, edge_weight);
+			}
+			
 
 		}
 
@@ -323,6 +357,7 @@ struct AdjStruct {
 	void add_edge(std::size_t start_vertex, std::size_t end_vertex, int weight) {
 		assert(start_vertex < this->size);
 		assert(end_vertex < this->size);
+		assert(!is_edge(start_vertex, end_vertex) && "Try to replace existing edge");
 
 		if (this->vertex[start_vertex] == nullptr || end_vertex < this->vertex[start_vertex]->end_vertex) {
 			GraphNode* next = this->vertex[start_vertex];
@@ -349,6 +384,7 @@ struct AdjStruct {
 	void remove_edge(std::size_t start_vertex, std::size_t end_vertex) {
 		assert(start_vertex < this->size);
 		assert(end_vertex < this->size);
+		assert(is_edge(start_vertex, end_vertex) && "Try to remove unexisting edge");
 
 		GraphNode* current = this->vertex[start_vertex];
 		if (!current) { return; }
@@ -369,10 +405,42 @@ struct AdjStruct {
 				current = current->next;
 			}
 		}
-		
+	}
+	
+	void add_undirected_edge(std::size_t start, std::size_t end, int weight) {
+		assert(start < this->size);
+		assert(end < this->size);
 
+		assert(!is_edge(start, end) && "Try to replace existing edge");
+		assert(!is_edge(start, end) && "Try to replace existing edge");
+
+		add_edge(start, end, weight);
+		add_edge(end, start, weight);
 	}
 
+	void remove_undirected_edge(std::size_t start, std::size_t end) {
+		assert(start < this->size);
+		assert(end < this->size);
+
+		assert(is_edge(start, end) != 0 && "Try to remove unexisting edge");
+		assert(is_edge(start, end) != 0 && "Try to remove unexisting edge");
+
+		
+		GraphNode* current_1 = this->vertex[start];
+		while (current_1 && current_1->end_vertex < end) {
+			current_1 = current_1->next;
+		}
+
+		GraphNode* current_2 = this->vertex[end];
+		while (current_2 && current_2->end_vertex < start) {
+			current_2 = current_2->next;
+		}
+
+		assert(current_1->weight == current_2->weight && "Try to remove two different directed edges");
+
+		remove_edge(start, end);
+		remove_edge(end, start);
+	}
 	
 
 	void print() {
@@ -625,9 +693,15 @@ AdjStruct convert_in_struct(AdjMatrix& adj_matrix) {
 }
 
 
-AdjStruct generate_random_structure(std::size_t size, std::size_t edge_number) {
+AdjStruct generate_random_structure(std::size_t size, std::size_t edge_number, std::size_t mode = directed) {
 	assert(size > 0);
-	assert(edge_number <= (size * (size - 1)) / 2);
+	if (mode == directed) {
+		assert(edge_number <= size * (size - 1));
+	}
+	else if (mode == undirected) {
+		assert(edge_number <= (size * (size - 1)) / 2);
+	}
+
 	AdjStruct new_struct(size);
 	for (std::size_t i = 0; i < edge_number; i++) {
 		std::size_t start_vertex;
@@ -639,6 +713,14 @@ AdjStruct generate_random_structure(std::size_t size, std::size_t edge_number) {
 			start_vertex = rand() % size;
 			end_vertex = rand() % size;
 		} while (start_vertex == end_vertex || new_struct.is_edge(start_vertex, end_vertex) == true || edge_weight == 0);
+
+
+		if (mode == directed) {
+			new_struct.add_edge(start_vertex, end_vertex, edge_weight);
+		}
+		else if (mode == undirected) {
+			new_struct.add_undirected_edge(start_vertex, end_vertex, edge_weight);
+		}
 
 		new_struct.add_edge(start_vertex, end_vertex, edge_weight);
 	}
@@ -686,19 +768,19 @@ int main() {
 	std::cout << "\nAdj struct:\n";
 	AdjStruct graph3(5);
 	graph3.add_edge(1, 4, 6);
+//	graph3.add_edge(1, 2, 6);
+//	graph3.add_edge(1, 1, 6);
+//	graph3.add_edge(1, 2, 6);
+//	graph3.add_edge(1, 2, 6);
+//	graph3.add_edge(1, 2, 6);
+	graph3.add_edge(1, 3, 6);
+//	graph3.add_edge(1, 2, 6);
 	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(1, 1, 6);
-	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(2, 1, 6);
-	graph3.add_edge(2, 1, 6);
+//	graph3.add_edge(2, 1, 6);
 	graph3.print();
 
 	std::cout << "\nRemove edge 1->2\n";
-	graph3.remove_edge(1, 4);
+//	graph3.remove_edge(1, 0);
 //	graph3.remove_edge(2, 1);
 //	graph3.remove_edge(3, 1);
 ///	graph3.remove_edge(1, 2);
@@ -864,7 +946,25 @@ int main() {
 	}
 	std::cout << std::endl;
 
+	std::cout << std::endl << std::endl;
+	std::cout << "\n\nUndirected edges:\n\n";
+	AdjMatrix graph11(6);
+	graph11.add_undirected_edge(4, 5, 3);
+	graph11.add_undirected_edge(1, 5, 6);
+	graph11.add_undirected_edge(4, 3, 9);
+	graph11.add_undirected_edge(2, 1, 1);
+	graph11.add_undirected_edge(0, 2, 7);
+	graph11.print_edges();
+	std::cout << std::endl << std::endl;
+	graph11.remove_undirected_edge(5, 0);
+	graph11.print_edges();
+	
+
+	std::cout << "\n\nUndirected edges (generate):\n\n";
+	generate_random_matrix(6, 7, undirected).print_matrix();
 	std::cout << std::endl;
+	generate_random_structure(6, 7, undirected).print();
+
 	std::system("pause");
 	return 0;
 }
