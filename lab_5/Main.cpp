@@ -5,6 +5,7 @@
 #include <cassert>
 #include <vector>
 #include <algorithm>
+#include <climits>
 
 enum generate_mode{directed, undirected};
 struct GraphNode {
@@ -214,6 +215,37 @@ struct AdjMatrix {
 		delete[]already_visited;
 	}
 
+	std::vector<std::size_t> get_distance(std::size_t start_vertex, std::vector <int>& prev) {
+		const std::size_t INF = INT_MAX;
+		std::vector<std::size_t> distances(this->size, INF);
+		distances[start_vertex] = 0;
+		
+		std::vector <bool> used(this->size, false);
+
+		std::size_t min_dist = 0;
+		std::size_t min_vertex = start_vertex;
+		while (min_dist < INF) {
+			std::size_t i = min_vertex;
+			used[i] = true;
+
+			for (std::size_t j = 0; j < this->size; j++) { // put marks to its neightbors
+				if (distances[i] + this->matrix[i][j] < distances[j] && this->matrix[i][j] !=0) {
+					distances[j] = distances[i] + this->matrix[i][j];
+					prev[j] = i;
+				}
+			}
+			
+			min_dist = INF;
+			for (std::size_t j = 0; j < this->size; j++) { // choose the minimum distance
+				if (!used[j] && distances[j] < min_dist) {
+					min_dist = distances[j];
+					min_vertex = j;
+				}
+			}
+		}
+
+		return distances;
+	}
 
 
 
@@ -722,7 +754,7 @@ AdjStruct generate_random_structure(std::size_t size, std::size_t edge_number, s
 			new_struct.add_undirected_edge(start_vertex, end_vertex, edge_weight);
 		}
 
-		new_struct.add_edge(start_vertex, end_vertex, edge_weight);
+		//new_struct.add_edge(start_vertex, end_vertex, edge_weight);
 	}
 	return new_struct;
 }
@@ -798,7 +830,7 @@ int main() {
 	graph4.add_edge(4, 3, 3);
 	graph4.add_edge(2, 0, 5);
 
-	graph4.add_edge(0, 2, 8);
+//	graph4.add_edge(0, 2, 8);
 
 	graph4.print();
 	std::cout << "\nCopied struct:\n";
@@ -818,7 +850,7 @@ int main() {
 	graph5.add_edge(4, 3, 3);
 	graph5.add_edge(2, 0, 5);
 
-	graph5.add_edge(0, 2, 8);
+//	graph5.add_edge(0, 2, 8);
 
 	graph5.print_matrix();
 	graph5.print_edges();
@@ -956,7 +988,7 @@ int main() {
 	graph11.add_undirected_edge(0, 2, 7);
 	graph11.print_edges();
 	std::cout << std::endl << std::endl;
-	graph11.remove_undirected_edge(5, 0);
+//	graph11.remove_undirected_edge(5, 0);
 	graph11.print_edges();
 	
 
@@ -964,6 +996,54 @@ int main() {
 	generate_random_matrix(6, 7, undirected).print_matrix();
 	std::cout << std::endl;
 	generate_random_structure(6, 7, undirected).print();
+
+
+
+	std::size_t J = 6, SIZE  = 7;
+	AdjMatrix graph12(SIZE);
+	graph12.add_edge(0, 1, 1);
+	graph12.add_edge(0, 4, 1);
+	graph12.add_edge(4, 0, 8);
+	graph12.add_edge(2, 1, 5);
+	graph12.add_edge(2, 3, 100); // 
+	graph12.add_edge(2, 5, 12);
+	graph12.add_edge(6, 2, 18);
+	graph12.add_edge(5, 3, 10);
+	graph12.add_edge(1, 3, 21);
+	graph12.print_edges();
+	graph12.print_matrix();
+
+	std::cout << "\n\n\n\n\nMIN distances from vertex " << J << ": \n\n\n";
+	std::vector <int> prev(7, -1);
+	std::vector<std::size_t> result = graph12.get_distance(J, prev);
+	std::cout << std::endl;
+
+	for (std::size_t i = 0; i < result.size(); i++) {
+		std::cout << J << "->" << i << ": ";
+
+		std::vector <int> path;
+		int j = i;
+		if (prev[j] != -1) {
+			while (j != -1) {
+				path.push_back(j);
+				j = prev[j];
+			}
+		}
+		
+		reverse(path.begin(), path.end());
+		for (std::size_t k = 0; k < path.size(); k++) {
+			std::cout << path[k] << " ";
+		}
+		if (result[i] != 0 && result[i] != INT_MAX) {
+			std::cout << "  = " << result[i] << std::endl;
+		}
+		else {
+			std::cout << "does not exist" << std::endl;
+		}
+	}
+
+
+
 
 	std::system("pause");
 	return 0;
