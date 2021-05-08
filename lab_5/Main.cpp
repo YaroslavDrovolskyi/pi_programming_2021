@@ -135,7 +135,7 @@ struct AdjMatrix {
 	*/
 
 	template <typename Callable>
-	void depth_search_all(Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
+	void depth_search_all(Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		bool* already_visited = new bool[this->size];
 		for (std::size_t i = 0; i < this->size; i++) {
 			already_visited[i] = false;
@@ -143,14 +143,14 @@ struct AdjMatrix {
 
 		for (std::size_t i = 0; i < this->size; i++) {
 			if (already_visited[i] == false) {
-				depth_search_impl(i, already_visited, process, compare_vertixes);
+				depth_search_impl(i, already_visited, process, process_after, compare_vertixes);
 			}
 		}
 		delete[]already_visited;
 	}
 
 	template <typename Callable>
-	void depth_search_one_component(std::size_t start_vertex, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
+	void depth_search_one_component(std::size_t start_vertex, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		assert(start_vertex < this->size);
 
 		bool* already_visited = new bool[this->size];
@@ -158,7 +158,7 @@ struct AdjMatrix {
 			already_visited[i] = false;
 		}
 
-		depth_search_impl(start_vertex, already_visited, process, compare_vertixes);
+		depth_search_impl(start_vertex, already_visited, process, process_after, compare_vertixes);
 		delete[]already_visited;
 	}
 
@@ -174,19 +174,25 @@ struct AdjMatrix {
 	}
 
 	bool is_cycles() {
-		bool* already_visited = new bool[this->size];
-		for (std::size_t i = 0; i < this->size; i++) {
-			already_visited[i] = false;
-		}
+//		bool* already_visited = new bool[this->size];
+//		for (std::size_t i = 0; i < this->size; i++) {
+//			already_visited[i] = false;
+//		}
 
 		for (std::size_t i = 0; i < this->size; i++) {
-			if (already_visited[i] == false) {
+
+			int* already_visited = new int[this->size];
+			for (std::size_t j = 0; j < this->size; j++) {
+				already_visited[j] = 0;
+			}
+//			if (already_visited[i] == false) {
 				if (depth_search_impl_parent(i, -1, already_visited) == true) {
 					return true;
 				}
-			}
+//			}
+			delete[]already_visited;
 		}
-		delete[]already_visited;
+//		delete[]already_visited;
 		return false;
 	}
 
@@ -343,15 +349,39 @@ struct AdjMatrix {
 	}
 
 
-
+	std::vector<std::size_t> topological_sort() {
+		// checking if graph has cycles in direct sense
+		assert(!is_cycles() && "This graph can't be sorted");
+		for (std::size_t i = 0; i < this->size; i++) {
+			for (std::size_t j = 0; j < this->size; j++) {
+				if (this->matrix[i][j] != 0) {
+					assert(this->matrix[j][i] == 0 && "This graph can't be sorted");
+				}
+			}
+		}
+		std::vector<std::size_t> vertices_order;
+		depth_search_all([&vertices_order](std::size_t vertex) {vertices_order.push_back(vertex); }, true);
+		std::reverse(vertices_order.begin(), vertices_order.end());
+		return vertices_order;
+		AdjMatrix sorted_graph(this->size);
+		for (std::size_t i = 0; i < this->size; i++) {
+			for (std::size_t j = 0; j < this->size; j++) {
+				sorted_graph.matrix[i][j] = this->matrix[vertices_order[i]][vertices_order[j]];
+			}
+		}
+		//return sorted_graph;
+	}
 
 
 
 
 private:
 	template <typename Callable>
-	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
-		process(start_vertex);
+	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
+		if (process_after == false) {
+			process(start_vertex);
+		}
+		
 		already_visited[start_vertex] = true;
 
 		std::vector<GraphNode> to_visit;
@@ -368,30 +398,33 @@ private:
 
 		for (std::size_t i = 0; i < to_visit.size(); i++) {
 			if (already_visited[to_visit[i].end_vertex] == false) {
-				depth_search_impl(to_visit[i].end_vertex, already_visited, process, compare_vertixes);
+				depth_search_impl(to_visit[i].end_vertex, already_visited, process, process_after, compare_vertixes);
 			}
 		}
-
+		if (process_after == true) {
+			process(start_vertex);
+		}
 		to_visit.clear();
 	}
 
-	bool depth_search_impl_parent(int start_vertex, int parent_vertex, bool* already_visited) {
+	bool depth_search_impl_parent(int start_vertex, int parent_vertex, int* already_visited) {
 		//process(start_vertex);
-		already_visited[start_vertex] = true;
+		already_visited[start_vertex] = 1;
 		bool result = false;
 		
 		for (std::size_t i = 0; i < this->size; i++) {
 			if (this->matrix[start_vertex][i] != 0) {
-				if (already_visited[i] == false) {
+				if (already_visited[i] == 0) {
 					result = depth_search_impl_parent(i, start_vertex, already_visited);
 				}
-				else if (i != parent_vertex && parent_vertex != -1 ||start_vertex == i) {
+				else if (already_visited[i] == 1 && i != parent_vertex && parent_vertex != -1 || start_vertex == i) {
 					result = true;
 				}
 
 				if (result == true) { return true; }
 			}
 		}
+		already_visited[start_vertex] = 2;
 		return false;
 	}
 
@@ -428,6 +461,10 @@ private:
 			}
 			neighbors.clear();
 		}
+	}
+
+	void topological_sort_impl(std::size_t* vertex_order) {
+
 	}
 
 
@@ -640,19 +677,26 @@ struct AdjStruct {
 	}
 
 	bool is_cycles() {
-		bool* already_visited = new bool[this->size];
-		for (std::size_t i = 0; i < this->size; i++) {
-			already_visited[i] = false;
-		}
+//		bool* already_visited = new bool[this->size];
+//		for (std::size_t i = 0; i < this->size; i++) {
+//			already_visited[i] = false;
+//		}
 
 		for (std::size_t i = 0; i < this->size; i++) {
-			if (already_visited[i] == false) {
-				if (depth_search_impl_parent(i, -1, already_visited) == true) {
-					return true;
-				}
+
+			bool* already_visited = new bool[this->size];
+			for (std::size_t j = 0; j < this->size; j++) {
+				already_visited[j] = false;
 			}
+
+//			if (already_visited[i] == false) {
+			if (depth_search_impl_parent(i, -1, already_visited) == true) {
+				return true;
+			}
+//			}
+			delete[]already_visited;
 		}
-		delete[]already_visited;
+//		delete[]already_visited;
 		return false;
 	}
 
@@ -662,7 +706,7 @@ struct AdjStruct {
 
 
 	template <typename Callable>
-	void depth_search_all(Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
+	void depth_search_all(Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
 		bool* already_visited = new bool[this->size];
 		for (std::size_t i = 0; i < this->size; i++) {
 			already_visited[i] = false;
@@ -670,14 +714,14 @@ struct AdjStruct {
 
 		for (std::size_t i = 0; i < this->size; i++) {
 			if (already_visited[i] == false) {
-				depth_search_impl(i, already_visited, process, compare_vertixes);
+				depth_search_impl(i, already_visited, process, process_after, compare_vertixes);
 			}
 		}
 		delete[]already_visited;
 	}
 
 	template <typename Callable>
-	void depth_search_one_component(std::size_t start_vertex, Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
+	void depth_search_one_component(std::size_t start_vertex, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
 		assert(start_vertex < this->size);
 
 		bool* already_visited = new bool[this->size];
@@ -685,7 +729,7 @@ struct AdjStruct {
 			already_visited[i] = false;
 		}
 		
-		depth_search_impl(start_vertex, already_visited, process, compare_vertixes);
+		depth_search_impl(start_vertex, already_visited, process, process_after, compare_vertixes);
 		delete[]already_visited;
 	}
 
@@ -752,13 +796,39 @@ struct AdjStruct {
 		return distances;
 	}
 
-
+	std::vector<std::size_t> topological_sort() {
+		// checking if graph has cycles in direct sense
+		assert(!is_cycles() && "This graph can't be sorted");
+		for (std::size_t i = 0; i < this->size; i++) {
+			GraphNode* current = this->vertex[i];
+			while (current) {
+				assert(!is_edge(current->end_vertex, i) && "This graph can't be sorted");
+				current = current->next;
+			}
+		}
+		std::vector<std::size_t> vertices_order;
+		depth_search_all([&vertices_order](std::size_t vertex) {vertices_order.push_back(vertex); }, true);
+		std::reverse(vertices_order.begin(), vertices_order.end());
+		return vertices_order;
+		AdjStruct sorted_graph(this->size);
+		for (std::size_t i = 0; i < this->size; i++) {
+			GraphNode* current = this->vertex[i];
+			while (current) {
+				sorted_graph.add_edge(vertices_order[i], vertices_order[current->end_vertex], current->weight);
+				current = current->next;
+			}
+		}
+		//return sorted_graph;
+	}
 
 	private:
 
 		template <typename Callable>
-		void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
-			process(start_vertex);
+		void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
+			if (process_after == false) {
+				process(start_vertex);
+			}
+		
 			already_visited[start_vertex] = true;
 
 			GraphNode* current = this->vertex[start_vertex];
@@ -774,9 +844,13 @@ struct AdjStruct {
 			
 			for (std::size_t i = 0; i < to_visit.size(); i++) {
 				if (already_visited[to_visit[i]->end_vertex] == false) {
-					depth_search_impl(to_visit[i]->end_vertex, already_visited, process, compare_vertixes);
+					depth_search_impl(to_visit[i]->end_vertex, already_visited, process, process_after, compare_vertixes);
 				}
 			}
+			if (process_after == true) {
+				process(start_vertex);
+			}
+			to_visit.clear();
 		}
 
 		bool depth_search_impl_parent(int start_vertex, int parent_vertex, bool* already_visited) {
@@ -1290,7 +1364,34 @@ int main() {
 	}
 	std::cout << "\n\n\n==============\n";
 	print_path_all(get_path_from_all(graph13), graph13.size);
-	
+
+
+	std::cout << "\n\n\n===========Topological sort====================\n";
+	AdjMatrix graph14(6);
+	/*
+	graph14.add_edge(5, 0, 1);
+	graph14.add_edge(4, 0, 1);
+	graph14.add_edge(5, 2, 1);
+	graph14.add_edge(4, 1, 1);
+	graph14.add_edge(2, 3, 1);
+	graph14.add_edge(3, 1, 1);
+	*/
+	graph14.add_edge(1, 2, 1);
+	graph14.add_edge(1, 3, 1);
+	graph14.add_edge(3, 2, 1);
+	graph14.add_edge(2, 4, 1);
+	graph14.add_edge(3, 4, 1);
+
+
+	graph14.print_matrix();
+	graph14.print_edges();
+	std::cout << "\n\nSorted vertices:\n";
+	std::vector<std::size_t> arr = graph14.topological_sort();
+	for (std::size_t i = 0; i < arr.size(); i++) {
+		std::cout << arr[i] << " ";
+	}
+	std::cout << std::endl;
+//	graph14.topological_sort().topological_sort().print_matrix();
 	std::system("pause");
 	return 0;
 }
