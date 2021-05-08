@@ -222,6 +222,7 @@ struct AdjMatrix {
 		delete[]already_visited;
 	}
 
+	/*
 
 	std::vector<Path> get_path_from_one(std::size_t vertex) {
 		std::vector <int> prev(this->size, -1);
@@ -250,7 +251,97 @@ struct AdjMatrix {
 		return paths_struture;
 	}
 
-	
+
+	Path get_path_between_two(std::size_t start_vertex, std::size_t end_vertex) {
+		std::vector <int> prev(this->size, -1);
+		std::vector<std::size_t> distances = get_distance(start_vertex, prev);
+
+		Path a;
+		int j = start_vertex;
+		if (prev[j] != -1) {
+			a.is_exist = true;
+			while (j != -1) { // put the path
+				a.path.push_back(j);
+				j = prev[j];
+			}
+		}
+		else {
+			a.is_exist = false;
+		}
+		reverse(a.path.begin(), a.path.end());
+
+		a.lenght = distances[start_vertex]; // put the length
+
+		return a;
+	}
+
+	Path** get_path_from_all() {
+		Path** path_matrix = new Path * [this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			path_matrix[i] = new Path[this->size];
+		}
+
+		for (std::size_t k = 0; k < this->size; k++) { // path from k to i;
+			std::vector <int> prev(this->size, -1);
+			std::vector<std::size_t> distances = get_distance(k, prev);
+
+			for (std::size_t i = 0; i < distances.size(); i++) {
+				Path a;
+				int j = i;
+				if (prev[j] != -1) {
+					a.is_exist = true;
+					while (j != -1) { // put the path
+						a.path.push_back(j);
+						j = prev[j];
+					}
+				}
+				else {
+					a.is_exist = false;
+				}
+				reverse(a.path.begin(), a.path.end());
+
+				a.lenght = distances[i]; // put the length
+
+				path_matrix[k][i] = a;
+			}
+		}
+		return path_matrix;
+	}
+
+	*/
+
+	std::vector<std::size_t> get_distance(std::size_t start_vertex, std::vector <int>& prev) {
+		const std::size_t INF = INT_MAX;
+		std::vector<std::size_t> distances(this->size, INF);
+		distances[start_vertex] = 0;
+
+		std::vector <bool> used(this->size, false);
+
+		std::size_t min_dist = 0;
+		std::size_t min_vertex = start_vertex;
+		while (min_dist < INF) {
+			std::size_t i = min_vertex;
+			used[i] = true;
+
+			for (std::size_t j = 0; j < this->size; j++) { // put marks to its neightbors
+				if (distances[i] + this->matrix[i][j] < distances[j] && this->matrix[i][j] != 0) {
+					distances[j] = distances[i] + this->matrix[i][j];
+					prev[j] = i;
+				}
+			}
+
+			min_dist = INF;
+			for (std::size_t j = 0; j < this->size; j++) { // choose the minimum distance
+				if (!used[j] && distances[j] < min_dist) {
+					min_dist = distances[j];
+					min_vertex = j;
+				}
+			}
+		}
+
+		return distances;
+	}
+
 
 
 
@@ -337,38 +428,6 @@ private:
 			}
 			neighbors.clear();
 		}
-	}
-
-	std::vector<std::size_t> get_distance(std::size_t start_vertex, std::vector <int>& prev) {
-		const std::size_t INF = INT_MAX;
-		std::vector<std::size_t> distances(this->size, INF);
-		distances[start_vertex] = 0;
-		
-		std::vector <bool> used(this->size, false);
-
-		std::size_t min_dist = 0;
-		std::size_t min_vertex = start_vertex;
-		while (min_dist < INF) {
-			std::size_t i = min_vertex;
-			used[i] = true;
-
-			for (std::size_t j = 0; j < this->size; j++) { // put marks to its neightbors
-				if (distances[i] + this->matrix[i][j] < distances[j] && this->matrix[i][j] !=0) {
-					distances[j] = distances[i] + this->matrix[i][j];
-					prev[j] = i;
-				}
-			}
-			
-			min_dist = INF;
-			for (std::size_t j = 0; j < this->size; j++) { // choose the minimum distance
-				if (!used[j] && distances[j] < min_dist) {
-					min_dist = distances[j];
-					min_vertex = j;
-				}
-			}
-		}
-
-		return distances;
 	}
 
 
@@ -658,6 +717,43 @@ struct AdjStruct {
 		breadth_search_impl(start_vertex, already_visited, process, compare_vertixes);
 		delete[]already_visited;
 	}
+
+
+	std::vector<std::size_t> get_distance(std::size_t start_vertex, std::vector <int>& prev) {
+		const std::size_t INF = INT_MAX;
+		std::vector<std::size_t> distances(this->size, INF);
+		distances[start_vertex] = 0;
+
+		std::vector <bool> used(this->size, false);
+
+		std::size_t min_dist = 0;
+		std::size_t min_vertex = start_vertex;
+		while (min_dist < INF) {
+			//std::size_t i = min_vertex;
+			used[min_vertex] = true;
+
+			GraphNode* current = this->vertex[min_vertex];
+			while (current) {
+				if (distances[min_vertex] + current->weight < distances[current->end_vertex]) { // put marks to its neightbors
+					distances[current->end_vertex] = distances[min_vertex] + current->weight;
+					prev[current->end_vertex] = min_vertex;
+				}
+			}
+
+			min_dist = INF;
+			for (std::size_t j = 0; j < this->size; j++) { // choose the minimum distance
+				if (!used[j] && distances[j] < min_dist) {
+					min_dist = distances[j];
+					min_vertex = j;
+				}
+			}
+		}
+
+		return distances;
+	}
+
+
+
 	private:
 
 		template <typename Callable>
@@ -821,18 +917,121 @@ bool compare_number_matrix(GraphNode& node_1, GraphNode& node_2) {
 	return node_1.end_vertex < node_2.end_vertex;
 }
 
+template <typename T>
+std::vector<Path> get_path_from_one(T& graph, std::size_t vertex) {
+	std::vector <int> prev(graph.size, -1);
+	std::vector<std::size_t> distances = graph.get_distance(vertex, prev);
+	std::vector <Path> paths_struture;
 
-void print_path_structure(std::vector<Path>& path_structure, std::size_t start_vertex, std::size_t size) {
-	for (std::size_t i = 0; i < size; i++) {
-		std::cout << start_vertex << "->" << i << ": ";
-		if (!path_structure[i].is_exist) {
-			std::cout << "does not exist";
+	for (std::size_t i = 0; i < distances.size(); i++) {
+		Path a;
+		int j = i;
+		if (prev[j] != -1) {
+			a.is_exist = true;
+			while (j != -1) { // put the path
+				a.path.push_back(j);
+				j = prev[j];
+			}
 		}
 		else {
-			for (std::size_t j = 0; j < path_structure[i].path.size(); j++) {
-				std::cout << path_structure[i].path[j] << " ";
+			a.is_exist = false;
+		}
+		reverse(a.path.begin(), a.path.end());
+
+		a.lenght = distances[i]; // put the length
+
+		paths_struture.push_back(a);
+	}
+	return paths_struture;
+}
+
+template <typename T>
+Path get_path_between_two(T& graph, std::size_t start_vertex, std::size_t end_vertex) {
+	std::vector <int> prev(graph.size, -1);
+	std::vector<std::size_t> distances = graph.get_distance(start_vertex, prev);
+
+	Path a;
+	int j = start_vertex;
+	if (prev[j] != -1) {
+		a.is_exist = true;
+		while (j != -1) { // put the path
+			a.path.push_back(j);
+			j = prev[j];
+		}
+	}
+	else {
+		a.is_exist = false;
+	}
+	reverse(a.path.begin(), a.path.end());
+
+	a.lenght = distances[start_vertex]; // put the length
+
+	return a;
+}
+
+template <typename T>
+Path** get_path_from_all(T& graph) {
+	Path** path_matrix = new Path * [graph.size];
+	for (std::size_t i = 0; i < graph.size; i++) {
+		path_matrix[i] = new Path[graph.size];
+	}
+
+	for (std::size_t k = 0; k < graph.size; k++) { // path from k to i;
+		std::vector <int> prev(graph.size, -1);
+		std::vector<std::size_t> distances = graph.get_distance(k, prev);
+
+		for (std::size_t i = 0; i < distances.size(); i++) {
+			Path a;
+			int j = i;
+			if (prev[j] != -1) {
+				a.is_exist = true;
+				while (j != -1) { // put the path
+					a.path.push_back(j);
+					j = prev[j];
+				}
 			}
-			std::cout << "  =  " << path_structure[i].lenght;
+			else {
+				a.is_exist = false;
+			}
+			reverse(a.path.begin(), a.path.end());
+
+			a.lenght = distances[i]; // put the length
+
+			path_matrix[k][i] = a;
+		}
+	}
+	return path_matrix;
+}
+
+
+
+
+void print_path(Path path, std::size_t start_vertex, std::size_t end_vertex) { // print path from start_vertex to end_vertex
+
+	std::cout << start_vertex << "->" << end_vertex << ": ";
+	if (!path.is_exist) {
+		std::cout << "does not exist";
+	}
+	else {
+		for (std::size_t j = 0; j < path.path.size(); j++) {
+			std::cout << path.path[j] << " ";
+		}
+		std::cout << "  =  " << path.lenght;
+	}
+	std::cout << std::endl;
+
+}
+
+void print_path_structure(std::vector<Path>& path_structure, std::size_t start_vertex) { // print path from 1 to all
+	for (std::size_t i = 0; i < path_structure.size(); i++) {
+		print_path(path_structure[i], start_vertex, i);
+	}
+}
+
+void print_path_all(Path** path_matrix, std::size_t size) {
+	for (std::size_t i = 0; i < size; i++) {
+		for (std::size_t j = 0; j < size; j++) {
+			print_path(path_matrix[i][j], i, j);
 		}
 		std::cout << std::endl;
 	}
@@ -1069,14 +1268,28 @@ int main() {
 	graph12.print_edges();
 	graph12.print_matrix();
 
+	AdjMatrix graph13(SIZE);
+	graph13.add_edge(0, 1, 1);
+	graph13.add_edge(0, 4, 1);
+	graph13.add_edge(4, 0, 8);
+	graph13.add_edge(2, 1, 5);
+	graph13.add_edge(2, 3, 100); // 
+	graph13.add_edge(2, 5, 12);
+	graph13.add_edge(6, 2, 18);
+	graph13.add_edge(5, 3, 10);
+	graph13.add_edge(1, 3, 21);
+	graph13.print_edges();
+	graph13.print_matrix();
+
 
 	for (std::size_t J = 0; J < graph12.size; J++) {
 		std::cout << "\n\n\n\n\nMIN distances from vertex " << J << ": \n\n\n";
-		std::vector<Path> path_structure = graph12.get_path_from_one(J);
+		std::vector<Path> path_structure = get_path_from_one(graph12,J);
 
-		print_path_structure(path_structure, J, graph12.size);
+		print_path_structure(path_structure, J);
 	}
-	
+	std::cout << "\n\n\n==============\n";
+	print_path_all(get_path_from_all(graph13), graph13.size);
 	
 	std::system("pause");
 	return 0;
