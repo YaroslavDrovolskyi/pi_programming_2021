@@ -27,6 +27,14 @@ struct Path {
 	std::vector<std::size_t> path;
 };
 
+template <typename T>
+int get_index(std::vector<T>& arr, T key) {
+	for (std::size_t i = 0; i < arr.size(); i++) {
+		if (arr[i] == key) { return i; }
+	}
+	return -1; // when no key in array
+}
+
 
 struct AdjMatrix {
 	int** matrix;
@@ -348,12 +356,12 @@ struct AdjMatrix {
 		return distances;
 	}
 
-
-	std::vector<std::size_t> topological_sort() {
+	AdjMatrix topological_sort() {
+//	std::vector<std::size_t> topological_sort() {
 		// checking if graph has cycles in direct sense
 		assert(!is_cycles() && "This graph can't be sorted");
 		for (std::size_t i = 0; i < this->size; i++) {
-			for (std::size_t j = 0; j < this->size; j++) {
+			for (std::size_t j = i; j < this->size; j++) {
 				if (this->matrix[i][j] != 0) {
 					assert(this->matrix[j][i] == 0 && "This graph can't be sorted");
 				}
@@ -362,14 +370,16 @@ struct AdjMatrix {
 		std::vector<std::size_t> vertices_order;
 		depth_search_all([&vertices_order](std::size_t vertex) {vertices_order.push_back(vertex); }, true);
 		std::reverse(vertices_order.begin(), vertices_order.end());
-		return vertices_order;
+//		return vertices_order;
+
+		//create sorted graph
 		AdjMatrix sorted_graph(this->size);
 		for (std::size_t i = 0; i < this->size; i++) {
 			for (std::size_t j = 0; j < this->size; j++) {
-				sorted_graph.matrix[i][j] = this->matrix[vertices_order[i]][vertices_order[j]];
+				sorted_graph.matrix[get_index(vertices_order, i)][get_index(vertices_order, j)] = this->matrix[i][j];
 			}
 		}
-		//return sorted_graph;
+		return sorted_graph;
 	}
 
 
@@ -684,9 +694,9 @@ struct AdjStruct {
 
 		for (std::size_t i = 0; i < this->size; i++) {
 
-			bool* already_visited = new bool[this->size];
+			int* already_visited = new int[this->size];
 			for (std::size_t j = 0; j < this->size; j++) {
-				already_visited[j] = false;
+				already_visited[j] = 0;
 			}
 
 //			if (already_visited[i] == false) {
@@ -796,7 +806,8 @@ struct AdjStruct {
 		return distances;
 	}
 
-	std::vector<std::size_t> topological_sort() {
+	AdjStruct topological_sort() {
+//	std::vector<std::size_t> topological_sort() {
 		// checking if graph has cycles in direct sense
 		assert(!is_cycles() && "This graph can't be sorted");
 		for (std::size_t i = 0; i < this->size; i++) {
@@ -806,19 +817,22 @@ struct AdjStruct {
 				current = current->next;
 			}
 		}
+
 		std::vector<std::size_t> vertices_order;
 		depth_search_all([&vertices_order](std::size_t vertex) {vertices_order.push_back(vertex); }, true);
 		std::reverse(vertices_order.begin(), vertices_order.end());
-		return vertices_order;
+//		return vertices_order;
+
+		// create sorted graph
 		AdjStruct sorted_graph(this->size);
 		for (std::size_t i = 0; i < this->size; i++) {
 			GraphNode* current = this->vertex[i];
 			while (current) {
-				sorted_graph.add_edge(vertices_order[i], vertices_order[current->end_vertex], current->weight);
+				sorted_graph.add_edge(get_index(vertices_order, i), get_index(vertices_order, current->end_vertex), current->weight);
 				current = current->next;
 			}
 		}
-		//return sorted_graph;
+		return sorted_graph;
 	}
 
 	private:
@@ -853,22 +867,24 @@ struct AdjStruct {
 			to_visit.clear();
 		}
 
-		bool depth_search_impl_parent(int start_vertex, int parent_vertex, bool* already_visited) {
+		bool depth_search_impl_parent(int start_vertex, int parent_vertex, int* already_visited) {
 			//process(start_vertex);
-			already_visited[start_vertex] = true;
+			already_visited[start_vertex] = 1;
 			bool result = false;
+
 			GraphNode* current = this->vertex[start_vertex];
 			while (current) {
-				if (already_visited[current->end_vertex] == false) {
+				if (already_visited[current->end_vertex] == 0) {
 					result = depth_search_impl_parent(current->end_vertex, start_vertex, already_visited);
 				}
-				else if (current->end_vertex != parent_vertex && parent_vertex != -1) {
+				else if (already_visited[current->end_vertex] == 1 && current->end_vertex != parent_vertex && parent_vertex != -1 || start_vertex == current->end_vertex) { // last condition is to catch a loop
 					result = true;
 				}
 
 				if (result == true) { return true; }
 				current = current->next;
 			}
+			already_visited[start_vertex] = 2;
 			return false;
 		}
 
@@ -1110,6 +1126,7 @@ void print_path_all(Path** path_matrix, std::size_t size) {
 		std::cout << std::endl;
 	}
 }
+
 
 
 int main() {
@@ -1376,22 +1393,56 @@ int main() {
 	graph14.add_edge(2, 3, 1);
 	graph14.add_edge(3, 1, 1);
 	*/
-	graph14.add_edge(1, 2, 1);
-	graph14.add_edge(1, 3, 1);
-	graph14.add_edge(3, 2, 1);
-	graph14.add_edge(2, 4, 1);
+	graph14.add_edge(0, 3, 1);
+	graph14.add_edge(0, 4, 1);
+	graph14.add_edge(0, 5, 1);
 	graph14.add_edge(3, 4, 1);
-
+	graph14.add_edge(4, 5, 1);
+	graph14.add_edge(3, 2, 1);
+	graph14.add_edge(2, 1, 1);
+	graph14.add_edge(4, 1, 1);
+	graph14.add_edge(5, 1, 1);
+	graph14.add_edge(4, 2, 1);
 
 	graph14.print_matrix();
 	graph14.print_edges();
-	std::cout << "\n\nSorted vertices:\n";
-	std::vector<std::size_t> arr = graph14.topological_sort();
-	for (std::size_t i = 0; i < arr.size(); i++) {
-		std::cout << arr[i] << " ";
-	}
 	std::cout << std::endl;
-//	graph14.topological_sort().topological_sort().print_matrix();
+
+	AdjStruct graph15(6);
+	graph15.add_edge(0, 3, 1);
+	graph15.add_edge(0, 4, 1);
+	graph15.add_edge(0, 5, 1);
+	graph15.add_edge(3, 4, 1);
+	graph15.add_edge(4, 5, 1);
+	graph15.add_edge(3, 2, 1);
+	graph15.add_edge(2, 1, 1);
+	graph15.add_edge(4, 1, 1);
+	graph15.add_edge(5, 1, 1);
+	graph15.add_edge(4, 2, 1);
+	graph15.print();
+
+
+	std::cout << "\n\nSorted graph14:\n";
+	AdjMatrix arr14_sorted = graph14.topological_sort();
+	arr14_sorted.print_matrix();
+	std::cout << std::endl;
+//	std::vector<std::size_t> arr14 = graph14.topological_sort();
+//	for (std::size_t i = 0; i < arr14.size(); i++) {
+//		std::cout << arr14[i] << " ";
+//	}
+//	std::cout << std::endl;
+
+	std::cout << "\n\nSorted graph15:\n";
+//	std::vector<std::size_t> arr15 = graph15.topological_sort();
+//	for (std::size_t i = 0; i < arr15.size(); i++) {
+//		std::cout << arr15[i] << " ";
+//	}
+	AdjStruct arr15_sorted = graph15.topological_sort();
+	convert_in_matrix(arr15_sorted).print_matrix();
+	std::cout << std::endl;
+
+	//graph14.topological_sort().topological_sort().print_matrix();
+
 	std::system("pause");
 	return 0;
 }
