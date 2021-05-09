@@ -1,4 +1,4 @@
-// 1, 2, 5, 7, 8, 10, 11, 13
+// 1, 2, 5, 7, 8, 10, 11, 13, 14
 
 #include "queue.h"
 #include <iostream>
@@ -359,14 +359,15 @@ struct AdjMatrix {
 	AdjMatrix topological_sort() {
 //	std::vector<std::size_t> topological_sort() {
 		// checking if graph has cycles in direct sense
-		assert(!is_cycles() && "This graph can't be sorted");
 		for (std::size_t i = 0; i < this->size; i++) {
 			for (std::size_t j = i; j < this->size; j++) {
 				if (this->matrix[i][j] != 0) {
-					assert(this->matrix[j][i] == 0 && "This graph can't be sorted");
+					assert(this->matrix[j][i] == 0 && "This graph can't be sorted: undirected edge exists");
 				}
 			}
 		}
+		assert(!is_cycles() && "This graph can't be sorted: cycle exists");
+
 		std::vector<std::size_t> vertices_order;
 		depth_search_all([&vertices_order](std::size_t vertex) {vertices_order.push_back(vertex); }, true);
 		std::reverse(vertices_order.begin(), vertices_order.end());
@@ -809,14 +810,14 @@ struct AdjStruct {
 	AdjStruct topological_sort() {
 //	std::vector<std::size_t> topological_sort() {
 		// checking if graph has cycles in direct sense
-		assert(!is_cycles() && "This graph can't be sorted");
 		for (std::size_t i = 0; i < this->size; i++) {
 			GraphNode* current = this->vertex[i];
 			while (current) {
-				assert(!is_edge(current->end_vertex, i) && "This graph can't be sorted");
+				assert(!is_edge(current->end_vertex, i) && "This graph can't be sorted: undirected edge exists");
 				current = current->next;
 			}
 		}
+		assert(!is_cycles() && "This graph can't be sorted: cycle exists");
 
 		std::vector<std::size_t> vertices_order;
 		depth_search_all([&vertices_order](std::size_t vertex) {vertices_order.push_back(vertex); }, true);
@@ -1403,6 +1404,8 @@ int main() {
 	graph14.add_edge(4, 1, 1);
 	graph14.add_edge(5, 1, 1);
 	graph14.add_edge(4, 2, 1);
+	graph14.add_edge(1, 4, 1);
+
 
 	graph14.print_matrix();
 	graph14.print_edges();
@@ -1441,7 +1444,16 @@ int main() {
 	convert_in_matrix(arr15_sorted).print_matrix();
 	std::cout << std::endl;
 
-	//graph14.topological_sort().topological_sort().print_matrix();
+	AdjStruct graph16(6);
+	graph16.add_edge(0, 1, 1);
+	graph16.add_edge(2, 1, 1);
+	graph16.add_edge(3, 1, 1);
+	graph16.add_edge(1, 4, 1);
+	graph16.add_edge(5, 4, 1);
+	graph16.add_edge(3, 5, 1);
+	graph16.add_edge(4, 1, 1);
+	graph16.print();
+	graph16.topological_sort().print();
 
 	std::system("pause");
 	return 0;
