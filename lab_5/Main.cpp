@@ -383,7 +383,60 @@ struct AdjMatrix {
 		return sorted_graph;
 	}
 
+	/*
+	AdjMatrix spanning_tree(std::size_t& spanning_weight, bool (*compare_vertices)(GraphNode&, GraphNode&) = nullptr) {
+		AdjMatrix spanning_graph (this->size);
+		spanning_weight = 0; // re-initialize, if it was not 0
 
+		bool* already_visited = new bool[this->size];
+		for (std::size_t i = 0; i < this->size; i++) {
+			already_visited[i] = false;
+		}
+
+		for (std::size_t i = 0; i < this->size; i++) { // to build spanning forest, if graph isn't connected
+			if (already_visited[i] == false) {
+				spanning_tree_impl(i, already_visited, spanning_graph, spanning_weight, compare_vertices);
+			}
+		}
+		delete[]already_visited;
+		return spanning_graph;
+	}
+	*/
+	
+
+	void spanning_tree_impl(std::size_t start_vertex, bool* already_visited, AdjMatrix& spanning_graph, std::size_t& spanning_weight, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
+		Queue<std::size_t> to_visit;
+		to_visit.enqueue(start_vertex);
+		already_visited[start_vertex] = true;
+
+		while (!to_visit.is_empty()) {
+			std::size_t current_vertex = to_visit.dequeue();
+
+			std::vector<GraphNode> neighbors;
+
+			for (std::size_t j = 0; j < this->size; j++) { // put all neighbors of vertex in vector to sort according to compare_vertixes
+				if (this->matrix[current_vertex][j] != 0) {
+					GraphNode new_node(j, this->matrix[current_vertex][j]);
+					neighbors.push_back(new_node);
+				}
+
+			}
+
+			if (neighbors.size() != 0 && compare_vertixes != nullptr) {
+				std::sort(neighbors.begin(), neighbors.end(), compare_vertixes);
+			}
+
+			for (std::size_t i = 0; i < neighbors.size(); i++) {
+				if (already_visited[neighbors[i].end_vertex] == false) {
+					to_visit.enqueue(neighbors[i].end_vertex);
+					already_visited[neighbors[i].end_vertex] = true;
+					spanning_graph.add_edge(current_vertex, neighbors[i].end_vertex, this->matrix[current_vertex][neighbors[i].end_vertex]);
+					spanning_weight += this->matrix[current_vertex][neighbors[i].end_vertex];
+				}
+			}
+			neighbors.clear();
+		}
+	}
 
 
 private:
@@ -474,11 +527,8 @@ private:
 		}
 	}
 
-	void topological_sort_impl(std::size_t* vertex_order) {
 
-	}
-
-
+	
 };
 
 
@@ -836,6 +886,38 @@ struct AdjStruct {
 		return sorted_graph;
 	}
 
+	void spanning_tree_impl(std::size_t start_vertex, bool* already_visited, AdjStruct& spanning_graph, std::size_t& spanning_weight, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
+		Queue<std::size_t> to_visit;
+		to_visit.enqueue(start_vertex);
+		already_visited[start_vertex] = true;
+
+		while (!to_visit.is_empty()) {
+			std::size_t current_vertex = to_visit.dequeue();
+
+			std::vector<GraphNode*> neighbors;
+
+			GraphNode* current = this->vertex[current_vertex];
+			while (current) { // put all neighbors of vertex in vector to sort according to compare_vertixes
+				neighbors.push_back(current);
+				current = current->next;
+			}
+
+			if (neighbors.size() != 0 && compare_vertixes != nullptr) {
+				std::sort(neighbors.begin(), neighbors.end(), compare_vertixes);
+			}
+
+			for (std::size_t i = 0; i < neighbors.size(); i++) {
+				if (already_visited[neighbors[i]->end_vertex] == false) {
+					to_visit.enqueue(neighbors[i]->end_vertex);
+					already_visited[neighbors[i]->end_vertex] = true;
+					spanning_graph.add_edge(current_vertex, neighbors[i]->end_vertex, neighbors[i]->weight);
+					spanning_weight += neighbors[i]->weight;
+				}
+			}
+			neighbors.clear();
+		}
+	}
+
 	private:
 
 		template <typename Callable>
@@ -1094,7 +1176,24 @@ Path** get_path_from_all(T& graph) {
 	return path_matrix;
 }
 
+template <typename T, typename Callable>
+T spanning_tree(T& graph, std::size_t& spanning_weight, Callable compare_vertices = nullptr) {
+	T spanning_graph(graph.size);
+	spanning_weight = 0; // re-initialize, if it was not 0
 
+	bool* already_visited = new bool[graph.size];
+	for (std::size_t i = 0; i < graph.size; i++) {
+		already_visited[i] = false;
+	}
+
+	for (std::size_t i = 0; i < graph.size; i++) { // to build spanning forest, if graph isn't connected
+		if (already_visited[i] == false) {
+			graph.spanning_tree_impl(i, already_visited, spanning_graph, spanning_weight, compare_vertices);
+		}
+	}
+	delete[]already_visited;
+	return spanning_graph;
+}
 
 
 void print_path(Path path, std::size_t start_vertex, std::size_t end_vertex) { // print path from start_vertex to end_vertex
@@ -1404,7 +1503,7 @@ int main() {
 	graph14.add_edge(4, 1, 1);
 	graph14.add_edge(5, 1, 1);
 	graph14.add_edge(4, 2, 1);
-	graph14.add_edge(1, 4, 1);
+//	graph14.add_edge(1, 4, 1);
 
 
 	graph14.print_matrix();
@@ -1451,9 +1550,71 @@ int main() {
 	graph16.add_edge(1, 4, 1);
 	graph16.add_edge(5, 4, 1);
 	graph16.add_edge(3, 5, 1);
-	graph16.add_edge(4, 1, 1);
+//	graph16.add_edge(4, 1, 1);
 	graph16.print();
 	graph16.topological_sort().print();
+
+
+	std::cout << "\n\n\n===========Spanning tree====================\n";
+	AdjMatrix graph17(12);
+	graph17.add_edge(0, 1, 1);
+	graph17.add_edge(0, 2, 1);
+	graph17.add_edge(0, 3, 1);
+	graph17.add_edge(1, 4, 1);
+	graph17.add_edge(1, 5, 1);
+	
+	graph17.add_edge(2, 5, 1);
+	graph17.add_edge(2, 6, 1);
+	graph17.add_edge(3, 7, 1);
+	graph17.add_edge(3, 8, 1);
+	graph17.add_edge(6, 9, 1);
+
+	graph17.add_edge(6, 10, 1);
+	graph17.add_edge(6, 2, 1);
+	graph17.add_edge(7, 11, 1);
+	graph17.add_edge(8, 0, 1);
+	graph17.add_edge(9, 0, 1);
+
+	graph17.add_undirected_edge(9, 4, 1);
+
+	graph17.print_edges();
+	std::cout << std::endl;
+	graph17.print_matrix();
+
+	AdjStruct graph18(12);
+	graph18.add_edge(0, 1, 1);
+	graph18.add_edge(0, 2, 1);
+	graph18.add_edge(0, 3, 1);
+	graph18.add_edge(1, 4, 1);
+	graph18.add_edge(1, 5, 1);
+
+	graph18.add_edge(2, 5, 1);
+	graph18.add_edge(2, 6, 1);
+	graph18.add_edge(3, 7, 1);
+	graph18.add_edge(3, 8, 1);
+	graph18.add_edge(6, 9, 1);
+
+	graph18.add_edge(6, 10, 1);
+	graph18.add_edge(6, 2, 1);
+	graph18.add_edge(7, 11, 1);
+	graph18.add_edge(8, 0, 1);
+	graph18.add_edge(9, 0, 1);
+
+	graph18.add_undirected_edge(9, 4, 1);
+
+	graph18.print();
+	
+	std::cout << std::endl << std::endl;
+	std::size_t spanning_weight = 0;
+	std::cout << "\n\n\nSpanning tree for graph17 (matrix):\n";
+	spanning_tree(graph17,spanning_weight, compare_number_matrix).print_edges();
+	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
+	std::cout << std::endl << std::endl;
+	std::cout << "\n\n\nSpanning tree for graph18 (struct):\n";
+	spanning_tree(graph18, spanning_weight, compare_number_struct).print();
+	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
 
 	std::system("pause");
 	return 0;
