@@ -659,7 +659,7 @@ struct AdjStruct {
 		assert(end < this->size);
 
 		assert(!is_edge(start, end) && "Try to replace existing edge");
-		assert(!is_edge(start, end) && "Try to replace existing edge");
+		assert(!is_edge(end, start) && "Try to replace existing edge");
 
 		add_edge(start, end, weight);
 		add_edge(end, start, weight);
@@ -669,8 +669,8 @@ struct AdjStruct {
 		assert(start < this->size);
 		assert(end < this->size);
 
-		assert(is_edge(start, end) != 0 && "Try to remove unexisting edge");
-		assert(is_edge(start, end) != 0 && "Try to remove unexisting edge");
+		assert(is_edge(start, end) == true && "Try to remove unexisting edge");
+		assert(is_edge(end, start) == true && "Try to remove unexisting edge");
 
 		
 		GraphNode* current_1 = this->vertex[start];
@@ -721,6 +721,21 @@ struct AdjStruct {
 		}
 
 		return false;
+	}
+
+	GraphNode* get_edge(std::size_t start_vertex, std::size_t end_vertex) {
+		assert(start_vertex < this->size);
+		assert(end_vertex < this->size);
+
+		GraphNode* current = this->vertex[start_vertex];
+		while (current && current->end_vertex <= end_vertex) {
+			if (current->end_vertex == end_vertex) {
+				return current;
+			}
+			current = current->next;
+		}
+
+		return nullptr;
 	}
 
 	void transitive_closure() {
@@ -947,7 +962,7 @@ struct AdjStruct {
 		for (std::size_t i = 0; i < this->size; i++) {
 			GraphNode* current = this->vertex[i];
 			while (current) {
-				if (!is_edge(current->end_vertex, i)) { return false; } // cheñk if reverse edge exists
+				if (!is_edge(current->end_vertex, i) || get_edge(current->end_vertex, i)->weight != current->weight) { return false; } // cheñk if reverse edge exists
 				current = current->next;
 			}
 		}
@@ -1226,7 +1241,7 @@ T spanning_tree(T& graph, std::size_t& spanning_weight, Callable compare_vertice
 		already_visited[i] = false;
 	}
 
-	for (std::size_t i = 0; i < graph.size; i++) { // to build spanning forest, if graph isn't connected
+	for (std::size_t i = 0; i < graph.size; i++) { // this loop is to build spanning forest, if graph isn't connected
 		if (already_visited[i] == false) {
 			graph.spanning_tree_impl(i, already_visited, spanning_graph, spanning_weight, compare_vertices);
 		}
@@ -1599,18 +1614,19 @@ int main() {
 	AdjMatrix graph17(7);
 	graph17.add_undirected_edge(0, 1, 1);
 	graph17.add_undirected_edge(1, 2, 1);
-	graph17.add_undirected_edge(2, 3, 1);
-	graph17.add_undirected_edge(3, 4, 1);
+//	graph17.add_undirected_edge(2, 3, 1);
+//	graph17.add_undirected_edge(3, 4, 1);
 	graph17.add_undirected_edge(4, 5, 1);
-	graph17.add_undirected_edge(5, 6, 1);
-	graph17.add_undirected_edge(6, 2, 1);
+//	graph17.add_undirected_edge(5, 6, 1);
+//	graph17.add_undirected_edge(6, 2, 1);
 	graph17.add_undirected_edge(0, 4, 1);
 	graph17.add_undirected_edge(0, 5, 1);
 	graph17.add_undirected_edge(2, 5, 1);
-	graph17.add_undirected_edge(0, 3, 1);
+//	graph17.add_undirected_edge(0, 3, 1);
 	graph17.add_undirected_edge(2, 4, 1);
+	graph17.add_undirected_edge(3, 6, 1);
 
-
+	std::cout << "\nGraph 17 (matrix):\n";
 	graph17.print_edges();
 	std::cout << std::endl;
 	graph17.print_matrix();
@@ -1627,12 +1643,12 @@ int main() {
 	graph18.add_undirected_edge(0, 5, 1);
 	graph18.add_undirected_edge(2, 5, 1);
 	graph18.add_undirected_edge(2, 4, 1);
-
+	std::cout << "\nGraph 18 (struct):\n";
 	graph18.print();
 	
 	std::cout << std::endl << std::endl;
 	std::size_t spanning_weight = 0;
-	std::cout << "\n\n\nSpanning tree for graph17 (matrix):\n";
+	std::cout << "\n\n\nSpanning forest for graph17 (matrix):\n";
 	spanning_tree(graph17,spanning_weight, compare_number_matrix).print_matrix();
 	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
 
@@ -1641,11 +1657,36 @@ int main() {
 	spanning_tree(graph18, spanning_weight, compare_number_struct).print();
 	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
 
-	std::cout << "\n\n\nSpanning tree for graph19 (random matrix):\n";
-	AdjMatrix graph19 = generate_random_matrix(10, 20, undirected);
+	std::cout << "\n\n\nSpanning tree/forest for graph19 (random matrix):\n";
+	AdjMatrix graph19 = generate_random_matrix(10, 45, undirected);
+	/*for (std::size_t i = 0; i < 10; i++) {
+		if (i != 1) {
+			graph19.remove_undirected_edge(1, i);
+		}
+		
+	}*/
 	graph19.print_matrix();
 	std::cout << "\nSpanning tree:\n";
-	spanning_tree(graph19, spanning_weight, compare_number_matrix).print_matrix();
+	spanning_tree(graph19, spanning_weight, compare_weight_matrix).print_matrix();
+	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
+
+	std::cout << "\n\n\nSpanning tree/forest for graph20:\n";
+	AdjStruct graph20(6);
+	graph20.add_undirected_edge(0, 1, 1);
+	graph20.add_undirected_edge(0, 2, 1);
+	graph20.add_undirected_edge(0, 3, 1);
+	graph20.add_undirected_edge(1, 2, 1);
+	graph20.add_undirected_edge(1, 4, 1);
+	graph20.add_undirected_edge(2, 5, 1);
+	graph20.add_undirected_edge(3, 4, 1);
+	graph20.add_undirected_edge(3, 5, 1);
+	graph20.add_undirected_edge(4, 5, 1);
+	convert_in_matrix(graph20).print_matrix();
+	std::cout << "\nSpanning tree:\n";
+	AdjStruct graph20_tree = spanning_tree(graph20, spanning_weight, compare_weight_struct);
+	graph20_tree.print();
+	convert_in_matrix(graph20_tree).print_matrix();
 	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
 	std::system("pause");
 	return 0;
