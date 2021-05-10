@@ -505,7 +505,8 @@ struct AdjMatrix {
 	}
 
 
-//private:
+	
+
 	template <typename Callable>
 	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		if (process_after == false) {
@@ -537,6 +538,7 @@ struct AdjMatrix {
 		to_visit.clear();
 	}
 
+	private:
 	bool depth_search_impl_parent(int start_vertex, int parent_vertex, int* already_visited) {
 		//process(start_vertex);
 		already_visited[start_vertex] = 1;
@@ -1392,6 +1394,41 @@ T min_spanning_tree(T& graph, std::size_t& min_weight) {
 	return min_tree;
 }
 
+
+template <typename T>
+std::vector<std::vector<std::size_t>> connected_components(T& graph) { // for directed graphs result can be incorrect: all are depend on from what vertex we start
+	std::vector<std::vector<std::size_t>> component_structure;
+
+	bool* already_visited = new bool[graph.size];
+	for (std::size_t i = 0; i < graph.size; i++) {
+		already_visited[i] = false;
+	}
+
+	for (std::size_t i = 0; i < graph.size; i++) {
+		if (already_visited[i] == false) {
+			std::vector<std::size_t> single_component;
+			graph.depth_search_impl(i, already_visited, [&single_component](std::size_t vertex) {single_component.push_back(vertex); });
+
+			if (single_component.size() != 0) {
+				component_structure.push_back(single_component);
+			}
+		}
+	}
+	delete[]already_visited;
+	return component_structure;
+}
+
+void print_connected_components(std::vector<std::vector<std::size_t>>& component_structure) {
+	for (std::size_t i = 0; i < component_structure.size(); i++) {
+		std::cout << i << ": ";
+		for (std::size_t j = 0; j < component_structure[i].size(); j++) {
+			std::cout << component_structure[i][j] << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+
 int main() {
 	AdjMatrix graph1(5);
 	//graph1.add_edge(1, 2, 5);
@@ -1754,7 +1791,7 @@ int main() {
 	graph18.add_undirected_edge(2, 5, 1);
 	graph18.add_undirected_edge(2, 4, 1);
 	std::cout << "\nGraph 18 (struct):\n";
-	graph18.print();
+	convert_in_matrix(graph18).print_matrix();
 	
 	std::cout << std::endl << std::endl;
 	std::size_t spanning_weight = 0;
@@ -1837,6 +1874,9 @@ int main() {
 		std::cout << "weight = " << spanning_weight << std::endl;
 	}
 
+	std::cout << "\n\n\nConnected components of graph18:\n";
+	std::vector<std::vector<std::size_t>> connected_structure = connected_components(graph18);
+	print_connected_components(connected_structure);
 
 	std::cout << std::endl;
 	graph17.print_edges();
