@@ -124,9 +124,19 @@ struct AdjMatrix {
 			bool is_edge = false;
 			for (std::size_t j = 0; j < size; j++) {
 				if (this->matrix[i][j] != 0) {
-					std::cout << i << "->" << j << " (" << this->matrix[i][j] << "), ";
-					is_edge = true;
-					is_empty = false;
+					if (this->matrix[i][j] == this->matrix[j][i] && i <= j) {
+						std::cout << i << "<->" << j << " (" << this->matrix[i][j] << "), ";
+						is_edge = true;
+						is_empty = false;
+					}
+					else if (this->matrix[i][j] == this->matrix[j][i] && i > j) {
+						; // we are on undirected edge, that we've printed before
+					}
+					else {
+						std::cout << i << "->" << j << " (" << this->matrix[i][j] << "), ";
+						is_edge = true;
+						is_empty = false;
+					}
 				}
 			}
 			if (is_edge) {
@@ -733,11 +743,22 @@ struct AdjStruct {
 			GraphNode* current = this->vertex[i];
 			if (current) {
 				is_empty = false;
+				bool is_newline = false;
 				while (current) {
-					std::cout << i << "->" << current->end_vertex << " (" << current->weight << "), ";
+					if (is_edge(current->end_vertex, i) && i < current->end_vertex) { // if it is undirected edge at the 1st time
+						std::cout << i << "<->" << current->end_vertex << " (" << current->weight << "), ";
+						is_newline = true;
+					}
+					else if (!is_edge(current->end_vertex, i)) { // if it is directed edge
+						std::cout << i << "->" << current->end_vertex << " (" << current->weight << "), ";
+						is_newline = true;
+					}
 					current = current->next;
 				}
-				std::cout << std::endl;
+				if (is_newline) {
+					std::cout << std::endl;
+				}
+				
 			}
 		}
 		if (is_empty) {
@@ -1815,6 +1836,10 @@ int main() {
 		convert_in_matrix(struct_min).print_matrix();
 		std::cout << "weight = " << spanning_weight << std::endl;
 	}
+
+
+	std::cout << std::endl;
+	graph17.print_edges();
 	std::system("pause");
 	return 0;
 }
