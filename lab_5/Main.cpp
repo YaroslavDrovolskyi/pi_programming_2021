@@ -8,6 +8,27 @@
 #include <climits>
 
 enum generate_mode{directed, undirected};
+
+void process_nothing(std::size_t vertex) {}
+template <typename T>
+std::size_t components_number(T& graph);
+
+struct Edge {
+	std::size_t start_vertex;
+	std::size_t end_vertex;
+	int weight;
+
+	Edge(std::size_t start_vertex, std::size_t end_vertex, int weight) {
+		this->start_vertex = start_vertex;
+		this->end_vertex = end_vertex;
+		this->weight = weight;
+	}
+};
+
+bool compare_edges(Edge& edge_1, Edge& edge_2) {
+	return edge_1.weight > edge_2.weight;
+}
+
 struct GraphNode {
 	GraphNode* next;
 	std::size_t end_vertex;
@@ -458,7 +479,23 @@ struct AdjMatrix {
 		return true;
 	}
 
-private:
+	std::vector<Edge> capture_edges(std::size_t& weight) {
+		std::vector<Edge> edges;
+		weight = 0; // re-initialize, if it was 0
+		for (std::size_t i = 0; i < this->size; i++) {
+			for (std::size_t j = i; j < this->size; j++) {
+				if (this->matrix[i][j] != 0) {
+					Edge new_edge(i, j, this->matrix[i][j]);
+					edges.push_back(new_edge);
+					weight += this->matrix[i][j];
+				}
+			}
+		}
+		return edges;
+	}
+
+
+//private:
 	template <typename Callable>
 	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		if (process_after == false) {
@@ -857,6 +894,7 @@ struct AdjStruct {
 		delete[]already_visited;
 	}
 
+	
 
 	std::vector<std::size_t> get_distance(std::size_t start_vertex, std::vector <int>& prev) {
 		const std::size_t INF = INT_MAX;
@@ -969,7 +1007,24 @@ struct AdjStruct {
 		return true;
 	}
 
-	private:
+	std::vector<Edge> capture_edges(std::size_t& weight) {
+		std::vector<Edge> edges;
+		weight = 0; // if it wasn't 0
+		for (std::size_t i = 0; i < this->size; i++) {
+			GraphNode* current = this->vertex[i];
+			while (current) {
+				if (i <= current->end_vertex) {
+					Edge new_edge(i, current->end_vertex, current->weight);
+					edges.push_back(new_edge);
+					weight += current->weight;
+				}
+				current = current->next;
+			}
+		}
+		return edges;
+	}
+	
+//	private:
 
 		template <typename Callable>
 		void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
@@ -1121,8 +1176,6 @@ AdjStruct generate_random_structure(std::size_t size, std::size_t edge_number, s
 void process_print(std::size_t vertex) {
 	std::cout << vertex << " ";
 }
-
-void process_nothing(std::size_t vertex) {}
 
 
 bool compare_weight_struct(GraphNode* node_1, GraphNode* node_2) {
@@ -1282,7 +1335,41 @@ void print_path_all(Path** path_matrix, std::size_t size) {
 	}
 }
 
+template <typename T>
+std::size_t components_number(T& graph) {
+	bool* already_visited = new bool[graph.size];
+	for (std::size_t i = 0; i < graph.size; i++) {
+		already_visited[i] = false;
+	}
+	std::size_t number = 0;
+	for (std::size_t i = 0; i < graph.size; i++) {
+		if (already_visited[i] == false) {
+			number++;
+			graph.depth_search_impl(i, already_visited, process_nothing);
+		}
+	}
+	delete[]already_visited;
+	return number;
+}
 
+template<typename T>
+T min_spanning_tree(T& graph, std::size_t& min_weight) {
+	assert(graph.is_undirected() && "Impossible to create MST: graph is directed");
+	std::vector<Edge> edges = graph.capture_edges(min_weight); // add_edges
+	
+	std::sort(edges.begin(), edges.end(), compare_edges);
+	T min_tree = graph;
+	std::size_t comp_number = components_number(graph);
+	for (std::size_t i = 0; i < edges.size(); i++) {
+		min_tree.remove_undirected_edge(edges[i].start_vertex, edges[i].end_vertex);
+		min_weight -= edges[i].weight;
+		if (comp_number != components_number(min_tree)) { // if number of components increase
+			min_tree.add_undirected_edge(edges[i].start_vertex, edges[i].end_vertex, edges[i].weight);
+			min_weight += edges[i].weight;
+		}
+	}
+	return min_tree;
+}
 
 int main() {
 	AdjMatrix graph1(5);
@@ -1631,6 +1718,8 @@ int main() {
 	std::cout << std::endl;
 	graph17.print_matrix();
 
+	std::cout << "\n Number of components = " << components_number(graph17) << std::endl;
+
 	AdjStruct graph18(7);
 	graph18.add_undirected_edge(0, 1, 1);
 	graph18.add_undirected_edge(1, 2, 1);
@@ -1658,7 +1747,7 @@ int main() {
 	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
 
 	std::cout << "\n\n\nSpanning tree/forest for graph19 (random matrix):\n";
-	AdjMatrix graph19 = generate_random_matrix(10, 45, undirected);
+	AdjMatrix graph19 = generate_random_matrix(10, 20, undirected);
 	/*for (std::size_t i = 0; i < 10; i++) {
 		if (i != 1) {
 			graph19.remove_undirected_edge(1, i);
@@ -1666,8 +1755,8 @@ int main() {
 		
 	}*/
 	graph19.print_matrix();
-	std::cout << "\nSpanning tree:\n";
-	spanning_tree(graph19, spanning_weight, compare_weight_matrix).print_matrix();
+	std::cout << "\nMin Spanning tree:\n";
+	min_spanning_tree(graph19, spanning_weight).print_matrix();
 	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
 
 
@@ -1688,6 +1777,44 @@ int main() {
 	graph20_tree.print();
 	convert_in_matrix(graph20_tree).print_matrix();
 	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
+	std::cout << "\n\n\n=====================Min spanning tree:====================\n";
+
+	/*
+	for (std::size_t I = 0; I < 15; I++) {
+		std::cout << "\n\nMatrix # " << I+1 << std::endl;
+		AdjMatrix graph_matrix = generate_random_matrix(I + 15, I + 20, undirected);
+		graph_matrix.print_matrix();
+		std::cout << "\nMin spanning tree:\n";
+		min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
+		std::cout << "weight = " << spanning_weight << std::endl;
+
+		std::cout << "\n\nStruct # " << I+1 << std::endl;
+		AdjStruct graph_struct = generate_random_structure(I + 15, I + 20, undirected);
+		convert_in_matrix(graph_struct).print_matrix();
+		std::cout << "\nMin spanning tree:\n";
+		AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
+		convert_in_matrix(struct_min).print_matrix();
+		std::cout << "weight = " << spanning_weight << std::endl;
+	}
+	*/
+
+	for (std::size_t I = 1; I < 6; I++) {
+		std::cout << "\n\nMatrix # " << I << std::endl;
+		AdjMatrix graph_matrix = generate_random_matrix(I+1, I + floor(I/2), undirected);
+		graph_matrix.print_matrix();
+		std::cout << "\nMin spanning tree:\n";
+		min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
+		std::cout << "weight = " << spanning_weight << std::endl;
+
+		std::cout << "\n\nStruct # " << I << std::endl;
+		AdjStruct graph_struct = generate_random_structure(I + 1, I + floor(I / 2), undirected);
+		convert_in_matrix(graph_struct).print_matrix();
+		std::cout << "\nMin spanning tree:\n";
+		AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
+		convert_in_matrix(struct_min).print_matrix();
+		std::cout << "weight = " << spanning_weight << std::endl;
+	}
 	std::system("pause");
 	return 0;
 }
