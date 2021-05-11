@@ -23,6 +23,12 @@ struct Edge {
 		this->end_vertex = end_vertex;
 		this->weight = weight;
 	}
+
+	Edge() {
+		this->start_vertex = 0;
+		this->end_vertex = 0;
+		this->weight = 0;
+	}
 };
 
 bool compare_edges(Edge& edge_1, Edge& edge_2) {
@@ -153,7 +159,7 @@ struct AdjMatrix {
 		for (std::size_t k = 0; k < this->size; k++) {
 			for (std::size_t i = 0; i < this->size; i++) {
 				for (std::size_t j = 0; j < this->size; j++) {
-					if (this->matrix[i][k] && this->matrix[k][j]) {
+					if (this->matrix[i][k] && this->matrix[k][j] && this->matrix[i][j] == 0) {
 						if (i != j) {
 							this->matrix[i][j] = rand() % 9 + 1;
 						}
@@ -163,15 +169,14 @@ struct AdjMatrix {
 		}
 	}
 	
-	/*
-	~AdjMatrix() {
-		this->size = 0;
-		for (std::size_t i = 0; i < size; i++) {
+	
+	void clean() {
+		for (std::size_t i = 0; i < this->size; i++) {
 			delete[]this->matrix[i];
 		}
 		delete []this->matrix;
+		this->size = 0;
 	}
-	*/
 
 	template <typename Callable>
 	void depth_search_all(Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
@@ -739,7 +744,7 @@ struct AdjStruct {
 	}
 	
 
-	void print() {
+	void print_edges() {
 		bool is_empty = true;
 		for (std::size_t i = 0; i < this->size; i++) {
 			GraphNode* current = this->vertex[i];
@@ -765,6 +770,21 @@ struct AdjStruct {
 		}
 		if (is_empty) {
 			std::cout << "No edges" << std::endl;
+		}
+	}
+	void print_matrix() {
+		for (std::size_t i = 0; i < this->size; i++) {
+			GraphNode* current = this->vertex[i];
+			for (std::size_t j = 0; j < size; j++) {
+				if (current && current->end_vertex == j) {
+					std::cout << current->weight << " ";
+					current = current->next;
+				}
+				else {
+					std::cout << "0 ";
+				}
+			}
+			std::cout << std::endl;
 		}
 	}
 
@@ -796,6 +816,20 @@ struct AdjStruct {
 		}
 
 		return nullptr;
+	}
+
+	void clean() {
+		for (std::size_t i = 0; i < this->size; i++) {
+			GraphNode* head = this->vertex[i];
+			GraphNode* current = head;
+			while (head) {
+				head = head->next;
+				delete current;
+				current = head;
+			}
+		}
+		delete[]this->vertex;
+		this->size = 0;
 	}
 
 	void transitive_closure() {
@@ -1427,459 +1461,950 @@ void print_connected_components(std::vector<std::vector<std::size_t>>& component
 		std::cout << std::endl;
 	}
 }
-
+void interactive();
 
 int main() {
-	AdjMatrix graph1(5);
-	//graph1.add_edge(1, 2, 5);
-	graph1.add_edge(1, 3, 5);
-	graph1.print_matrix();
-	graph1.print_edges();
-	std::cout << "\nRemove edge 1->3:\n";
-	graph1.remove_edge(1, 3);
-	graph1.print_matrix();
-	graph1.print_edges();
-	std::cout << "\nGenerate random graph:\n";
-	AdjMatrix graph2 = generate_random_matrix(6, 5);
-	graph2.print_matrix();
-	graph2.print_edges();
-	std::cout << "\nAdj struct:\n";
-	AdjStruct graph3(5);
-	graph3.add_edge(1, 4, 6);
-//	graph3.add_edge(1, 2, 6);
-//	graph3.add_edge(1, 1, 6);
-//	graph3.add_edge(1, 2, 6);
-//	graph3.add_edge(1, 2, 6);
-//	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(1, 3, 6);
-//	graph3.add_edge(1, 2, 6);
-	graph3.add_edge(1, 2, 6);
-//	graph3.add_edge(2, 1, 6);
-	graph3.print();
-
-	std::cout << "\nRemove edge 1->2\n";
-//	graph3.remove_edge(1, 0);
-//	graph3.remove_edge(2, 1);
-//	graph3.remove_edge(3, 1);
-///	graph3.remove_edge(1, 2);
-//	graph3.remove_edge(1, 4);
-//	graph3.remove_edge(1, 4);
-	graph3.print();
-
-	std::cout << "\nConvert from Adj struct to matrix:\n";
-	std::cout << "Adj struct:\n";
-	AdjStruct graph4(5);
-	graph4.add_edge(0, 4, 6);
-	graph4.add_edge(0, 2, 7);
-	graph4.add_edge(3, 0, 8);
-	graph4.add_edge(2, 1, 9);
-	graph4.add_edge(4, 3, 3);
-	graph4.add_edge(2, 0, 5);
-
-//	graph4.add_edge(0, 2, 8);
-
-	graph4.print();
-	std::cout << "\nCopied struct:\n";
-	AdjMatrix graph4_copy = convert_in_matrix(graph4);
-	graph4_copy.print_edges();
-	std::cout << std::endl;
-	graph4_copy.print_matrix();
-
-
-	std::cout << "\nConvert from Adj matrix to struct:\n";
-	std::cout << "Adj matrix:\n";
-	AdjMatrix graph5(5);
-	graph5.add_edge(0, 4, 6);
-	graph5.add_edge(0, 2, 7);
-	graph5.add_edge(3, 0, 8);
-	graph5.add_edge(2, 1, 9);
-	graph5.add_edge(4, 3, 3);
-	graph5.add_edge(2, 0, 5);
-
-//	graph5.add_edge(0, 2, 8);
-
-	graph5.print_matrix();
-	graph5.print_edges();
-	std::cout << "\nCopied matrix:\n";
-	AdjStruct graph5_copy = convert_in_struct(graph5);
-	graph5_copy.print();
-
-	std::cout << "\nGenerate random AdjStruct:\n";
-	AdjStruct graph6 = generate_random_structure(5, 6);
-	graph6.print();
-	
-	std::cout <<"\nTransitive closure of AdjMatrix:\n";
-	AdjMatrix graph7(4);
-	graph7.add_edge(0, 1, 1);
-	graph7.add_edge(1, 2, 1);
-	graph7.add_edge(2, 3, 1);
-	//graph7.add_edge(3, 0, 5);
-	graph7.print_matrix();
-	std::cout << "\nAfter transitive closure of AdjMatrix:\n";
-	graph7.transitive_closure();
-	graph7.print_matrix();
-
-	std::cout << "\nTransitive closure of AdjStruct:\n";
-	AdjStruct graph8(4);
-	graph8.add_edge(0, 1, 1);
-	graph8.add_edge(1, 2, 1);
-	graph8.add_edge(2, 3, 1);
-	//graph8.add_edge(0, 2, 1);
-	graph8.print();
-	//graph7.add_edge(3, 0, 5);
-	convert_in_matrix(graph8).print_matrix();
-	std::cout << "\nAfter transitive closure of AdjStruct:\n";
-	graph8.transitive_closure();
-	graph8.print();
-	convert_in_matrix(graph8).print_matrix();
-
-
-
-
-	std::cout << "\n\n\n\n====================SEARCH===========\n\n\n";
-	std::cout << "\nDepth search in AdjStruct from vertex 0:\n";
-	AdjStruct graph9(7);
-	graph9.add_edge(0, 1, 1);
-	graph9.add_edge(0, 4, 1);
-	graph9.add_edge(4, 0, 1);
-	graph9.add_edge(2, 1, 1);
-	graph9.add_edge(2, 3, 1);
-	graph9.add_edge(2, 5, 1);
-	graph9.add_edge(6, 2, 1);
-	graph9.print();
-	std::cout << std::endl;
-	AdjMatrix graph10(7);
-	graph10.add_edge(0, 1, 1);
-	graph10.add_edge(0, 4, 1);
-	graph10.add_edge(4, 0, 8);
-	graph10.add_edge(2, 1, 5);
-	graph10.add_edge(2, 3, 1);
-	graph10.add_edge(2, 5, 12);
-	graph10.add_edge(6, 2, 18);
-	graph10.print_edges();
-	graph10.print_matrix();
-
-	std::size_t I = 6;
-
-	std::cout << "\nDepth search in AdjStruct from vertex " << I << ": \n";
-	graph9.depth_search_one_component(I, process_print, compare_number_struct);
-
-	std::cout << "\nDepth search in AdjMatrix from vertex " << I << ": \n";
-	graph10.depth_search_one_component(I, process_print, compare_number_matrix);
-
-
-	std::cout << "\nBreadth search in AdjStruct from vertex " << I << ": \n";
-	graph9.breadth_search_one_component(I, process_print, compare_number_struct);
-
-	std::cout << "\nBreadth search in AdjMatrix from vertex " << I << ": \n";
-	graph10.breadth_search_one_component(I, process_print, compare_weight_matrix);
-
-
-	std::cout << "\n\nAdjStruct:\n";
-
-	if (graph9.is_connected()) {
-		std::cout << "\nConnected: YES\n";
+	short int next;
+	std::cout << "Hello!\n\n\n";
+	std::cout << "Choose program mode: 0 - exit, 1 - interactive, 2 - demonstrative, 3 - benchamrk\n\n";
+	std::cin >> next;
+	if (next == 1) {
+		interactive();
 	}
-	else {
-		std::cout << "\nConnected: NO\n";
+	else if(next == 2) {
+
 	}
+	else if (next == 3) {
 
-	if (graph9.is_cycles()) {
-		std::cout << "Cycles: YES\n";
 	}
-	else {
-		std::cout << "Cycles: NO\n";
-	}
+	else if (next == 4) {
+		AdjMatrix graph1(5);
+		//graph1.add_edge(1, 2, 5);
+		graph1.add_edge(1, 3, 5);
+		graph1.print_matrix();
+		graph1.print_edges();
+		std::cout << "\nRemove edge 1->3:\n";
+		graph1.remove_edge(1, 3);
+		graph1.print_matrix();
+		graph1.print_edges();
+		std::cout << "\nGenerate random graph:\n";
+		AdjMatrix graph2 = generate_random_matrix(6, 5);
+		graph2.print_matrix();
+		graph2.print_edges();
+		std::cout << "\nAdj struct:\n";
+		AdjStruct graph3(5);
+		graph3.add_edge(1, 4, 6);
+		//	graph3.add_edge(1, 2, 6);
+		//	graph3.add_edge(1, 1, 6);
+		//	graph3.add_edge(1, 2, 6);
+		//	graph3.add_edge(1, 2, 6);
+		//	graph3.add_edge(1, 2, 6);
+		graph3.add_edge(1, 3, 6);
+		//	graph3.add_edge(1, 2, 6);
+		graph3.add_edge(1, 2, 6);
+		//	graph3.add_edge(2, 1, 6);
+		graph3.print_edges();
 
-	if (graph9.is_tree()) {
-		std::cout << "Tree: YES\n";
-	}
-	else {
-		std::cout << "Tree: NO\n";
-	}
-	std::cout << std::endl;
+		std::cout << "\nRemove edge 1->2\n";
+		//	graph3.remove_edge(1, 0);
+		//	graph3.remove_edge(2, 1);
+		//	graph3.remove_edge(3, 1);
+		///	graph3.remove_edge(1, 2);
+		//	graph3.remove_edge(1, 4);
+		//	graph3.remove_edge(1, 4);
+		graph3.print_edges();
 
+		std::cout << "\nConvert from Adj struct to matrix:\n";
+		std::cout << "Adj struct:\n";
+		AdjStruct graph4(5);
+		graph4.add_edge(0, 4, 6);
+		graph4.add_edge(0, 2, 7);
+		graph4.add_edge(3, 0, 8);
+		graph4.add_edge(2, 1, 9);
+		graph4.add_edge(4, 3, 3);
+		graph4.add_edge(2, 0, 5);
 
-	std::cout << "\n\nAdjMatrix:";
+		//	graph4.add_edge(0, 2, 8);
 
-	if (graph10.is_connected()) {
-		std::cout << "\nConnected: YES\n";
-	}
-	else {
-		std::cout << "\nConnected: NO\n";
-	}
-
-	if (graph10.is_cycles()) {
-		std::cout << "Cycles: YES\n";
-	}
-	else {
-		std::cout << "Cycles: NO\n";
-	}
-
-	if (graph10.is_tree()) {
-		std::cout << "Tree: YES\n";
-	}
-	else {
-		std::cout << "Tree: NO\n";
-	}
-	std::cout << std::endl;
-
-	std::cout << std::endl << std::endl;
-	std::cout << "\n\nUndirected edges:\n\n";
-	AdjMatrix graph11(6);
-	graph11.add_undirected_edge(4, 5, 3);
-	graph11.add_undirected_edge(1, 5, 6);
-	graph11.add_undirected_edge(4, 3, 9);
-	graph11.add_undirected_edge(2, 1, 1);
-	graph11.add_undirected_edge(0, 2, 7);
-	graph11.print_edges();
-	std::cout << std::endl << std::endl;
-//	graph11.remove_undirected_edge(5, 0);
-	graph11.print_edges();
-	
-
-	std::cout << "\n\nUndirected edges (generate):\n\n";
-	generate_random_matrix(6, 7, undirected).print_matrix();
-	std::cout << std::endl;
-	generate_random_structure(6, 7, undirected).print();
-
-
-
-	std::size_t J = 6, SIZE  = 7;
-	AdjMatrix graph12(SIZE);
-	graph12.add_edge(0, 1, 1);
-	graph12.add_edge(0, 4, 1);
-	graph12.add_edge(4, 0, 8);
-	graph12.add_edge(2, 1, 5);
-	graph12.add_edge(2, 3, 100); // 
-	graph12.add_edge(2, 5, 12);
-	graph12.add_edge(6, 2, 18);
-	graph12.add_edge(5, 3, 10);
-	graph12.add_edge(1, 3, 21);
-	graph12.print_edges();
-	graph12.print_matrix();
-
-	AdjMatrix graph13(SIZE);
-	graph13.add_edge(0, 1, 1);
-	graph13.add_edge(0, 4, 1);
-	graph13.add_edge(4, 0, 8);
-	graph13.add_edge(2, 1, 5);
-	graph13.add_edge(2, 3, 100); // 
-	graph13.add_edge(2, 5, 12);
-	graph13.add_edge(6, 2, 18);
-	graph13.add_edge(5, 3, 10);
-	graph13.add_edge(1, 3, 21);
-	graph13.print_edges();
-	graph13.print_matrix();
+		graph4.print_edges();
+		std::cout << "\nCopied struct:\n";
+		AdjMatrix graph4_copy = convert_in_matrix(graph4);
+		graph4_copy.print_edges();
+		std::cout << std::endl;
+		graph4_copy.print_matrix();
 
 
-	for (std::size_t J = 0; J < graph12.size; J++) {
-		std::cout << "\n\n\n\n\nMIN distances from vertex " << J << ": \n\n\n";
-		std::vector<Path> path_structure = get_path_from_one(graph12,J);
+		std::cout << "\nConvert from Adj matrix to struct:\n";
+		std::cout << "Adj matrix:\n";
+		AdjMatrix graph5(5);
+		graph5.add_edge(0, 4, 6);
+		graph5.add_edge(0, 2, 7);
+		graph5.add_edge(3, 0, 8);
+		graph5.add_edge(2, 1, 9);
+		graph5.add_edge(4, 3, 3);
+		graph5.add_edge(2, 0, 5);
 
-		print_path_structure(path_structure, J);
-	}
-	std::cout << "\n\n\n==============\n";
-	print_path_all(get_path_from_all(graph13), graph13.size);
+		//	graph5.add_edge(0, 2, 8);
 
+		graph5.print_matrix();
+		graph5.print_edges();
+		std::cout << "\nCopied matrix:\n";
+		AdjStruct graph5_copy = convert_in_struct(graph5);
+		graph5_copy.print_edges();
 
-	std::cout << "\n\n\n===========Topological sort====================\n";
-	AdjMatrix graph14(6);
-	/*
-	graph14.add_edge(5, 0, 1);
-	graph14.add_edge(4, 0, 1);
-	graph14.add_edge(5, 2, 1);
-	graph14.add_edge(4, 1, 1);
-	graph14.add_edge(2, 3, 1);
-	graph14.add_edge(3, 1, 1);
-	*/
-	graph14.add_edge(0, 3, 1);
-	graph14.add_edge(0, 4, 1);
-	graph14.add_edge(0, 5, 1);
-	graph14.add_edge(3, 4, 1);
-	graph14.add_edge(4, 5, 1);
-	graph14.add_edge(3, 2, 1);
-	graph14.add_edge(2, 1, 1);
-	graph14.add_edge(4, 1, 1);
-	graph14.add_edge(5, 1, 1);
-	graph14.add_edge(4, 2, 1);
-//	graph14.add_edge(1, 4, 1);
+		std::cout << "\nGenerate random AdjStruct:\n";
+		AdjStruct graph6 = generate_random_structure(5, 6);
+		graph6.print_edges();
 
+		std::cout << "\nTransitive closure of AdjMatrix:\n";
+		AdjMatrix graph7(4);
+		graph7.add_edge(0, 1, 1);
+		graph7.add_edge(1, 2, 1);
+		graph7.add_edge(2, 3, 1);
+		//graph7.add_edge(3, 0, 5);
+		graph7.print_matrix();
+		std::cout << "\nAfter transitive closure of AdjMatrix:\n";
+		graph7.transitive_closure();
+		graph7.print_matrix();
 
-	graph14.print_matrix();
-	graph14.print_edges();
-	std::cout << std::endl;
-
-	AdjStruct graph15(6);
-	graph15.add_edge(0, 3, 1);
-	graph15.add_edge(0, 4, 1);
-	graph15.add_edge(0, 5, 1);
-	graph15.add_edge(3, 4, 1);
-	graph15.add_edge(4, 5, 1);
-	graph15.add_edge(3, 2, 1);
-	graph15.add_edge(2, 1, 1);
-	graph15.add_edge(4, 1, 1);
-	graph15.add_edge(5, 1, 1);
-	graph15.add_edge(4, 2, 1);
-	graph15.print();
+		std::cout << "\nTransitive closure of AdjStruct:\n";
+		AdjStruct graph8(4);
+		graph8.add_edge(0, 1, 1);
+		graph8.add_edge(1, 2, 1);
+		graph8.add_edge(2, 3, 1);
+		//graph8.add_edge(0, 2, 1);
+		graph8.print_edges();
+		//graph7.add_edge(3, 0, 5);
+		convert_in_matrix(graph8).print_matrix();
+		std::cout << "\nAfter transitive closure of AdjStruct:\n";
+		graph8.transitive_closure();
+		graph8.print_edges();
+		convert_in_matrix(graph8).print_matrix();
 
 
-	std::cout << "\n\nSorted graph14:\n";
-	AdjMatrix arr14_sorted = graph14.topological_sort();
-	arr14_sorted.print_matrix();
-	std::cout << std::endl;
-//	std::vector<std::size_t> arr14 = graph14.topological_sort();
-//	for (std::size_t i = 0; i < arr14.size(); i++) {
-//		std::cout << arr14[i] << " ";
-//	}
-//	std::cout << std::endl;
-
-	std::cout << "\n\nSorted graph15:\n";
-//	std::vector<std::size_t> arr15 = graph15.topological_sort();
-//	for (std::size_t i = 0; i < arr15.size(); i++) {
-//		std::cout << arr15[i] << " ";
-//	}
-	AdjStruct arr15_sorted = graph15.topological_sort();
-	convert_in_matrix(arr15_sorted).print_matrix();
-	std::cout << std::endl;
-
-	AdjStruct graph16(6);
-	graph16.add_edge(0, 1, 1);
-	graph16.add_edge(2, 1, 1);
-	graph16.add_edge(3, 1, 1);
-	graph16.add_edge(1, 4, 1);
-	graph16.add_edge(5, 4, 1);
-	graph16.add_edge(3, 5, 1);
-//	graph16.add_edge(4, 1, 1);
-	graph16.print();
-	graph16.topological_sort().print();
 
 
-	std::cout << "\n\n\n===========Spanning tree====================\n";
-	AdjMatrix graph17(7);
-	graph17.add_undirected_edge(0, 1, 1);
-	graph17.add_undirected_edge(1, 2, 1);
-//	graph17.add_undirected_edge(2, 3, 1);
-//	graph17.add_undirected_edge(3, 4, 1);
-	graph17.add_undirected_edge(4, 5, 1);
-//	graph17.add_undirected_edge(5, 6, 1);
-//	graph17.add_undirected_edge(6, 2, 1);
-	graph17.add_undirected_edge(0, 4, 1);
-	graph17.add_undirected_edge(0, 5, 1);
-	graph17.add_undirected_edge(2, 5, 1);
-//	graph17.add_undirected_edge(0, 3, 1);
-	graph17.add_undirected_edge(2, 4, 1);
-	graph17.add_undirected_edge(3, 6, 1);
+		std::cout << "\n\n\n\n====================SEARCH===========\n\n\n";
+		std::cout << "\nDepth search in AdjStruct from vertex 0:\n";
+		AdjStruct graph9(7);
+		graph9.add_edge(0, 1, 1);
+		graph9.add_edge(0, 4, 1);
+		graph9.add_edge(4, 0, 1);
+		graph9.add_edge(2, 1, 1);
+		graph9.add_edge(2, 3, 1);
+		graph9.add_edge(2, 5, 1);
+		graph9.add_edge(6, 2, 1);
+		graph9.print_edges();
+		std::cout << std::endl;
+		AdjMatrix graph10(7);
+		graph10.add_edge(0, 1, 1);
+		graph10.add_edge(0, 4, 1);
+		graph10.add_edge(4, 0, 8);
+		graph10.add_edge(2, 1, 5);
+		graph10.add_edge(2, 3, 1);
+		graph10.add_edge(2, 5, 12);
+		graph10.add_edge(6, 2, 18);
+		graph10.print_edges();
+		graph10.print_matrix();
 
-	std::cout << "\nGraph 17 (matrix):\n";
-	graph17.print_edges();
-	std::cout << std::endl;
-	graph17.print_matrix();
+		std::size_t I = 6;
 
-	std::cout << "\n Number of components = " << components_number(graph17) << std::endl;
+		std::cout << "\nDepth search in AdjStruct from vertex " << I << ": \n";
+		graph9.depth_search_one_component(I, process_print, compare_number_struct);
 
-	AdjStruct graph18(7);
-	graph18.add_undirected_edge(0, 1, 1);
-	graph18.add_undirected_edge(1, 2, 1);
-	graph18.add_undirected_edge(2, 3, 1);
-	graph18.add_undirected_edge(3, 4, 1);
-	graph18.add_undirected_edge(4, 5, 1);
-	graph18.add_undirected_edge(5, 6, 1);
-	graph18.add_undirected_edge(6, 2, 1);
-	graph18.add_undirected_edge(0, 4, 1);
-	graph18.add_undirected_edge(0, 5, 1);
-	graph18.add_undirected_edge(2, 5, 1);
-	graph18.add_undirected_edge(2, 4, 1);
-	std::cout << "\nGraph 18 (struct):\n";
-	convert_in_matrix(graph18).print_matrix();
-	
-	std::cout << std::endl << std::endl;
-	std::size_t spanning_weight = 0;
-	std::cout << "\n\n\nSpanning forest for graph17 (matrix):\n";
-	spanning_tree(graph17,spanning_weight, compare_number_matrix).print_matrix();
-	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+		std::cout << "\nDepth search in AdjMatrix from vertex " << I << ": \n";
+		graph10.depth_search_one_component(I, process_print, compare_number_matrix);
 
-	std::cout << std::endl << std::endl;
-	std::cout << "\n\n\nSpanning tree for graph18 (struct):\n";
-	spanning_tree(graph18, spanning_weight, compare_number_struct).print();
-	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
 
-	std::cout << "\n\n\nSpanning tree/forest for graph19 (random matrix):\n";
-	AdjMatrix graph19 = generate_random_matrix(10, 20, undirected);
-	/*for (std::size_t i = 0; i < 10; i++) {
-		if (i != 1) {
-			graph19.remove_undirected_edge(1, i);
+		std::cout << "\nBreadth search in AdjStruct from vertex " << I << ": \n";
+		graph9.breadth_search_one_component(I, process_print, compare_number_struct);
+
+		std::cout << "\nBreadth search in AdjMatrix from vertex " << I << ": \n";
+		graph10.breadth_search_one_component(I, process_print, compare_weight_matrix);
+
+
+		std::cout << "\n\nAdjStruct:\n";
+
+		if (graph9.is_connected()) {
+			std::cout << "\nConnected: YES\n";
 		}
-		
-	}*/
-	graph19.print_matrix();
-	std::cout << "\nMin Spanning tree:\n";
-	min_spanning_tree(graph19, spanning_weight).print_matrix();
-	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+		else {
+			std::cout << "\nConnected: NO\n";
+		}
+
+		if (graph9.is_cycles()) {
+			std::cout << "Cycles: YES\n";
+		}
+		else {
+			std::cout << "Cycles: NO\n";
+		}
+
+		if (graph9.is_tree()) {
+			std::cout << "Tree: YES\n";
+		}
+		else {
+			std::cout << "Tree: NO\n";
+		}
+		std::cout << std::endl;
 
 
-	std::cout << "\n\n\nSpanning tree/forest for graph20:\n";
-	AdjStruct graph20(6);
-	graph20.add_undirected_edge(0, 1, 1);
-	graph20.add_undirected_edge(0, 2, 1);
-	graph20.add_undirected_edge(0, 3, 1);
-	graph20.add_undirected_edge(1, 2, 1);
-	graph20.add_undirected_edge(1, 4, 1);
-	graph20.add_undirected_edge(2, 5, 1);
-	graph20.add_undirected_edge(3, 4, 1);
-	graph20.add_undirected_edge(3, 5, 1);
-	graph20.add_undirected_edge(4, 5, 1);
-	convert_in_matrix(graph20).print_matrix();
-	std::cout << "\nSpanning tree:\n";
-	AdjStruct graph20_tree = spanning_tree(graph20, spanning_weight, compare_weight_struct);
-	graph20_tree.print();
-	convert_in_matrix(graph20_tree).print_matrix();
-	std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+		std::cout << "\n\nAdjMatrix:";
 
-	std::cout << "\n\n\n=====================Min spanning tree:====================\n";
+		if (graph10.is_connected()) {
+			std::cout << "\nConnected: YES\n";
+		}
+		else {
+			std::cout << "\nConnected: NO\n";
+		}
 
-	/*
-	for (std::size_t I = 0; I < 15; I++) {
-		std::cout << "\n\nMatrix # " << I+1 << std::endl;
-		AdjMatrix graph_matrix = generate_random_matrix(I + 15, I + 20, undirected);
-		graph_matrix.print_matrix();
-		std::cout << "\nMin spanning tree:\n";
-		min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
-		std::cout << "weight = " << spanning_weight << std::endl;
+		if (graph10.is_cycles()) {
+			std::cout << "Cycles: YES\n";
+		}
+		else {
+			std::cout << "Cycles: NO\n";
+		}
 
-		std::cout << "\n\nStruct # " << I+1 << std::endl;
-		AdjStruct graph_struct = generate_random_structure(I + 15, I + 20, undirected);
-		convert_in_matrix(graph_struct).print_matrix();
-		std::cout << "\nMin spanning tree:\n";
-		AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
-		convert_in_matrix(struct_min).print_matrix();
-		std::cout << "weight = " << spanning_weight << std::endl;
+		if (graph10.is_tree()) {
+			std::cout << "Tree: YES\n";
+		}
+		else {
+			std::cout << "Tree: NO\n";
+		}
+		std::cout << std::endl;
+
+		std::cout << std::endl << std::endl;
+		std::cout << "\n\nUndirected edges:\n\n";
+		AdjMatrix graph11(6);
+		graph11.add_undirected_edge(4, 5, 3);
+		graph11.add_undirected_edge(1, 5, 6);
+		graph11.add_undirected_edge(4, 3, 9);
+		graph11.add_undirected_edge(2, 1, 1);
+		graph11.add_undirected_edge(0, 2, 7);
+		graph11.print_edges();
+		std::cout << std::endl << std::endl;
+		//	graph11.remove_undirected_edge(5, 0);
+		graph11.print_edges();
+
+
+		std::cout << "\n\nUndirected edges (generate):\n\n";
+		generate_random_matrix(6, 7, undirected).print_matrix();
+		std::cout << std::endl;
+		generate_random_structure(6, 7, undirected).print_edges();
+
+
+
+		std::size_t J = 6, SIZE = 7;
+		AdjMatrix graph12(SIZE);
+		graph12.add_edge(0, 1, 1);
+		graph12.add_edge(0, 4, 1);
+		graph12.add_edge(4, 0, 8);
+		graph12.add_edge(2, 1, 5);
+		graph12.add_edge(2, 3, 100); // 
+		graph12.add_edge(2, 5, 12);
+		graph12.add_edge(6, 2, 18);
+		graph12.add_edge(5, 3, 10);
+		graph12.add_edge(1, 3, 21);
+		graph12.print_edges();
+		graph12.print_matrix();
+
+		AdjMatrix graph13(SIZE);
+		graph13.add_edge(0, 1, 1);
+		graph13.add_edge(0, 4, 1);
+		graph13.add_edge(4, 0, 8);
+		graph13.add_edge(2, 1, 5);
+		graph13.add_edge(2, 3, 100); // 
+		graph13.add_edge(2, 5, 12);
+		graph13.add_edge(6, 2, 18);
+		graph13.add_edge(5, 3, 10);
+		graph13.add_edge(1, 3, 21);
+		graph13.print_edges();
+		graph13.print_matrix();
+
+
+		for (std::size_t J = 0; J < graph12.size; J++) {
+			std::cout << "\n\n\n\n\nMIN distances from vertex " << J << ": \n\n\n";
+			std::vector<Path> path_structure = get_path_from_one(graph12, J);
+
+			print_path_structure(path_structure, J);
+		}
+		std::cout << "\n\n\n==============\n";
+		print_path_all(get_path_from_all(graph13), graph13.size);
+
+
+		std::cout << "\n\n\n===========Topological sort====================\n";
+		AdjMatrix graph14(6);
+		/*
+		graph14.add_edge(5, 0, 1);
+		graph14.add_edge(4, 0, 1);
+		graph14.add_edge(5, 2, 1);
+		graph14.add_edge(4, 1, 1);
+		graph14.add_edge(2, 3, 1);
+		graph14.add_edge(3, 1, 1);
+		*/
+		graph14.add_edge(0, 3, 1);
+		graph14.add_edge(0, 4, 1);
+		graph14.add_edge(0, 5, 1);
+		graph14.add_edge(3, 4, 1);
+		graph14.add_edge(4, 5, 1);
+		graph14.add_edge(3, 2, 1);
+		graph14.add_edge(2, 1, 1);
+		graph14.add_edge(4, 1, 1);
+		graph14.add_edge(5, 1, 1);
+		graph14.add_edge(4, 2, 1);
+		//	graph14.add_edge(1, 4, 1);
+
+
+		graph14.print_matrix();
+		graph14.print_edges();
+		std::cout << std::endl;
+
+		AdjStruct graph15(6);
+		graph15.add_edge(0, 3, 1);
+		graph15.add_edge(0, 4, 1);
+		graph15.add_edge(0, 5, 1);
+		graph15.add_edge(3, 4, 1);
+		graph15.add_edge(4, 5, 1);
+		graph15.add_edge(3, 2, 1);
+		graph15.add_edge(2, 1, 1);
+		graph15.add_edge(4, 1, 1);
+		graph15.add_edge(5, 1, 1);
+		graph15.add_edge(4, 2, 1);
+		graph15.print_edges();
+
+
+		std::cout << "\n\nSorted graph14:\n";
+		AdjMatrix arr14_sorted = graph14.topological_sort();
+		arr14_sorted.print_matrix();
+		std::cout << std::endl;
+		//	std::vector<std::size_t> arr14 = graph14.topological_sort();
+		//	for (std::size_t i = 0; i < arr14.size(); i++) {
+		//		std::cout << arr14[i] << " ";
+		//	}
+		//	std::cout << std::endl;
+
+		std::cout << "\n\nSorted graph15:\n";
+		//	std::vector<std::size_t> arr15 = graph15.topological_sort();
+		//	for (std::size_t i = 0; i < arr15.size(); i++) {
+		//		std::cout << arr15[i] << " ";
+		//	}
+		AdjStruct arr15_sorted = graph15.topological_sort();
+		convert_in_matrix(arr15_sorted).print_matrix();
+		std::cout << std::endl;
+
+		AdjStruct graph16(6);
+		graph16.add_edge(0, 1, 1);
+		graph16.add_edge(2, 1, 1);
+		graph16.add_edge(3, 1, 1);
+		graph16.add_edge(1, 4, 1);
+		graph16.add_edge(5, 4, 1);
+		graph16.add_edge(3, 5, 1);
+		//	graph16.add_edge(4, 1, 1);
+		graph16.print_edges();
+		graph16.topological_sort().print_edges();
+
+
+		std::cout << "\n\n\n===========Spanning tree====================\n";
+		AdjMatrix graph17(7);
+		graph17.add_undirected_edge(0, 1, 1);
+		graph17.add_undirected_edge(1, 2, 1);
+		//	graph17.add_undirected_edge(2, 3, 1);
+		//	graph17.add_undirected_edge(3, 4, 1);
+		graph17.add_undirected_edge(4, 5, 1);
+		//	graph17.add_undirected_edge(5, 6, 1);
+		//	graph17.add_undirected_edge(6, 2, 1);
+		graph17.add_undirected_edge(0, 4, 1);
+		graph17.add_undirected_edge(0, 5, 1);
+		graph17.add_undirected_edge(2, 5, 1);
+		//	graph17.add_undirected_edge(0, 3, 1);
+		graph17.add_undirected_edge(2, 4, 1);
+		graph17.add_undirected_edge(3, 6, 1);
+
+		std::cout << "\nGraph 17 (matrix):\n";
+		graph17.print_edges();
+		std::cout << std::endl;
+		graph17.print_matrix();
+
+		std::cout << "\n Number of components = " << components_number(graph17) << std::endl;
+
+		AdjStruct graph18(7);
+		graph18.add_undirected_edge(0, 1, 1);
+		graph18.add_undirected_edge(1, 2, 1);
+		graph18.add_undirected_edge(2, 3, 1);
+		graph18.add_undirected_edge(3, 4, 1);
+		graph18.add_undirected_edge(4, 5, 1);
+		graph18.add_undirected_edge(5, 6, 1);
+		graph18.add_undirected_edge(6, 2, 1);
+		graph18.add_undirected_edge(0, 4, 1);
+		graph18.add_undirected_edge(0, 5, 1);
+		graph18.add_undirected_edge(2, 5, 1);
+		graph18.add_undirected_edge(2, 4, 1);
+		std::cout << "\nGraph 18 (struct):\n";
+		convert_in_matrix(graph18).print_matrix();
+
+		std::cout << std::endl << std::endl;
+		std::size_t spanning_weight = 0;
+		std::cout << "\n\n\nSpanning forest for graph17 (matrix):\n";
+		spanning_tree(graph17, spanning_weight, compare_number_matrix).print_matrix();
+		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
+		std::cout << std::endl << std::endl;
+		std::cout << "\n\n\nSpanning tree for graph18 (struct):\n";
+		spanning_tree(graph18, spanning_weight, compare_number_struct).print_edges();
+		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
+		std::cout << "\n\n\nSpanning tree/forest for graph19 (random matrix):\n";
+		AdjMatrix graph19 = generate_random_matrix(10, 20, undirected);
+		/*for (std::size_t i = 0; i < 10; i++) {
+			if (i != 1) {
+				graph19.remove_undirected_edge(1, i);
+			}
+
+		}*/
+		graph19.print_matrix();
+		std::cout << "\nMin Spanning tree:\n";
+		min_spanning_tree(graph19, spanning_weight).print_matrix();
+		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
+
+		std::cout << "\n\n\nSpanning tree/forest for graph20:\n";
+		AdjStruct graph20(6);
+		graph20.add_undirected_edge(0, 1, 1);
+		graph20.add_undirected_edge(0, 2, 1);
+		graph20.add_undirected_edge(0, 3, 1);
+		graph20.add_undirected_edge(1, 2, 1);
+		graph20.add_undirected_edge(1, 4, 1);
+		graph20.add_undirected_edge(2, 5, 1);
+		graph20.add_undirected_edge(3, 4, 1);
+		graph20.add_undirected_edge(3, 5, 1);
+		graph20.add_undirected_edge(4, 5, 1);
+		convert_in_matrix(graph20).print_matrix();
+		std::cout << "\nSpanning tree:\n";
+		AdjStruct graph20_tree = spanning_tree(graph20, spanning_weight, compare_weight_struct);
+		graph20_tree.print_edges();
+		convert_in_matrix(graph20_tree).print_matrix();
+		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
+
+		std::cout << "\n\n\n=====================Min spanning tree:====================\n";
+
+		/*
+		for (std::size_t I = 0; I < 15; I++) {
+			std::cout << "\n\nMatrix # " << I+1 << std::endl;
+			AdjMatrix graph_matrix = generate_random_matrix(I + 15, I + 20, undirected);
+			graph_matrix.print_matrix();
+			std::cout << "\nMin spanning tree:\n";
+			min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
+			std::cout << "weight = " << spanning_weight << std::endl;
+
+			std::cout << "\n\nStruct # " << I+1 << std::endl;
+			AdjStruct graph_struct = generate_random_structure(I + 15, I + 20, undirected);
+			convert_in_matrix(graph_struct).print_matrix();
+			std::cout << "\nMin spanning tree:\n";
+			AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
+			convert_in_matrix(struct_min).print_matrix();
+			std::cout << "weight = " << spanning_weight << std::endl;
+		}
+		*/
+
+		for (std::size_t I = 1; I < 6; I++) {
+			std::cout << "\n\nMatrix # " << I << std::endl;
+			AdjMatrix graph_matrix = generate_random_matrix(I + 1, I + floor(I / 2), undirected);
+			graph_matrix.print_matrix();
+			std::cout << "\nMin spanning tree:\n";
+			min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
+			std::cout << "weight = " << spanning_weight << std::endl;
+
+			std::cout << "\n\nStruct # " << I << std::endl;
+			AdjStruct graph_struct = generate_random_structure(I + 1, I + floor(I / 2), undirected);
+			convert_in_matrix(graph_struct).print_matrix();
+			std::cout << "\nMin spanning tree:\n";
+			AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
+			convert_in_matrix(struct_min).print_matrix();
+			std::cout << "weight = " << spanning_weight << std::endl;
+		}
+
+		std::cout << "\n\n\nConnected components of graph18:\n";
+		std::vector<std::vector<std::size_t>> connected_structure = connected_components(graph18);
+		print_connected_components(connected_structure);
+		std::cout << std::endl;
+		graph17.print_edges();
 	}
-	*/
-
-	for (std::size_t I = 1; I < 6; I++) {
-		std::cout << "\n\nMatrix # " << I << std::endl;
-		AdjMatrix graph_matrix = generate_random_matrix(I+1, I + floor(I/2), undirected);
-		graph_matrix.print_matrix();
-		std::cout << "\nMin spanning tree:\n";
-		min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
-		std::cout << "weight = " << spanning_weight << std::endl;
-
-		std::cout << "\n\nStruct # " << I << std::endl;
-		AdjStruct graph_struct = generate_random_structure(I + 1, I + floor(I / 2), undirected);
-		convert_in_matrix(graph_struct).print_matrix();
-		std::cout << "\nMin spanning tree:\n";
-		AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
-		convert_in_matrix(struct_min).print_matrix();
-		std::cout << "weight = " << spanning_weight << std::endl;
-	}
-
-	std::cout << "\n\n\nConnected components of graph18:\n";
-	std::vector<std::vector<std::size_t>> connected_structure = connected_components(graph18);
-	print_connected_components(connected_structure);
-
-	std::cout << std::endl;
-	graph17.print_edges();
+	std::cout << "\n\nTHE END!!!\n\n";
 	std::system("pause");
 	return 0;
 }
+
+
+void print_menu(bool is_structure = 0) {
+	std::cout << "\n============MENU============\n" <<
+		"0\tchoose realization\n" <<
+		"1\tadd edge\n" <<
+		"2\tremove edge\n" <<
+		"3\treinitialize with random graph\n" <<
+		"4\tprint \n";
+		if (is_structure == false) {
+			std::cout << "5\tconvert into Adjacent Structure\n";
+		}
+		else {
+			std::cout << "5\tconvert into Adjacent Matrix\n";
+		}
+
+	std::cout << "6\tcheck connectivity\n" <<
+		"7\tfind connected components\n" <<
+		"8\tcheck acyclicity\n" <<
+		"9\tcheck if graph is a tree\n" <<
+		"10\tbuild transitive closure of graph\n" <<
+		"11\tDFS\n" <<
+		"12\tBFS\n" <<
+		"13\tmin path\n" <<
+		"14\ttopological sort\n" <<
+		"15\tbuild spanning tree\n" <<
+		"16\tbuild min spanning tree (for undirected graphs)\n" <<
+		"===========================\n\n";
+}
+
+Edge get_edge(bool with_weight = true) {
+	Edge new_edge;
+	std::cout << "Enter start vertex (>= 0): ";
+	std::cin >> new_edge.start_vertex;
+	std::cout << "Enter end vertex (>= 0): ";
+	std::cin >> new_edge.end_vertex;
+	if (with_weight) {
+		std::cout << "Enter edge weight (> 0): ";
+		std::cin >> new_edge.weight;
+	}
+
+
+	return new_edge;
+}
+
+
+
+void interactive() {
+	while (true) {
+		std::cout << "0 - exit, 1 - Adjacent Matrix, 2 - Adjacent Structure\n";
+		short int realization = 1;
+		std::cin >> realization;
+		if (realization == 0) { return; }
+		if (realization == 1) {
+			std::cout << "Enter number of vertex (>0):";
+			std::size_t size;
+			std::cin >> size;
+			AdjMatrix graph(size);
+			std::cout << "graph created!\n";
+			short int action = 1;
+			while (action > 0) {
+				print_menu(0);
+				std::cin >> action;
+				switch (action) {
+				case 1: { // add adge
+					short int direct;
+					std::cout << "0 - directed, 1 - undirected edge: ";
+					std::cin >> direct;
+					Edge new_edge = get_edge();
+
+					if (direct == 0) {
+						graph.add_edge(new_edge.start_vertex, new_edge.end_vertex, new_edge.weight);
+						std::cout << "directed edge added\n";
+					}
+					else {
+						graph.add_undirected_edge(new_edge.start_vertex, new_edge.end_vertex, new_edge.weight);
+						std::cout << "undirected edge added\n";
+					}
+					
+					break;
+				}
+				case 2: { // remove edge
+					short int direct;
+					std::cout << "0 - directed, 1 - undirected edge: ";
+					std::cin >> direct;
+					Edge new_edge = get_edge(false);
+
+					if (direct == 0) {
+						graph.remove_edge(new_edge.start_vertex, new_edge.end_vertex);
+						std::cout << "directed edge removed\n";
+					}
+					else {
+						graph.remove_undirected_edge(new_edge.start_vertex, new_edge.end_vertex);
+						std::cout << "undirected edge removed\n";
+					}
+					break;
+				}
+				case 3: {
+					graph.clean();
+					int size, edges, direct;
+					std::cout << "Enter number of vertex: ";
+					std::cin >> size;
+					std::cout << "Enter number of edges: ";
+					std::cin >> edges;
+					std::cout << "0 - directed, 1 - undirected: ";
+					std::cin >> direct;
+					graph = generate_random_matrix(size, edges, direct);
+					break;
+				}
+				case 4: { // print
+					short int presentation;
+					std::cout << "0 - matrix, 1 - edges: ";
+					std::cin >> presentation;
+					if (presentation == 0) {
+						graph.print_matrix();
+					}
+					else {
+						graph.print_edges();
+					}
+					break;
+				}
+				case 5: {
+					std::cout << "Converted:\n";
+					convert_in_struct(graph).print_edges();
+					break;
+				}
+				case 6: {
+					if (graph.is_connected() == true) {
+						std::cout << "graph is connected\n";
+					}
+					else {
+						std::cout << "graph isn't connected\n";
+					}
+					break;
+				}
+				case 7: {
+					std::vector<std::vector<std::size_t>> connected_structure = connected_components(graph);
+					print_connected_components(connected_structure);
+					break;
+				}
+				case 8: {
+					if (graph.is_cycles() == true) {
+						std::cout << "graph has cycle\n";
+					}
+					else {
+						std::cout << "graph hasn't cycle\n";
+					}
+					break;
+				}
+				case 9: {
+					if (graph.is_tree() == true) {
+						std::cout << "graph is a tree\n";
+					}
+					else {
+						std::cout << "graph isn't a tree\n";
+					}
+					break;
+				}
+				case 10: {
+					std::cout << "\nTransitive closure:\n";
+					graph.transitive_closure();
+					graph.print_edges();
+					break;
+				}
+				case 11: { // DFS
+					int vertex = -1, priority;
+					std::cout << "-1 - DFS all, 0 - from vertex\n";
+					std::cin >> vertex;
+					if (vertex == 0) {
+						std::cout << "Enter number of vertex: ";
+						std::cin >> vertex;
+					}
+					std::cout << "priority: 0 - vertex number, 1 - weight\n";
+					std::cin >> priority;
+					bool (*order_func)(GraphNode&, GraphNode&) = priority == 0 ? compare_number_matrix : compare_weight_matrix;
+					if (vertex == -1) {
+						graph.depth_search_all(process_print, false, order_func);
+					}
+					else {
+						graph.depth_search_one_component(vertex, process_print, false, order_func);
+					}
+					break;
+				}
+				case 12: { // BFS
+					int vertex = -1, priority;
+					std::cout << "-1 - BFS all, 0 - from one vertex\n";
+					std::cin >> vertex;
+					if (vertex == 0) {
+						std::cout << "Enter number of vertex: ";
+						std::cin >> vertex;
+					}
+					std::cout << "priority: 0 - vertex number, 1 - weight\n";
+					std::cin >> priority;
+					bool (*order_func)(GraphNode&, GraphNode&) = priority == 0 ? compare_number_matrix : compare_weight_matrix;
+					if (vertex == -1) {
+						graph.breadth_search_all(process_print, order_func);
+					}
+					else {
+						graph.breadth_search_one_component(vertex, process_print, order_func);
+					}
+					break;
+				}
+				case 13: { // min paths
+					std::cout << "1 - between two vertices, 2 - from one to all, 3 - from all to all: ";
+					int next;
+					std::cin >> next;
+					if (next == 1) {
+						Edge vertices = get_edge(false);
+						Path path = get_path_between_two(graph, vertices.start_vertex, vertices.end_vertex);
+						print_path(path, vertices.start_vertex, vertices.end_vertex);
+					}
+					else if (next == 2) {
+						std::cout << "Enter vertix: ";
+						std::size_t vertex;
+						std::cin >> vertex;
+						std::vector<Path> path_structure = get_path_from_one(graph, vertex);
+						print_path_structure(path_structure, vertex);
+					}
+					else if (next == 3) {
+						Path** path_matrix = get_path_from_all(graph);
+						print_path_all(path_matrix, graph.size);
+					}
+					break;
+				}
+				case 14: { // topological sort
+					AdjMatrix sorted_graph = graph.topological_sort();
+					std::cout << "Sorted graph:\n";
+					sorted_graph.print_edges();
+					break;
+				}
+				case 15: { // spanning tree
+					int priority;
+					std::cout << "priority: 0 - vertex number, 1 - weight\n";
+					std::cin >> priority;
+					bool (*order_func)(GraphNode&, GraphNode&) = priority == 0 ? compare_number_matrix : compare_weight_matrix;
+					std::size_t weight = 0;
+
+					std::cout << "Spanning tree:\n";
+					AdjMatrix spanning_graph = spanning_tree(graph, weight, order_func);
+					spanning_graph.print_edges();
+					std::cout << std::endl;
+					spanning_graph.print_matrix();
+					std::cout << "weight = " << weight << std::endl;
+					break;
+				}
+				case 16: { // min spanning tree
+					std::size_t weight = 0;
+
+					std::cout << "Minimal spanning tree:\n";
+					AdjMatrix min_spanning_graph = min_spanning_tree(graph, weight);
+					min_spanning_graph.print_edges();
+					std::cout << std::endl;
+					min_spanning_graph.print_matrix();
+					std::cout << "weight = " << weight << std::endl;
+					break;
+				}
+				default:break;
+
+				}
+			}
+			graph.clean();
+		}
+		else if (realization == 2) {
+		std::cout << "Enter number of vertex (>0):";
+		std::size_t size;
+		std::cin >> size;
+		AdjStruct graph(size);
+		std::cout << "graph created!\n";
+		short int action = 1;
+		while (action > 0) {
+			print_menu(1);
+			std::cin >> action;
+			switch (action) {
+			case 1: { // add adge
+				short int direct;
+				std::cout << "0 - directed, 1 - undirected edge: ";
+				std::cin >> direct;
+				Edge new_edge = get_edge();
+
+				if (direct == 0) {
+					graph.add_edge(new_edge.start_vertex, new_edge.end_vertex, new_edge.weight);
+					std::cout << "directed edge added\n";
+				}
+				else {
+					graph.add_undirected_edge(new_edge.start_vertex, new_edge.end_vertex, new_edge.weight);
+					std::cout << "undirected edge added\n";
+				}
+
+				break;
+			}
+			case 2: { // remove edge
+				short int direct;
+				std::cout << "0 - directed, 1 - undirected edge: ";
+				std::cin >> direct;
+				Edge new_edge = get_edge(false);
+
+				if (direct == 0) {
+					graph.remove_edge(new_edge.start_vertex, new_edge.end_vertex);
+					std::cout << "directed edge removed\n";
+				}
+				else {
+					graph.remove_undirected_edge(new_edge.start_vertex, new_edge.end_vertex);
+					std::cout << "undirected edge removed\n";
+				}
+				break;
+			}
+			case 3: {
+				graph.clean();
+				int size, edges, direct;
+				std::cout << "Enter number of vertex: ";
+				std::cin >> size;
+				std::cout << "Enter number of edges:" ;
+				std::cin >> edges;
+				std::cout << "0 - directed, 1 - undirected: ";
+				std::cin >> direct;
+				graph = generate_random_structure(size, edges, direct);
+				break;
+			}
+			case 4: { // print
+				short int presentation;
+				std::cout << "0 - matrix, 1 - edges: ";
+				std::cin >> presentation;
+				if (presentation == 0) {
+					graph.print_matrix();
+				}
+				else {
+					graph.print_edges();
+				}
+				break;
+			}
+			case 5: {
+				std::cout << "Converted:\n";
+				convert_in_matrix(graph).print_matrix();
+				break;
+			}
+			case 6: {
+				if (graph.is_connected() == true) {
+					std::cout << "graph is connected\n";
+				}
+				else {
+					std::cout << "graph isn't connected\n";
+				}
+				break;
+			}
+			case 7: {
+				std::vector<std::vector<std::size_t>> connected_structure = connected_components(graph);
+				print_connected_components(connected_structure);
+				break;
+			}
+			case 8: {
+				if (graph.is_cycles() == true) {
+					std::cout << "graph has cycle\n";
+				}
+				else {
+					std::cout << "graph hasn't cycle\n";
+				}
+				break;
+			}
+			case 9: {
+				if (graph.is_tree() == true) {
+					std::cout << "graph is a tree\n";
+				}
+				else {
+					std::cout << "graph isn't a tree\n";
+				}
+				break;
+			}
+			case 10: {
+				std::cout << "\nTransitive closure:\n";
+				graph.transitive_closure();
+				graph.print_edges();
+				break;
+			}
+			case 11: { // DFS
+				int vertex = -1, priority;
+				std::cout << "-1 - DFS all, 0 - from vertex\n";
+				std::cin >> vertex;
+				if (vertex == 0) {
+					std::cout << "Enter number of vertex: ";
+					std::cin >> vertex;
+				}
+				std::cout << "priority: 0 - vertex number, 1 - weight\n";
+				std::cin >> priority;
+				bool (*order_func)(GraphNode*, GraphNode*) = priority == 0 ? compare_number_struct : compare_weight_struct;
+				if (vertex == -1) {
+					graph.depth_search_all(process_print, false, order_func);
+				}
+				else {
+					graph.depth_search_one_component(vertex, process_print, false, order_func);
+				}
+				break;
+			}
+			case 12: { // BFS
+				int vertex = -1, priority;
+				std::cout << "-1 - BFS all, 0 - from one vertex\n";
+				std::cin >> vertex;
+				if (vertex == 0) {
+					std::cout << "Enter number of vertex: ";
+					std::cin >> vertex;
+				}
+				std::cout << "priority: 0 - vertex number, 1 - weight\n";
+				std::cin >> priority;
+				bool (*order_func)(GraphNode*, GraphNode*) = priority == 0 ? compare_number_struct : compare_weight_struct;
+				if (vertex == -1) {
+					graph.breadth_search_all(process_print, order_func);
+				}
+				else {
+					graph.breadth_search_one_component(vertex, process_print, order_func);
+				}
+				break;
+			}
+			case 13: { // min paths
+				std::cout << "1 - between two vertices, 2 - from one to all, 3 - from all to all: ";
+				int next;
+				std::cin >> next;
+				if (next == 1) {
+					Edge vertices = get_edge(false);
+					Path path = get_path_between_two(graph, vertices.start_vertex, vertices.end_vertex);
+					print_path(path, vertices.start_vertex, vertices.end_vertex);
+				}
+				else if (next == 2) {
+					std::cout << "Enter vertix: ";
+					std::size_t vertex;
+					std::cin >> vertex;
+					std::vector<Path> path_structure = get_path_from_one(graph, vertex);
+					print_path_structure(path_structure, vertex);
+				}
+				else if (next == 3) {
+					Path** path_matrix = get_path_from_all(graph);
+					print_path_all(path_matrix, graph.size);
+				}
+				break;
+			}
+			case 14: { // topological sort
+				AdjStruct sorted_graph = graph.topological_sort();
+				std::cout << "Sorted graph:\n";
+				sorted_graph.print_edges();
+				break;
+			}
+			case 15: { // spanning tree
+				int priority;
+				std::cout << "priority: 0 - vertex number, 1 - weight\n";
+				std::cin >> priority;
+				bool (*order_func)(GraphNode*, GraphNode*) = priority == 0 ? compare_number_struct : compare_weight_struct;
+				std::size_t weight = 0;
+
+				std::cout << "Spanning tree:\n";
+				AdjStruct spanning_graph = spanning_tree(graph, weight, order_func);
+				spanning_graph.print_edges();
+				std::cout << std::endl;
+				spanning_graph.print_matrix();
+				std::cout << "weight = " << weight << std::endl;
+				break;
+			}
+			case 16: { // min spanning tree
+				std::size_t weight = 0;
+
+				std::cout << "Minimal spanning tree:\n";
+				AdjStruct min_spanning_graph = min_spanning_tree(graph, weight);
+				min_spanning_graph.print_edges();
+				std::cout << std::endl;
+				min_spanning_graph.print_matrix();
+				std::cout << "weight = " << weight << std::endl;
+				break;
+			}
+			default:break;
+
+			}
+		}
+		graph.clean();
+		}
+	}
+}
+	
+
+
