@@ -7,6 +7,10 @@
 #include <algorithm>
 #include <climits>
 
+namespace memory {
+	unsigned int cmemory = 0;
+}
+
 enum generate_mode{directed, undirected};
 
 void process_nothing(std::size_t vertex) {}
@@ -508,9 +512,6 @@ struct AdjMatrix {
 		}
 		return edges;
 	}
-
-
-	
 
 	template <typename Callable>
 	void depth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool process_after = false, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
@@ -1462,6 +1463,16 @@ void print_connected_components(std::vector<std::vector<std::size_t>>& component
 		std::cout << std::endl;
 	}
 }
+
+
+unsigned int get_memory(AdjMatrix& graph) {
+	unsigned int memory = 0;
+	memory += sizeof(graph);
+	memory += sizeof(graph.matrix[0]) * graph.size; // size of array, that contains pointers on arrays
+	memory += sizeof(graph.matrix[0][0]) * graph.size * graph.size; // size of this arrays
+}
+
+
 
 template<typename T>
 void clean_matrix(T** matrix, std::size_t size);
