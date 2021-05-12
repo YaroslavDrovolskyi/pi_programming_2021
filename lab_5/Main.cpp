@@ -6,6 +6,8 @@
 #include <vector>
 #include <algorithm>
 #include <climits>
+#include <fstream>
+#include <ctime>
 
 namespace memory {
 	unsigned int cmemory = 0;
@@ -16,6 +18,9 @@ enum generate_mode{directed, undirected};
 void process_nothing(std::size_t vertex) {}
 template <typename T>
 std::size_t components_number(T& graph);
+
+template <typename T>
+unsigned int get_memory(Queue<T> queue, std::size_t max_size);
 
 struct Edge {
 	std::size_t start_vertex;
@@ -498,6 +503,19 @@ struct AdjMatrix {
 		return true;
 	}
 
+	bool is_edge(std::size_t start_vertex, std::size_t end_vertex) {
+		return this->matrix[start_vertex][end_vertex] != 0;
+	}
+	AdjMatrix get_copy() {
+		AdjMatrix new_graph(this->size);
+		for (std::size_t i = 0; i < this->size; i++){
+			for (std::size_t j = 0; j < this->size; j++){
+				new_graph.matrix[i][j] = this->matrix[i][j];
+			}
+		}
+		return new_graph;
+	}
+
 	std::vector<Edge> capture_edges(std::size_t& weight) {
 		std::vector<Edge> edges;
 		weight = 0; // re-initialize, if it was 0
@@ -541,6 +559,7 @@ struct AdjMatrix {
 		if (process_after == true) {
 			process(start_vertex);
 		}
+		memory::cmemory += sizeof(to_visit) += sizeof(GraphNode) * to_visit.capacity();
 		to_visit.clear();
 	}
 
@@ -1082,6 +1101,18 @@ struct AdjStruct {
 		}
 		return edges;
 	}
+
+	AdjStruct get_copy() {
+		AdjStruct new_graph(this->size);
+		for (std::size_t i = 0; i < this->size; i++) {
+			GraphNode* current = this->vertex[i];
+			while (current) {
+				new_graph.add_edge(i, current->end_vertex, current->weight);
+				current = current->next;
+			}
+		}
+		return new_graph;
+	}
 	
 //	private:
 
@@ -1112,6 +1143,7 @@ struct AdjStruct {
 			if (process_after == true) {
 				process(start_vertex);
 			}
+//			memory::cmemory += sizeof(to_visit) += sizeof(GraphNode) * to_visit.capacity();
 			to_visit.clear();
 		}
 
@@ -1139,6 +1171,7 @@ struct AdjStruct {
 		template <typename Callable>
 		void breadth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
 			Queue<std::size_t> to_visit;
+			memory::cmemory += get_memory(to_visit, this->size);
 			to_visit.enqueue(start_vertex);
 			already_visited[start_vertex] = true;
 
@@ -1162,6 +1195,7 @@ struct AdjStruct {
 						already_visited[neighbors[i]->end_vertex] = true;
 					}
 				}
+				memory::cmemory += sizeof(neighbors) += sizeof(GraphNode) * neighbors.capacity();
 				neighbors.clear();
 			}
 		}
@@ -1253,6 +1287,8 @@ bool compare_number_matrix(GraphNode& node_1, GraphNode& node_2) {
 	return node_1.end_vertex < node_2.end_vertex;
 }
 
+
+
 template <typename T>
 std::vector<Path> get_path_from_one(T& graph, std::size_t vertex) {
 	assert(vertex < graph.size);
@@ -1279,6 +1315,7 @@ std::vector<Path> get_path_from_one(T& graph, std::size_t vertex) {
 
 		paths_struture.push_back(a);
 	}
+	paths_struture.shrink_to_fit();
 	return paths_struture;
 }
 
@@ -1412,12 +1449,13 @@ std::size_t components_number(T& graph) {
 }
 
 template<typename T>
-T min_spanning_tree(T& graph, std::size_t& min_weight) {
+T min_spanning_tree(T graph, std::size_t& min_weight) {
 	assert(graph.is_undirected() && "Impossible to create MST: graph is directed");
 	std::vector<Edge> edges = graph.capture_edges(min_weight); // add_edges
 	
 	std::sort(edges.begin(), edges.end(), compare_edges);
-	T min_tree = graph;
+	T min_tree = graph.get_copy();
+	
 	std::size_t comp_number = components_number(graph);
 	for (std::size_t i = 0; i < edges.size(); i++) {
 		min_tree.remove_undirected_edge(edges[i].start_vertex, edges[i].end_vertex);
@@ -1450,8 +1488,19 @@ std::vector<std::vector<std::size_t>> connected_components(T& graph) { // for di
 			}
 		}
 	}
+	component_structure.shrink_to_fit();
 	delete[]already_visited;
 	return component_structure;
+}
+
+unsigned int get_memory_conn_comp(std::vector<std::vector<std::size_t>>& connected_components) {
+	unsigned int memory = 0;
+	memory += sizeof(connected_components);
+	for (std::size_t i = 0; i < connected_components.size(); i++) {
+		memory += sizeof(connected_components[i]);
+		memory += connected_components[i].capacity() * sizeof(std::size_t);
+	}
+	return memory;
 }
 
 void print_connected_components(std::vector<std::vector<std::size_t>>& component_structure) {
@@ -1470,8 +1519,60 @@ unsigned int get_memory(AdjMatrix& graph) {
 	memory += sizeof(graph);
 	memory += sizeof(graph.matrix[0]) * graph.size; // size of array, that contains pointers on arrays
 	memory += sizeof(graph.matrix[0][0]) * graph.size * graph.size; // size of this arrays
+	return memory;
 }
 
+template <typename T>
+unsigned int get_memory(Queue<T> queue, std::size_t max_size) {
+	unsigned int memory = 0;
+	memory += sizeof(queue); // pointers on begin, end and size of this->size
+	memory += sizeof(ListNode<T>) * max_size; // size of all listnodes
+	return memory;
+}
+
+unsigned int get_memory(AdjStruct& graph) {
+	unsigned int memory = 0;
+	memory += sizeof(graph); // memory for pointer to array of lists and this->size
+	memory += sizeof(graph.vertex[0]) * graph.size; // memory for array of lists
+	for (std::size_t i = 0; i < graph.size; i++) {
+		GraphNode* current = graph.vertex[i];
+		std::size_t k = 0;
+		while (current) {
+			k++;
+			current = current->next;
+		}
+		memory = sizeof(GraphNode) * k; // memory from one list
+	}
+	return memory;
+}
+
+unsigned int get_path_memory(Path& path) {
+	unsigned int memory = 0;
+	memory += sizeof(path);
+	memory += path.path.capacity() * sizeof(std::size_t);
+	return memory;
+}
+
+unsigned int get_path_struct_memory(std::vector<Path>& path_struct) {
+	unsigned int memory = 0;
+	memory += sizeof(path_struct);
+	for (std::size_t i = 0; i < path_struct.size(); i++) {
+		memory += get_path_memory(path_struct[i]);
+	}
+	return memory;
+}
+
+unsigned int get_path_matrix_memory(Path** matrix, std::size_t size) {
+	unsigned int memory = 0;
+	memory += sizeof(matrix);
+	memory += sizeof(matrix[0]) * size; // size of array, that contains pointers on arrays
+	for (std::size_t i = 0; i < size; i++) {
+		for (std::size_t j = 0; j < size; j++) {
+			memory += get_path_memory(matrix[i][j]);
+		}
+	}
+	return memory;
+}
 
 
 template<typename T>
@@ -1479,6 +1580,7 @@ void clean_matrix(T** matrix, std::size_t size);
 
 void interactive();
 void demonstrative();
+void benchmark();
 
 int main() {
 	short int next;
@@ -1492,7 +1594,7 @@ int main() {
 		demonstrative();
 	}
 	else if (next == 3) {
-
+		benchmark();
 	}
 	else if (next == 4) {
 		AdjMatrix graph1(5);
@@ -2693,4 +2795,257 @@ void demonstrative() {
 }
 //}
 	
+void benchmark() {
+	std::ofstream result("result.txt", std::ofstream::ios_base::trunc);
+	
+	unsigned int begin_time = clock();
+	unsigned int total_time = clock() - begin_time;
+	std::size_t N = 50, N_fixed = 50;
+	while (total_time <= 100000) {
+		unsigned int generate_matrix_time = clock();
+		AdjMatrix graph_matrix = generate_random_matrix(N, (3*N)/4, undirected);
+		generate_matrix_time = clock() - generate_matrix_time;
+		unsigned int matrix_mem = get_memory(graph_matrix);
+
+		unsigned int generate_struct_time = clock();
+		AdjStruct graph_struct = generate_random_structure(N, (3 * N) / 4, undirected);
+		generate_struct_time = clock() - generate_struct_time;
+		unsigned int struct_mem = get_memory(graph_struct);
+
+		// removing edges
+		std::size_t k_matrix = 0;
+		unsigned int remove_matrix_time = clock();
+		for (std::size_t i = 0; i < (35*N)/100; i++) {
+			std::size_t start_vertex = rand() % N;
+			std::size_t end_vertex = rand() % N;
+			if (graph_matrix.matrix[start_vertex][end_vertex] != 0) { // there is undirected graph, so we don't need to check graph_matrix.matrix[end_vertex][start_vertex]
+				graph_matrix.remove_undirected_edge(start_vertex, end_vertex);
+				k_matrix++;
+			}
+		}
+		
+		remove_matrix_time = clock() - remove_matrix_time;
+//		result << "Remove in matrix: " << remove_matrix_time << " ms\n";
+
+		std::size_t k_struct = 0;
+		unsigned int remove_struct_time = clock();
+		for (std::size_t i = 0; i < (35 * N) / 100; i++) {
+			std::size_t start_vertex = rand() % N;
+			std::size_t end_vertex = rand() % N;
+			if (graph_struct.is_edge(start_vertex, end_vertex) == true) { // there is undirected graph, so we don't need to check graph_struct.is_edge(end_vertex, start_vertex)
+				graph_struct.remove_undirected_edge(start_vertex, end_vertex);
+				k_struct++;
+			}
+		}
+		remove_struct_time = clock() - remove_struct_time;
+//		result << "Remove in struct: " << remove_struct_time << " ms\n";
+
+		// converting
+		unsigned int convert_in_struct_time = clock();
+		AdjStruct converted_matrix = convert_in_struct(graph_matrix);
+		convert_in_struct_time = clock() - convert_in_struct_time;
+		unsigned int converted_matrix_mem = get_memory(converted_matrix);
+		converted_matrix.clean();
+
+		unsigned int convert_in_matrix_time = clock();
+		AdjMatrix converted_struct = convert_in_matrix(graph_struct);
+		convert_in_matrix_time = clock() - convert_in_matrix_time;
+		unsigned int converted_struct_mem = get_memory(converted_struct);
+		converted_struct.clean();
+
+		// check on connectivity
+		unsigned int connectivity_matrix_time = clock();
+		graph_matrix.is_connected();
+		connectivity_matrix_time = clock() - connectivity_matrix_time;
+
+		unsigned int connectivity_struct_time = clock();
+		graph_struct.is_connected();
+		connectivity_struct_time = clock() - connectivity_struct_time;
+
+		//connected components
+		unsigned int components_matrix_time = clock();
+		std::vector<std::vector<std::size_t>> connected_structure = connected_components(graph_matrix);
+		components_matrix_time = clock() - components_matrix_time;
+		unsigned int components_matrix_mem = get_memory_conn_comp(connected_structure);
+
+		unsigned int components_struct_time = clock();
+		connected_structure = connected_components(graph_struct);
+		components_struct_time = clock() - components_struct_time;
+		unsigned int components_struct_mem = get_memory_conn_comp(connected_structure);
+
+		// check for cycle
+		unsigned int cycle_matrix_time = clock();
+		graph_matrix.is_cycles();
+		cycle_matrix_time = clock() - cycle_matrix_time;
+
+		unsigned int cycle_struct_time = clock();
+		graph_struct.is_cycles();
+		cycle_struct_time = clock() - cycle_struct_time;
+
+
+		// check if tree
+		unsigned int tree_matrix_time = clock();
+		graph_matrix.is_tree();
+		tree_matrix_time = clock() - tree_matrix_time;
+
+		unsigned int tree_struct_time = clock();
+		graph_struct.is_tree();
+		tree_struct_time = clock() - tree_struct_time;
+
+		// DFS
+		memory::cmemory = 0;
+		unsigned int dfs_matrix_time = clock();
+		graph_matrix.depth_search_all(process_nothing);
+		dfs_matrix_time = clock() - dfs_matrix_time;
+		unsigned int dfs_matrix_memory = memory::cmemory;
+
+		memory::cmemory = 0;
+		unsigned int dfs_struct_time = clock();
+		graph_matrix.depth_search_all(process_nothing);
+		dfs_struct_time = clock() - dfs_struct_time;
+		unsigned int dfs_struct_memory = memory::cmemory;
+
+		// BFS
+		memory::cmemory = 0;
+		unsigned int bfs_matrix_time = clock();
+		graph_matrix.breadth_search_all(process_nothing);
+		bfs_matrix_time = clock() - bfs_matrix_time;
+		unsigned int bfs_matrix_memory = memory::cmemory;
+
+		memory::cmemory = 0;
+		unsigned int bfs_struct_time = clock();
+		graph_struct.breadth_search_all(process_nothing);
+		bfs_struct_time = clock() - bfs_struct_time;
+		unsigned int bfs_struct_memory = memory::cmemory;
+
+		// min path between two
+		unsigned int matrix_min_path_time = clock();
+		Path path = get_path_between_two(graph_matrix, 1, (3*N)/100);
+		matrix_min_path_time = clock() - matrix_min_path_time;
+		unsigned int matrix_min_path_mem = get_path_memory(path);
+
+		unsigned int struct_min_path_time = clock();
+		path = get_path_between_two(graph_struct, 1, (3 * N) / 100);
+		struct_min_path_time = clock() - struct_min_path_time;
+		unsigned int struct_min_path_mem = get_path_memory(path);
+
+		// min path from all to all
+		unsigned int matrix_path_all_time = clock();
+		Path** path_matrix = get_path_from_all(graph_matrix);
+		matrix_path_all_time = clock() - matrix_path_all_time;
+		unsigned int matrix_path_all_mem = get_path_matrix_memory(path_matrix, graph_matrix.size);
+		clean_matrix(path_matrix, graph_matrix.size);
+
+		unsigned int struct_path_all_time = clock();
+		path_matrix = get_path_from_all(graph_struct);
+		struct_path_all_time = clock() - struct_path_all_time;
+		unsigned int struct_path_all_mem = get_path_matrix_memory(path_matrix, graph_matrix.size);
+		clean_matrix(path_matrix, graph_struct.size);
+
+		// spanning tree
+		std::size_t weight = 0;
+		unsigned int span_matrix_time = clock();
+		AdjMatrix span_matrix = spanning_tree(graph_matrix, weight, compare_number_matrix);
+		span_matrix_time = clock() - span_matrix_time;
+		span_matrix.clean();
+
+		unsigned int span_struct_time = clock();
+		AdjStruct span_struct = spanning_tree(graph_struct, weight, compare_number_struct);
+		span_struct_time = clock() - span_struct_time;
+		span_struct.clean();
+
+		// min_spanning tree
+		unsigned int min_span_matrix_time = clock();
+		span_matrix = min_spanning_tree(graph_matrix, weight);
+		min_span_matrix_time = clock() - min_span_matrix_time;
+		span_matrix.clean();
+
+		unsigned int min_span_struct_time = clock();
+		span_struct = min_spanning_tree(graph_struct, weight);
+		min_span_struct_time = clock() - min_span_struct_time;
+		span_struct.clean();
+		
+
+		// make graph directed
+		for (std::size_t i = 0; i < N; i++) {
+			for (std::size_t j = 0; j < N; j++) {
+				if (graph_matrix.matrix[i][j] != 0 && graph_matrix.matrix[j][i] != 0) {
+					graph_matrix.remove_edge(i, j);
+				}
+				if (graph_struct.is_edge(i, j) && graph_struct.is_edge(j, i)) {
+					graph_struct.remove_edge(i, j);
+				}
+			}
+		}
+
+		// topological sort
+
+		unsigned int sort_matrix_time = clock();
+		graph_matrix.topological_sort();
+		sort_matrix_time = clock() - sort_matrix_time;
+
+		unsigned int sort_struct_time = clock();
+		graph_struct.topological_sort();
+		sort_struct_time = clock() - sort_struct_time;
+
+
+		// transitive closure
+		unsigned int transitive_matrix_time = clock();
+		graph_matrix.transitive_closure();
+		transitive_matrix_time = clock() - transitive_matrix_time;
+
+		unsigned int transitive_struct_time = clock();
+		graph_struct.transitive_closure();
+		transitive_struct_time = clock() - transitive_struct_time;
+
+		total_time = clock() - begin_time;
+		std::cout << "total time: " << total_time << " ms\n";
+
+		result << "\n======   N=" << N << "   ======\n" << "AdjMatrix:\n";
+		result << "Generate random: " << generate_matrix_time << " ms, size = " << matrix_mem << "\n";
+		result << "Remove " << k_matrix << " items: " << remove_matrix_time << " ms\n";
+		result << "Convert in struct: " << convert_in_struct_time << " ms, " << converted_struct_mem << " bytes\n";
+		result << "Check if connected: " << connectivity_matrix_time << " ms\n";
+		result << "Connected components: " << components_matrix_time << " ms, " << components_matrix_mem << " bytes\n";
+		result << "Check for cycle: " << cycle_matrix_time << " ms\n";
+		result << "Check if tree: " << tree_matrix_time << " ms\n";
+		result << "DFS all: " << dfs_matrix_time << " ms, " << dfs_matrix_memory << " bytes\n";
+		result << "BFS all: " << bfs_matrix_time << " ms, " << bfs_matrix_memory << " bytes\n";
+		result << "min path between two: " << matrix_min_path_time << " ms, " << matrix_min_path_mem << " bytes\n";
+		result << "min path from all to all: " << matrix_path_all_time << " ms, " << matrix_path_all_mem << " bytes\n";
+		result << "spanning tree: " << span_matrix_time << " ms\n";
+		result << "min spanning tree: " << min_span_matrix_time << " ms\n";
+		result << "topological sort:" << sort_matrix_time << " ms\n";
+		result << "transitive closure: " << transitive_matrix_time << " ms\n\n";
+
+		result << "AdjStruct\nGenerate random: " << generate_struct_time << " ms, size = " << struct_mem << "\n";
+		result << "Remove " << k_struct << " items: " << remove_struct_time << " ms\n";
+		result << "Convert in struct: " << convert_in_matrix_time << " ms, " << converted_matrix_mem << " bytes\n";
+		result << "Check if connected: " << connectivity_struct_time << " ms\n";
+		result << "Connected components: " << components_struct_time << " ms, " << components_struct_mem << " bytes\n";
+		result << "Check for cycle: " << cycle_struct_time << " ms\n";
+		result << "Check if tree: " << tree_struct_time << " ms\n";
+		result << "DFS all: " << dfs_struct_time << " ms, " << dfs_struct_memory << " bytes\n";
+		result << "BFS all: " << bfs_struct_time << " ms, " << bfs_struct_memory << " bytes\n";
+		result << "min path between two: " << struct_min_path_time << " ms, " << struct_min_path_mem << " bytes\n";
+		result << "min path from all to all: " << struct_path_all_time << " ms, " << struct_path_all_mem << " bytes\n";
+		result << "spanning tree: " << span_struct_time << " ms\n";
+		result << "min spanning tree: " << min_span_struct_time << " ms\n";
+		result << "topological sort:" << sort_struct_time << " ms\n";
+		result << "transitive closure: " << transitive_struct_time << " ms\n\n\n";
+
+		if (total_time > 5100) {
+			N += N_fixed;
+		}
+		else {
+			N *= 2;
+			N_fixed = N;
+		}
+	}
+	result.close();
+}
+
+
+	
+//}
 
