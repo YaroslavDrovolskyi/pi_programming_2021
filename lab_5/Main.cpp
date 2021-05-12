@@ -9,8 +9,10 @@
 #include <fstream>
 #include <ctime>
 
+namespace count_memory {
+	unsigned int MEMORY;
+}
 
-unsigned int MEMORY;
 
 
 enum generate_mode{directed, undirected};
@@ -452,7 +454,7 @@ struct AdjMatrix {
 		if (process_after == true) {
 			process(start_vertex);
 		}
-		MEMORY += sizeof(to_visit) + sizeof(GraphNode) * to_visit.capacity();
+		count_memory::MEMORY += sizeof(to_visit) + sizeof(GraphNode) * to_visit.capacity();
 		to_visit.clear();
 	}
 
@@ -482,7 +484,7 @@ struct AdjMatrix {
 	void breadth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		Queue<std::size_t> to_visit;
 		to_visit.enqueue(start_vertex);
-		MEMORY += get_memory(to_visit, this->size);
+		count_memory::MEMORY += get_memory(to_visit, this->size);
 		already_visited[start_vertex] = true;
 
 		while (!to_visit.is_empty()) {
@@ -509,7 +511,7 @@ struct AdjMatrix {
 					already_visited[neighbors[i].end_vertex] = true;
 				}
 			}
-			MEMORY += sizeof(neighbors) + sizeof(GraphNode) * neighbors.capacity();
+			count_memory::MEMORY += sizeof(neighbors) + sizeof(GraphNode) * neighbors.capacity();
 			neighbors.clear();
 		}
 	}
@@ -1034,7 +1036,7 @@ struct AdjStruct {
 			if (process_after == true) {
 				process(start_vertex);
 			}
-			MEMORY += sizeof(to_visit) + sizeof(GraphNode) * to_visit.capacity();
+			count_memory::MEMORY += sizeof(to_visit) + sizeof(GraphNode) * to_visit.capacity();
 			to_visit.clear();
 		}
 
@@ -1062,7 +1064,7 @@ struct AdjStruct {
 		template <typename Callable>
 		void breadth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
 			Queue<std::size_t> to_visit;
-			MEMORY += get_memory(to_visit, this->size);
+			count_memory::MEMORY += get_memory(to_visit, this->size);
 			to_visit.enqueue(start_vertex);
 			already_visited[start_vertex] = true;
 
@@ -1086,7 +1088,7 @@ struct AdjStruct {
 						already_visited[neighbors[i]->end_vertex] = true;
 					}
 				}
-				MEMORY += sizeof(neighbors) + sizeof(GraphNode) * neighbors.capacity();
+				count_memory::MEMORY += sizeof(neighbors) + sizeof(GraphNode) * neighbors.capacity();
 				neighbors.clear();
 			}
 		}
@@ -2332,30 +2334,30 @@ void benchmark() {
 		tree_struct_time = clock() - tree_struct_time;
 
 		// DFS
-		MEMORY = 0;
+		count_memory::MEMORY = 0;
 		unsigned int dfs_matrix_time = clock();
 		graph_matrix.depth_search_all(process_nothing);
 		dfs_matrix_time = clock() - dfs_matrix_time;
-		unsigned int dfs_matrix_memory = MEMORY;
+		unsigned int dfs_matrix_memory = count_memory::MEMORY;
 
-		MEMORY = 0;
+		count_memory::MEMORY = 0;
 		unsigned int dfs_struct_time = clock();
 		graph_matrix.depth_search_all(process_nothing);
 		dfs_struct_time = clock() - dfs_struct_time;
-		unsigned int dfs_struct_memory = MEMORY;
+		unsigned int dfs_struct_memory = count_memory::MEMORY;
 
 		// BFS
-		MEMORY = 0;
+		count_memory::MEMORY = 0;
 		unsigned int bfs_matrix_time = clock();
 		graph_matrix.breadth_search_all(process_nothing);
 		bfs_matrix_time = clock() - bfs_matrix_time;
-		unsigned int bfs_matrix_memory = MEMORY;
+		unsigned int bfs_matrix_memory = count_memory::MEMORY;
 
-		MEMORY = 0;
+		count_memory::MEMORY = 0;
 		unsigned int bfs_struct_time = clock();
 		graph_struct.breadth_search_all(process_nothing);
 		bfs_struct_time = clock() - bfs_struct_time;
-		unsigned int bfs_struct_memory = MEMORY;
+		unsigned int bfs_struct_memory = count_memory::MEMORY;
 
 		// min path between two
 		unsigned int matrix_min_path_time = clock();
