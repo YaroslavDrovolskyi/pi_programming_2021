@@ -1,0 +1,148 @@
+
+======   N=50   ======
+AdjMatrix:
+Generate random: 0 ms, size = 10416 bytes
+Remove 0 items: 0 ms
+Convert in struct: 0 ms, 24 bytes
+Check if connected: 0 ms
+Connected components: 0 ms, 880 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 0 ms, 3400 bytes
+BFS all: 0 ms, 14936 bytes
+min path between two: 2 ms, 48 bytes
+min path from all to all: 65 ms, 134408 bytes
+spanning tree: 0 ms
+min spanning tree: 16 ms
+topological sort:10 ms
+transitive closure: 0 ms
+
+AdjStruct:
+Generate random: 0 ms, size = 0 bytes
+Remove 0 items: 0 ms
+Convert in matrix: 0 ms, 10416 bytes
+Check if connected: 0 ms
+Connected components: 1 ms, 944 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 1 ms, 3400 bytes
+BFS all: 0 ms, 16560 bytes
+min path between two: 1 ms, 48 bytes
+min path from all to all: 107 ms, 139192 bytes
+spanning tree: 1 ms
+min spanning tree: 12 ms
+topological sort:1 ms
+transitive closure: 0 ms
+
+
+
+======   N=100   ======
+AdjMatrix:
+Generate random: 1 ms, size = 40816 bytes
+Remove 0 items: 0 ms
+Convert in struct: 0 ms, 0 bytes
+Check if connected: 2 ms
+Connected components: 1 ms, 1760 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 1 ms, 6848 bytes
+BFS all: 1 ms, 53944 bytes
+min path between two: 13 ms, 48 bytes
+min path from all to all: 772 ms, 723720 bytes
+spanning tree: 1 ms
+min spanning tree: 50 ms
+topological sort:79 ms
+transitive closure: 5 ms
+
+AdjStruct:
+Generate random: 0 ms, size = 0 bytes
+Remove 0 items: 0 ms
+Convert in matrix: 0 ms, 40816 bytes
+Check if connected: 0 ms
+Connected components: 1 ms, 1728 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 0 ms, 6848 bytes
+BFS all: 1 ms, 52296 bytes
+min path between two: 9 ms, 64 bytes
+min path from all to all: 673 ms, 702440 bytes
+spanning tree: 1 ms
+min spanning tree: 43 ms
+topological sort:1 ms
+transitive closure: 0 ms
+
+
+
+======   N=200   ======
+AdjMatrix:
+Generate random: 1 ms, size = 161616 bytes
+Remove 0 items: 0 ms
+Convert in struct: 0 ms, 24 bytes
+Check if connected: 0 ms
+Connected components: 2 ms, 3520 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 2 ms, 13648 bytes
+BFS all: 2 ms, 203864 bytes
+min path between two: 0 ms, 48 bytes
+min path from all to all: 4769 ms, 2983800 bytes
+spanning tree: 2 ms
+min spanning tree: 214 ms
+topological sort:678 ms
+transitive closure: 34 ms
+
+AdjStruct:
+Generate random: 0 ms, size = 72 bytes
+Remove 0 items: 0 ms
+Convert in matrix: 1 ms, 161616 bytes
+Check if connected: 0 ms
+Connected components: 2 ms, 3360 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 1 ms, 13648 bytes
+BFS all: 2 ms, 187792 bytes
+min path between two: 37 ms, 272 bytes
+min path from all to all: 5210 ms, 3323736 bytes
+spanning tree: 2 ms
+min spanning tree: 169 ms
+topological sort:3 ms
+transitive closure: 0 ms
+
+
+
+======   N=400   ======
+AdjMatrix:
+Generate random: 2 ms, size = 643216 bytes
+Remove 0 items: 0 ms
+Convert in struct: 1 ms, 24 bytes
+Check if connected: 0 ms
+Connected components: 6 ms, 6912 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 4 ms, 27416 bytes
+BFS all: 3 ms, 766176 bytes
+min path between two: 2 ms, 48 bytes
+min path from all to all: 28939 ms, 11030104 bytes
+spanning tree: 6 ms
+min spanning tree: 993 ms
+topological sort:5477 ms
+transitive closure: 292 ms
+
+AdjStruct:
+Generate random: 0 ms, size = 0 bytes
+Remove 1 items: 0 ms
+Convert in matrix: 2 ms, 643216 bytes
+Check if connected: 0 ms
+Connected components: 4 ms, 6976 bytes
+Check for cycle: 0 ms
+Check if tree: 0 ms
+DFS all: 3 ms, 27416 bytes
+BFS all: 3 ms, 778856 bytes
+min path between two: 1 ms, 48 bytes
+min path from all to all: 35680 ms, 12608464 bytes
+spanning tree: 4 ms
+min spanning tree: 660 ms
+topological sort:13 ms
+transitive closure: 0 ms
+
+

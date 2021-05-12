@@ -1,4 +1,4 @@
-// 1, 2, 5, 7, 8, 10, 11, 13, 14
+// 1, 2, 5, 6, 7, 8, 10, 11, 13, 14, 18, 20, 24
 
 #include "queue.h"
 #include <iostream>
@@ -9,9 +9,9 @@
 #include <fstream>
 #include <ctime>
 
-namespace memory {
-	unsigned int cmemory = 0;
-}
+
+unsigned int MEMORY;
+
 
 enum generate_mode{directed, undirected};
 
@@ -281,94 +281,7 @@ struct AdjMatrix {
 		delete[]already_visited;
 	}
 
-	/*
-
-	std::vector<Path> get_path_from_one(std::size_t vertex) {
-		std::vector <int> prev(this->size, -1);
-		std::vector<std::size_t> distances = get_distance(vertex, prev);
-		std::vector <Path> paths_struture;
-
-		for (std::size_t i = 0; i < distances.size(); i++) {
-			Path a;
-			int j = i;
-			if (prev[j] != -1) { 
-				a.is_exist = true;
-				while (j != -1) { // put the path
-					a.path.push_back(j);
-					j = prev[j];
-				}
-			}
-			else {
-				a.is_exist = false;
-			}
-			reverse(a.path.begin(), a.path.end());
-
-			a.lenght = distances[i]; // put the length
-
-			paths_struture.push_back(a);
-		}
-		return paths_struture;
-	}
-
-
-	Path get_path_between_two(std::size_t start_vertex, std::size_t end_vertex) {
-		std::vector <int> prev(this->size, -1);
-		std::vector<std::size_t> distances = get_distance(start_vertex, prev);
-
-		Path a;
-		int j = start_vertex;
-		if (prev[j] != -1) {
-			a.is_exist = true;
-			while (j != -1) { // put the path
-				a.path.push_back(j);
-				j = prev[j];
-			}
-		}
-		else {
-			a.is_exist = false;
-		}
-		reverse(a.path.begin(), a.path.end());
-
-		a.lenght = distances[start_vertex]; // put the length
-
-		return a;
-	}
-
-	Path** get_path_from_all() {
-		Path** path_matrix = new Path * [this->size];
-		for (std::size_t i = 0; i < this->size; i++) {
-			path_matrix[i] = new Path[this->size];
-		}
-
-		for (std::size_t k = 0; k < this->size; k++) { // path from k to i;
-			std::vector <int> prev(this->size, -1);
-			std::vector<std::size_t> distances = get_distance(k, prev);
-
-			for (std::size_t i = 0; i < distances.size(); i++) {
-				Path a;
-				int j = i;
-				if (prev[j] != -1) {
-					a.is_exist = true;
-					while (j != -1) { // put the path
-						a.path.push_back(j);
-						j = prev[j];
-					}
-				}
-				else {
-					a.is_exist = false;
-				}
-				reverse(a.path.begin(), a.path.end());
-
-				a.lenght = distances[i]; // put the length
-
-				path_matrix[k][i] = a;
-			}
-		}
-		return path_matrix;
-	}
-
-	*/
-
+	
 	std::vector<std::size_t> get_distance(std::size_t start_vertex, std::vector <int>& prev) {
 		const std::size_t INF = INT_MAX;
 		std::vector<std::size_t> distances(this->size, INF);
@@ -428,26 +341,6 @@ struct AdjMatrix {
 		return sorted_graph;
 	}
 
-	/*
-	AdjMatrix spanning_tree(std::size_t& spanning_weight, bool (*compare_vertices)(GraphNode&, GraphNode&) = nullptr) {
-		AdjMatrix spanning_graph (this->size);
-		spanning_weight = 0; // re-initialize, if it was not 0
-
-		bool* already_visited = new bool[this->size];
-		for (std::size_t i = 0; i < this->size; i++) {
-			already_visited[i] = false;
-		}
-
-		for (std::size_t i = 0; i < this->size; i++) { // to build spanning forest, if graph isn't connected
-			if (already_visited[i] == false) {
-				spanning_tree_impl(i, already_visited, spanning_graph, spanning_weight, compare_vertices);
-			}
-		}
-		delete[]already_visited;
-		return spanning_graph;
-	}
-	*/
-	
 	//build spanning tree only for undirected graphs
 	void spanning_tree_impl(std::size_t start_vertex, bool* already_visited, AdjMatrix& spanning_graph, std::size_t& spanning_weight, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		Queue<std::size_t> to_visit;
@@ -559,7 +452,7 @@ struct AdjMatrix {
 		if (process_after == true) {
 			process(start_vertex);
 		}
-		memory::cmemory += sizeof(to_visit) += sizeof(GraphNode) * to_visit.capacity();
+		MEMORY += sizeof(to_visit) + sizeof(GraphNode) * to_visit.capacity();
 		to_visit.clear();
 	}
 
@@ -585,11 +478,11 @@ struct AdjMatrix {
 		return false;
 	}
 
-
 	template <typename Callable>
 	void breadth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode&, GraphNode&) = nullptr) {
 		Queue<std::size_t> to_visit;
 		to_visit.enqueue(start_vertex);
+		MEMORY += get_memory(to_visit, this->size);
 		already_visited[start_vertex] = true;
 
 		while (!to_visit.is_empty()) {
@@ -616,12 +509,10 @@ struct AdjMatrix {
 					already_visited[neighbors[i].end_vertex] = true;
 				}
 			}
+			MEMORY += sizeof(neighbors) + sizeof(GraphNode) * neighbors.capacity();
 			neighbors.clear();
 		}
 	}
-
-
-	
 };
 
 
@@ -1143,7 +1034,7 @@ struct AdjStruct {
 			if (process_after == true) {
 				process(start_vertex);
 			}
-//			memory::cmemory += sizeof(to_visit) += sizeof(GraphNode) * to_visit.capacity();
+			MEMORY += sizeof(to_visit) + sizeof(GraphNode) * to_visit.capacity();
 			to_visit.clear();
 		}
 
@@ -1171,7 +1062,7 @@ struct AdjStruct {
 		template <typename Callable>
 		void breadth_search_impl(std::size_t start_vertex, bool* already_visited, Callable process, bool (*compare_vertixes)(GraphNode*, GraphNode*) = nullptr) {
 			Queue<std::size_t> to_visit;
-			memory::cmemory += get_memory(to_visit, this->size);
+			MEMORY += get_memory(to_visit, this->size);
 			to_visit.enqueue(start_vertex);
 			already_visited[start_vertex] = true;
 
@@ -1195,7 +1086,7 @@ struct AdjStruct {
 						already_visited[neighbors[i]->end_vertex] = true;
 					}
 				}
-				memory::cmemory += sizeof(neighbors) += sizeof(GraphNode) * neighbors.capacity();
+				MEMORY += sizeof(neighbors) + sizeof(GraphNode) * neighbors.capacity();
 				neighbors.clear();
 			}
 		}
@@ -1595,457 +1486,6 @@ int main() {
 	}
 	else if (next == 3) {
 		benchmark();
-	}
-	else if (next == 4) {
-		AdjMatrix graph1(5);
-		//graph1.add_edge(1, 2, 5);
-		graph1.add_edge(1, 3, 5);
-		graph1.print_matrix();
-		graph1.print_edges();
-		std::cout << "\nRemove edge 1->3:\n";
-		graph1.remove_edge(1, 3);
-		graph1.print_matrix();
-		graph1.print_edges();
-		std::cout << "\nGenerate random graph:\n";
-		AdjMatrix graph2 = generate_random_matrix(6, 5);
-		graph2.print_matrix();
-		graph2.print_edges();
-		std::cout << "\nAdj struct:\n";
-		AdjStruct graph3(5);
-		graph3.add_edge(1, 4, 6);
-		//	graph3.add_edge(1, 2, 6);
-		//	graph3.add_edge(1, 1, 6);
-		//	graph3.add_edge(1, 2, 6);
-		//	graph3.add_edge(1, 2, 6);
-		//	graph3.add_edge(1, 2, 6);
-		graph3.add_edge(1, 3, 6);
-		//	graph3.add_edge(1, 2, 6);
-		graph3.add_edge(1, 2, 6);
-		//	graph3.add_edge(2, 1, 6);
-		graph3.print_edges();
-
-		std::cout << "\nRemove edge 1->2\n";
-		//	graph3.remove_edge(1, 0);
-		//	graph3.remove_edge(2, 1);
-		//	graph3.remove_edge(3, 1);
-		///	graph3.remove_edge(1, 2);
-		//	graph3.remove_edge(1, 4);
-		//	graph3.remove_edge(1, 4);
-		graph3.print_edges();
-
-		std::cout << "\nConvert from Adj struct to matrix:\n";
-		std::cout << "Adj struct:\n";
-		AdjStruct graph4(5);
-		graph4.add_edge(0, 4, 6);
-		graph4.add_edge(0, 2, 7);
-		graph4.add_edge(3, 0, 8);
-		graph4.add_edge(2, 1, 9);
-		graph4.add_edge(4, 3, 3);
-		graph4.add_edge(2, 0, 5);
-
-		//	graph4.add_edge(0, 2, 8);
-
-		graph4.print_edges();
-		std::cout << "\nCopied struct:\n";
-		AdjMatrix graph4_copy = convert_in_matrix(graph4);
-		graph4_copy.print_edges();
-		std::cout << std::endl;
-		graph4_copy.print_matrix();
-
-
-		std::cout << "\nConvert from Adj matrix to struct:\n";
-		std::cout << "Adj matrix:\n";
-		AdjMatrix graph5(5);
-		graph5.add_edge(0, 4, 6);
-		graph5.add_edge(0, 2, 7);
-		graph5.add_edge(3, 0, 8);
-		graph5.add_edge(2, 1, 9);
-		graph5.add_edge(4, 3, 3);
-		graph5.add_edge(2, 0, 5);
-
-		//	graph5.add_edge(0, 2, 8);
-
-		graph5.print_matrix();
-		graph5.print_edges();
-		std::cout << "\nCopied matrix:\n";
-		AdjStruct graph5_copy = convert_in_struct(graph5);
-		graph5_copy.print_edges();
-
-		std::cout << "\nGenerate random AdjStruct:\n";
-		AdjStruct graph6 = generate_random_structure(5, 6);
-		graph6.print_edges();
-
-		std::cout << "\nTransitive closure of AdjMatrix:\n";
-		AdjMatrix graph7(4);
-		graph7.add_edge(0, 1, 1);
-		graph7.add_edge(1, 2, 1);
-		graph7.add_edge(2, 3, 1);
-		//graph7.add_edge(3, 0, 5);
-		graph7.print_matrix();
-		std::cout << "\nAfter transitive closure of AdjMatrix:\n";
-		graph7.transitive_closure();
-		graph7.print_matrix();
-
-		std::cout << "\nTransitive closure of AdjStruct:\n";
-		AdjStruct graph8(4);
-		graph8.add_edge(0, 1, 1);
-		graph8.add_edge(1, 2, 1);
-		graph8.add_edge(2, 3, 1);
-		//graph8.add_edge(0, 2, 1);
-		graph8.print_edges();
-		//graph7.add_edge(3, 0, 5);
-		convert_in_matrix(graph8).print_matrix();
-		std::cout << "\nAfter transitive closure of AdjStruct:\n";
-		graph8.transitive_closure();
-		graph8.print_edges();
-		convert_in_matrix(graph8).print_matrix();
-
-
-
-
-		std::cout << "\n\n\n\n====================SEARCH===========\n\n\n";
-		std::cout << "\nDepth search in AdjStruct from vertex 0:\n";
-		AdjStruct graph9(7);
-		graph9.add_edge(0, 1, 1);
-		graph9.add_edge(0, 4, 1);
-		graph9.add_edge(4, 0, 1);
-		graph9.add_edge(2, 1, 1);
-		graph9.add_edge(2, 3, 1);
-		graph9.add_edge(2, 5, 1);
-		graph9.add_edge(6, 2, 1);
-		graph9.print_edges();
-		std::cout << std::endl;
-		AdjMatrix graph10(7);
-		graph10.add_edge(0, 1, 1);
-		graph10.add_edge(0, 4, 1);
-		graph10.add_edge(4, 0, 8);
-		graph10.add_edge(2, 1, 5);
-		graph10.add_edge(2, 3, 1);
-		graph10.add_edge(2, 5, 12);
-		graph10.add_edge(6, 2, 18);
-		graph10.print_edges();
-		graph10.print_matrix();
-
-		std::size_t I = 6;
-
-		std::cout << "\nDepth search in AdjStruct from vertex " << I << ": \n";
-		graph9.depth_search_one_component(I, process_print, compare_number_struct);
-
-		std::cout << "\nDepth search in AdjMatrix from vertex " << I << ": \n";
-		graph10.depth_search_one_component(I, process_print, compare_number_matrix);
-
-
-		std::cout << "\nBreadth search in AdjStruct from vertex " << I << ": \n";
-		graph9.breadth_search_one_component(I, process_print, compare_number_struct);
-
-		std::cout << "\nBreadth search in AdjMatrix from vertex " << I << ": \n";
-		graph10.breadth_search_one_component(I, process_print, compare_weight_matrix);
-
-
-		std::cout << "\n\nAdjStruct:\n";
-
-		if (graph9.is_connected()) {
-			std::cout << "\nConnected: YES\n";
-		}
-		else {
-			std::cout << "\nConnected: NO\n";
-		}
-
-		if (graph9.is_cycles()) {
-			std::cout << "Cycles: YES\n";
-		}
-		else {
-			std::cout << "Cycles: NO\n";
-		}
-
-		if (graph9.is_tree()) {
-			std::cout << "Tree: YES\n";
-		}
-		else {
-			std::cout << "Tree: NO\n";
-		}
-		std::cout << std::endl;
-
-
-		std::cout << "\n\nAdjMatrix:";
-
-		if (graph10.is_connected()) {
-			std::cout << "\nConnected: YES\n";
-		}
-		else {
-			std::cout << "\nConnected: NO\n";
-		}
-
-		if (graph10.is_cycles()) {
-			std::cout << "Cycles: YES\n";
-		}
-		else {
-			std::cout << "Cycles: NO\n";
-		}
-
-		if (graph10.is_tree()) {
-			std::cout << "Tree: YES\n";
-		}
-		else {
-			std::cout << "Tree: NO\n";
-		}
-		std::cout << std::endl;
-
-		std::cout << std::endl << std::endl;
-		std::cout << "\n\nUndirected edges:\n\n";
-		AdjMatrix graph11(6);
-		graph11.add_undirected_edge(4, 5, 3);
-		graph11.add_undirected_edge(1, 5, 6);
-		graph11.add_undirected_edge(4, 3, 9);
-		graph11.add_undirected_edge(2, 1, 1);
-		graph11.add_undirected_edge(0, 2, 7);
-		graph11.print_edges();
-		std::cout << std::endl << std::endl;
-		//	graph11.remove_undirected_edge(5, 0);
-		graph11.print_edges();
-
-
-		std::cout << "\n\nUndirected edges (generate):\n\n";
-		generate_random_matrix(6, 7, undirected).print_matrix();
-		std::cout << std::endl;
-		generate_random_structure(6, 7, undirected).print_edges();
-
-
-
-		std::size_t J = 6, SIZE = 7;
-		AdjMatrix graph12(SIZE);
-		graph12.add_edge(0, 1, 1);
-		graph12.add_edge(0, 4, 1);
-		graph12.add_edge(4, 0, 8);
-		graph12.add_edge(2, 1, 5);
-		graph12.add_edge(2, 3, 100); // 
-		graph12.add_edge(2, 5, 12);
-		graph12.add_edge(6, 2, 18);
-		graph12.add_edge(5, 3, 10);
-		graph12.add_edge(1, 3, 21);
-		graph12.print_edges();
-		graph12.print_matrix();
-
-		AdjMatrix graph13(SIZE);
-		graph13.add_edge(0, 1, 1);
-		graph13.add_edge(0, 4, 1);
-		graph13.add_edge(4, 0, 8);
-		graph13.add_edge(2, 1, 5);
-		graph13.add_edge(2, 3, 100); // 
-		graph13.add_edge(2, 5, 12);
-		graph13.add_edge(6, 2, 18);
-		graph13.add_edge(5, 3, 10);
-		graph13.add_edge(1, 3, 21);
-		graph13.print_edges();
-		graph13.print_matrix();
-
-
-		for (std::size_t J = 0; J < graph12.size; J++) {
-			std::cout << "\n\n\n\n\nMIN distances from vertex " << J << ": \n\n\n";
-			std::vector<Path> path_structure = get_path_from_one(graph12, J);
-
-			print_path_structure(path_structure, J);
-		}
-		std::cout << "\n\n\n==============\n";
-		print_path_all(get_path_from_all(graph13), graph13.size);
-
-
-		std::cout << "\n\n\n===========Topological sort====================\n";
-		AdjMatrix graph14(6);
-		/*
-		graph14.add_edge(5, 0, 1);
-		graph14.add_edge(4, 0, 1);
-		graph14.add_edge(5, 2, 1);
-		graph14.add_edge(4, 1, 1);
-		graph14.add_edge(2, 3, 1);
-		graph14.add_edge(3, 1, 1);
-		*/
-		graph14.add_edge(0, 3, 1);
-		graph14.add_edge(0, 4, 1);
-		graph14.add_edge(0, 5, 1);
-		graph14.add_edge(3, 4, 1);
-		graph14.add_edge(4, 5, 1);
-		graph14.add_edge(3, 2, 1);
-		graph14.add_edge(2, 1, 1);
-		graph14.add_edge(4, 1, 1);
-		graph14.add_edge(5, 1, 1);
-		graph14.add_edge(4, 2, 1);
-		//	graph14.add_edge(1, 4, 1);
-
-
-		graph14.print_matrix();
-		graph14.print_edges();
-		std::cout << std::endl;
-
-		AdjStruct graph15(6);
-		graph15.add_edge(0, 3, 1);
-		graph15.add_edge(0, 4, 1);
-		graph15.add_edge(0, 5, 1);
-		graph15.add_edge(3, 4, 1);
-		graph15.add_edge(4, 5, 1);
-		graph15.add_edge(3, 2, 1);
-		graph15.add_edge(2, 1, 1);
-		graph15.add_edge(4, 1, 1);
-		graph15.add_edge(5, 1, 1);
-		graph15.add_edge(4, 2, 1);
-		graph15.print_edges();
-
-
-		std::cout << "\n\nSorted graph14:\n";
-		AdjMatrix arr14_sorted = graph14.topological_sort();
-		arr14_sorted.print_matrix();
-		std::cout << std::endl;
-		//	std::vector<std::size_t> arr14 = graph14.topological_sort();
-		//	for (std::size_t i = 0; i < arr14.size(); i++) {
-		//		std::cout << arr14[i] << " ";
-		//	}
-		//	std::cout << std::endl;
-
-		std::cout << "\n\nSorted graph15:\n";
-		//	std::vector<std::size_t> arr15 = graph15.topological_sort();
-		//	for (std::size_t i = 0; i < arr15.size(); i++) {
-		//		std::cout << arr15[i] << " ";
-		//	}
-		AdjStruct arr15_sorted = graph15.topological_sort();
-		convert_in_matrix(arr15_sorted).print_matrix();
-		std::cout << std::endl;
-
-		AdjStruct graph16(6);
-		graph16.add_edge(0, 1, 1);
-		graph16.add_edge(2, 1, 1);
-		graph16.add_edge(3, 1, 1);
-		graph16.add_edge(1, 4, 1);
-		graph16.add_edge(5, 4, 1);
-		graph16.add_edge(3, 5, 1);
-		//	graph16.add_edge(4, 1, 1);
-		graph16.print_edges();
-		graph16.topological_sort().print_edges();
-
-
-		std::cout << "\n\n\n===========Spanning tree====================\n";
-		AdjMatrix graph17(7);
-		graph17.add_undirected_edge(0, 1, 1);
-		graph17.add_undirected_edge(1, 2, 1);
-		//	graph17.add_undirected_edge(2, 3, 1);
-		//	graph17.add_undirected_edge(3, 4, 1);
-		graph17.add_undirected_edge(4, 5, 1);
-		//	graph17.add_undirected_edge(5, 6, 1);
-		//	graph17.add_undirected_edge(6, 2, 1);
-		graph17.add_undirected_edge(0, 4, 1);
-		graph17.add_undirected_edge(0, 5, 1);
-		graph17.add_undirected_edge(2, 5, 1);
-		//	graph17.add_undirected_edge(0, 3, 1);
-		graph17.add_undirected_edge(2, 4, 1);
-		graph17.add_undirected_edge(3, 6, 1);
-
-		std::cout << "\nGraph 17 (matrix):\n";
-		graph17.print_edges();
-		std::cout << std::endl;
-		graph17.print_matrix();
-
-		std::cout << "\n Number of components = " << components_number(graph17) << std::endl;
-
-		AdjStruct graph18(7);
-		graph18.add_undirected_edge(0, 1, 1);
-		graph18.add_undirected_edge(1, 2, 1);
-		graph18.add_undirected_edge(2, 3, 1);
-		graph18.add_undirected_edge(3, 4, 1);
-		graph18.add_undirected_edge(4, 5, 1);
-		graph18.add_undirected_edge(5, 6, 1);
-		graph18.add_undirected_edge(6, 2, 1);
-		graph18.add_undirected_edge(0, 4, 1);
-		graph18.add_undirected_edge(0, 5, 1);
-		graph18.add_undirected_edge(2, 5, 1);
-		graph18.add_undirected_edge(2, 4, 1);
-		std::cout << "\nGraph 18 (struct):\n";
-		convert_in_matrix(graph18).print_matrix();
-
-		std::cout << std::endl << std::endl;
-		std::size_t spanning_weight = 0;
-		std::cout << "\n\n\nSpanning forest for graph17 (matrix):\n";
-		spanning_tree(graph17, spanning_weight, compare_number_matrix).print_matrix();
-		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
-
-		std::cout << std::endl << std::endl;
-		std::cout << "\n\n\nSpanning tree for graph18 (struct):\n";
-		spanning_tree(graph18, spanning_weight, compare_number_struct).print_edges();
-		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
-
-		std::cout << "\n\n\nSpanning tree/forest for graph19 (random matrix):\n";
-		AdjMatrix graph19 = generate_random_matrix(10, 20, undirected);
-		/*for (std::size_t i = 0; i < 10; i++) {
-			if (i != 1) {
-				graph19.remove_undirected_edge(1, i);
-			}
-
-		}*/
-		graph19.print_matrix();
-		std::cout << "\nMin Spanning tree:\n";
-		min_spanning_tree(graph19, spanning_weight).print_matrix();
-		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
-
-
-		std::cout << "\n\n\nSpanning tree/forest for graph20:\n";
-		AdjStruct graph20(6);
-		graph20.add_undirected_edge(0, 1, 1);
-		graph20.add_undirected_edge(0, 2, 1);
-		graph20.add_undirected_edge(0, 3, 1);
-		graph20.add_undirected_edge(1, 2, 1);
-		graph20.add_undirected_edge(1, 4, 1);
-		graph20.add_undirected_edge(2, 5, 1);
-		graph20.add_undirected_edge(3, 4, 1);
-		graph20.add_undirected_edge(3, 5, 1);
-		graph20.add_undirected_edge(4, 5, 1);
-		convert_in_matrix(graph20).print_matrix();
-		std::cout << "\nSpanning tree:\n";
-		AdjStruct graph20_tree = spanning_tree(graph20, spanning_weight, compare_weight_struct);
-		graph20_tree.print_edges();
-		convert_in_matrix(graph20_tree).print_matrix();
-		std::cout << "\nspanning tree weight = " << spanning_weight << std::endl;
-
-		std::cout << "\n\n\n=====================Min spanning tree:====================\n";
-
-		/*
-		for (std::size_t I = 0; I < 15; I++) {
-			std::cout << "\n\nMatrix # " << I+1 << std::endl;
-			AdjMatrix graph_matrix = generate_random_matrix(I + 15, I + 20, undirected);
-			graph_matrix.print_matrix();
-			std::cout << "\nMin spanning tree:\n";
-			min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
-			std::cout << "weight = " << spanning_weight << std::endl;
-
-			std::cout << "\n\nStruct # " << I+1 << std::endl;
-			AdjStruct graph_struct = generate_random_structure(I + 15, I + 20, undirected);
-			convert_in_matrix(graph_struct).print_matrix();
-			std::cout << "\nMin spanning tree:\n";
-			AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
-			convert_in_matrix(struct_min).print_matrix();
-			std::cout << "weight = " << spanning_weight << std::endl;
-		}
-		*/
-
-		for (std::size_t I = 1; I < 6; I++) {
-			std::cout << "\n\nMatrix # " << I << std::endl;
-			AdjMatrix graph_matrix = generate_random_matrix(I + 1, I + floor(I / 2), undirected);
-			graph_matrix.print_matrix();
-			std::cout << "\nMin spanning tree:\n";
-			min_spanning_tree(graph_matrix, spanning_weight).print_matrix();
-			std::cout << "weight = " << spanning_weight << std::endl;
-
-			std::cout << "\n\nStruct # " << I << std::endl;
-			AdjStruct graph_struct = generate_random_structure(I + 1, I + floor(I / 2), undirected);
-			convert_in_matrix(graph_struct).print_matrix();
-			std::cout << "\nMin spanning tree:\n";
-			AdjStruct struct_min = min_spanning_tree(graph_struct, spanning_weight);
-			convert_in_matrix(struct_min).print_matrix();
-			std::cout << "weight = " << spanning_weight << std::endl;
-		}
-
-		std::cout << "\n\n\nConnected components of graph18:\n";
-		std::vector<std::vector<std::size_t>> connected_structure = connected_components(graph18);
-		print_connected_components(connected_structure);
-		std::cout << std::endl;
-		graph17.print_edges();
 	}
 	std::cout << "\n\nTHE END!!!\n\n";
 	std::system("pause");
@@ -2801,7 +2241,7 @@ void benchmark() {
 	unsigned int begin_time = clock();
 	unsigned int total_time = clock() - begin_time;
 	std::size_t N = 50, N_fixed = 50;
-	while (total_time <= 100000) {
+	while (total_time <= 80000) {
 		unsigned int generate_matrix_time = clock();
 		AdjMatrix graph_matrix = generate_random_matrix(N, (3*N)/4, undirected);
 		generate_matrix_time = clock() - generate_matrix_time;
@@ -2838,7 +2278,6 @@ void benchmark() {
 			}
 		}
 		remove_struct_time = clock() - remove_struct_time;
-//		result << "Remove in struct: " << remove_struct_time << " ms\n";
 
 		// converting
 		unsigned int convert_in_struct_time = clock();
@@ -2893,30 +2332,30 @@ void benchmark() {
 		tree_struct_time = clock() - tree_struct_time;
 
 		// DFS
-		memory::cmemory = 0;
+		MEMORY = 0;
 		unsigned int dfs_matrix_time = clock();
 		graph_matrix.depth_search_all(process_nothing);
 		dfs_matrix_time = clock() - dfs_matrix_time;
-		unsigned int dfs_matrix_memory = memory::cmemory;
+		unsigned int dfs_matrix_memory = MEMORY;
 
-		memory::cmemory = 0;
+		MEMORY = 0;
 		unsigned int dfs_struct_time = clock();
 		graph_matrix.depth_search_all(process_nothing);
 		dfs_struct_time = clock() - dfs_struct_time;
-		unsigned int dfs_struct_memory = memory::cmemory;
+		unsigned int dfs_struct_memory = MEMORY;
 
 		// BFS
-		memory::cmemory = 0;
+		MEMORY = 0;
 		unsigned int bfs_matrix_time = clock();
 		graph_matrix.breadth_search_all(process_nothing);
 		bfs_matrix_time = clock() - bfs_matrix_time;
-		unsigned int bfs_matrix_memory = memory::cmemory;
+		unsigned int bfs_matrix_memory = MEMORY;
 
-		memory::cmemory = 0;
+		MEMORY = 0;
 		unsigned int bfs_struct_time = clock();
 		graph_struct.breadth_search_all(process_nothing);
 		bfs_struct_time = clock() - bfs_struct_time;
-		unsigned int bfs_struct_memory = memory::cmemory;
+		unsigned int bfs_struct_memory = MEMORY;
 
 		// min path between two
 		unsigned int matrix_min_path_time = clock();
@@ -3002,9 +2441,9 @@ void benchmark() {
 		std::cout << "total time: " << total_time << " ms\n";
 
 		result << "\n======   N=" << N << "   ======\n" << "AdjMatrix:\n";
-		result << "Generate random: " << generate_matrix_time << " ms, size = " << matrix_mem << "\n";
+		result << "Generate random: " << generate_matrix_time << " ms, size = " << matrix_mem << " bytes\n";
 		result << "Remove " << k_matrix << " items: " << remove_matrix_time << " ms\n";
-		result << "Convert in struct: " << convert_in_struct_time << " ms, " << converted_struct_mem << " bytes\n";
+		result << "Convert in struct: " << convert_in_struct_time << " ms, " << converted_matrix_mem << " bytes\n";
 		result << "Check if connected: " << connectivity_matrix_time << " ms\n";
 		result << "Connected components: " << components_matrix_time << " ms, " << components_matrix_mem << " bytes\n";
 		result << "Check for cycle: " << cycle_matrix_time << " ms\n";
@@ -3018,9 +2457,9 @@ void benchmark() {
 		result << "topological sort:" << sort_matrix_time << " ms\n";
 		result << "transitive closure: " << transitive_matrix_time << " ms\n\n";
 
-		result << "AdjStruct\nGenerate random: " << generate_struct_time << " ms, size = " << struct_mem << "\n";
+		result << "AdjStruct:\nGenerate random: " << generate_struct_time << " ms, size = " << struct_mem << " bytes\n";
 		result << "Remove " << k_struct << " items: " << remove_struct_time << " ms\n";
-		result << "Convert in struct: " << convert_in_matrix_time << " ms, " << converted_matrix_mem << " bytes\n";
+		result << "Convert in matrix: " << convert_in_matrix_time << " ms, " << converted_struct_mem << " bytes\n";
 		result << "Check if connected: " << connectivity_struct_time << " ms\n";
 		result << "Connected components: " << components_struct_time << " ms, " << components_struct_mem << " bytes\n";
 		result << "Check for cycle: " << cycle_struct_time << " ms\n";
@@ -3045,7 +2484,4 @@ void benchmark() {
 	result.close();
 }
 
-
-	
-//}
 
