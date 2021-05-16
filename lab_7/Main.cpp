@@ -1,10 +1,14 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 using namespace sf;
 
 
 enum mode {
 	creating, game
+};
+enum Direct {
+	top, right, bottom, left
 };
 
 struct Point {
@@ -73,11 +77,152 @@ struct Cell {
 	bool is_destroyed = false;
 };
 
-bool set_deck(std::size_t x, std::size_t y, std::size_t size, Cell** matrix, Fleet& fleet, std::size_t& filled, std::size_t& ship_index, std::size_t& max_decks) {
+// function, that say, can we put only one deck there, that control previous deck
+bool is_good(Cell** matrix, Point point, Point prev) {
+	int x = point.x;
+	int y = point.y;
+	if (x >= 0 && y >= 0 && x <= 9 && y <= 9) { ; }
+	else { return false; }
+	if (x - 1 >= 0 && y - 1 >= 0) { // if this point exists
+		if (matrix[x - 1][y - 1].ship >= 0) { return false; }
+	}
+
+	if (x - 1 >= 0 && y + 1 <= 9) { // if this point exists
+		if (matrix[x - 1][y + 1].ship >= 0) { return false; }
+	}
+
+	if (x + 1 < 10 && y + 1 < 10) { // if this point exists
+		if (matrix[x + 1][y + 1].ship >= 0) { return false; }
+	}
+
+	if (x + 1 < 10 && y - 1 >= 0) { // if this point exists
+		if (matrix[x + 1][y - 1].ship >= 0) { return false; }
+	}
+
+	if (x >= 0 && y - 1 >= 0) { // if this point exists
+		if (matrix[x][y - 1].ship >= 0 &&(x != prev.x || y - 1 != prev.y)) { return false; }
+	}
+
+	if (x + 1 < 10 && y >= 0) { // if this point exists
+		if (matrix[x + 1][y].ship >= 0 && (x + 1 != prev.x || y != prev.y)) { return false; }
+	}
+
+	if (x >= 0 && y + 1 < 10) { // if this point exists
+		if (matrix[x][y + 1].ship >= 0 && (x != prev.x || y + 1 != prev.y)) { return false; }
+	}
+
+	if (x - 1 >= 0 && y >= 0) { // if this point exists
+		if (matrix[x - 1][y].ship >= 0 && (x - 1 != prev.x || y != prev.y)) { return false; }
+	}
+
+	return true;
+}
+
+// function, that say, can we put only one deck there
+bool is_good(Cell** matrix, Point point) {
+	int x = point.x;
+	int y = point.y;
+	if (x >= 0 && y >= 0 && x <= 9 && y <= 9) { ; }
+	else { return false; }
+	if (x - 1 >= 0 && y - 1 >= 0) { // if this point exists
+		if (matrix[x - 1][y - 1].ship >= 0) { return false; }
+	}
+
+	if (x - 1 >= 0 && y + 1 <= 9) { // if this point exists
+		if (matrix[x - 1][y + 1].ship >= 0) { return false; }
+	}
+
+	if (x + 1 < 10 && y + 1 < 10) { // if this point exists
+		if (matrix[x + 1][y + 1].ship >= 0) { return false; }
+	}
+
+	if (x + 1 < 10 && y - 1 >= 0) { // if this point exists
+		if (matrix[x + 1][y - 1].ship >= 0) { return false; }
+	}
+
+	if (x >= 0 && y - 1 >= 0) { // if this point exists
+		if (matrix[x][y - 1].ship >= 0) { return false; }
+	}
+
+	if (x + 1 < 10 && y >= 0) { // if this point exists
+		if (matrix[x + 1][y].ship >= 0) { return false; }
+	}
+
+	if (x >= 0 && y + 1 < 10) { // if this point exists
+		if (matrix[x][y + 1].ship >= 0) { return false; }
+	}
+
+	if (x - 1 >= 0 && y >= 0) { // if this point exists
+		if (matrix[x - 1][y].ship >= 0) { return false; }
+	}
+
+	return true;
+}
+
+void build_ship(std::vector <std::vector<Point>>& ships, Cell** matrix, Point start, std::size_t size, std::size_t direct) {
+	std::vector<Point> ship;
+	if (is_good(matrix, start)) {
+		ship.push_back(start);
+	}
+	else {
+		return;
+	}
+	Point prev(start);
+	std::size_t i = size - 1;
+	while (i != 0) {
+		Point test_point(prev);
+		if (direct == top) {
+			test_point.y--;
+		}
+		if (direct == right) {
+			test_point.x++;
+		}
+		if (direct == bottom) {
+			test_point.y++;
+		}
+		if (direct == left) {
+			test_point.x--;
+		}
+
+		if (is_good(matrix, test_point, prev)) {
+			ship.push_back(test_point);
+			prev = test_point;
+		}
+		else {
+			break;
+		}
+
+		i--;
+	}
+	if (ship.size() == size) {
+		ships.push_back(ship);
+	}
+}
+
+std::vector <std::vector<Point>> build_ships(Cell** matrix, Point start, std::size_t size) {
+	std::vector <std::vector<Point>> ships;
+	for (std::size_t direct = 0; direct < 4; direct++) {
+		build_ship(ships, matrix, start, size, direct);
+	}
+	return ships;
+}
+
+bool is_in_ships(std::vector <std::vector<Point>>& possible_ships, std::size_t index, Point point) {
+	for (std::size_t i = 0; i < possible_ships.size(); i++) {
+		if (possible_ships[i][index].x == point.x && possible_ships[i][index].y == point.y) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool set_deck(std::size_t x, std::size_t y, std::size_t size, std::vector <std::vector<Point>>& possible_ships, Cell** matrix, Fleet& fleet, std::size_t& filled, std::size_t& ship_index, std::size_t& max_decks) {
 	if (matrix[x][y].ship != -1) { return false; }
 	if (x >= size || y >= size) { return false; }
 	if (ship_index >= size) { return false; }
 	if (fleet.ships[ship_index].last_filled == fleet.ships[ship_index].size - 1 && ship_index == size - 1) { return false; }
+
+	
 
 	if (fleet.ships[ship_index].last_filled == fleet.ships[ship_index].size - 1) {
 		ship_index++;
@@ -87,11 +232,17 @@ bool set_deck(std::size_t x, std::size_t y, std::size_t size, Cell** matrix, Fle
 		
 		filled = 0;
 	}
-	filled++;
-	fleet.add_deck(x, y, ship_index);
-	matrix[x][y].ship = ship_index;
+	if (filled == 0) {
+		possible_ships = build_ships(matrix, Point(x, y), fleet.ships[ship_index].size);
+	}
+	if (is_in_ships(possible_ships, filled, Point(x, y))) {
+		filled++;
+		fleet.add_deck(x, y, ship_index);
+		matrix[x][y].ship = ship_index;
 
-	return true;
+		return true;
+	}
+	return false;
 }
 
 
@@ -101,6 +252,7 @@ int main() {
 	Cell** field_user = new Cell*[SIZE]; // -2 destroyed, -1 - empty, >=0 - some ship
 	Cell field_ai[10][10];
 	short int score_user = 0, score_ai = 1000;
+	std::vector<std::vector<Point>> possible_ships;
 	for (std::size_t i = 0; i < SIZE; i++) {
 		field_user[i] = new Cell[SIZE];
 		for (std::size_t j = 0; j < SIZE; j++) {
@@ -145,15 +297,13 @@ int main() {
 				if (event.type == Event::Closed) { window.close(); }
 				if (event.type == Event::MouseButtonPressed && (x >= 15 && x <= 24) && (y >= 2 && y <= 11)) {
 					if (event.key.code == Mouse::Left) {
-						set_deck(x - 15, y-2, SIZE, field_user, fleet_user, filled, current_ship, max_decks);
+						set_deck(x - 15, y-2, SIZE, possible_ships, field_user, fleet_user, filled, current_ship, max_decks);
+					}
+					if (event.key.code == Mouse::Right) {
+						std::cout << "Right mouse\n\n\n";
 					}
 				}
-
-
 			}
-
-
-
 		}
 
 
