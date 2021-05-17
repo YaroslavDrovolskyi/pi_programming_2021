@@ -75,7 +75,7 @@ struct Fleet {
 struct Cell {
 	short int ship = -1;
 	bool is_visited = false;
-	bool is_destroyed = false;
+//	bool is_destroyed = false;
 };
 
 // function, that say, can we put only one deck there, that control previous deck
@@ -208,6 +208,8 @@ std::vector <std::vector<Point>> build_ships(Cell** matrix, Point start, std::si
 	return ships;
 }
 
+
+
 bool is_in_ships(std::vector <std::vector<Point>>& possible_ships, short int& ship_number, std::size_t index, Point point) {
 	if (ship_number == -1) {
 		for (std::size_t i = 0; i < possible_ships.size(); i++) {
@@ -278,25 +280,61 @@ Fleet generate_random_field(Cell** matrix, std::size_t size) {
 	}
 	return fleet;
 }
+Cell** create_matrix(std::size_t size) {
+	Cell** matrix = new Cell * [size];
+	for (std::size_t i = 0; i < size; i++) {
+		matrix[i] = new Cell[size];
+		for (std::size_t j = 0; j < size; j++) {
+			matrix[i][j].ship = -1;
+			matrix[i][j].is_visited = false;
+		}
+	}
+	return matrix;
+}
+void clear_matrix(Cell** matrix, std::size_t size) {
+	for (std::size_t i = 0; i < size; i++) {
+		for (std::size_t j = 0; j < size; j++) {
+//			matrix[i][j].is_destroyed = false;
+			matrix[i][j].is_visited = false;
+			matrix[i][j].ship = -1;
+		}
+	}
+}
 
+void remove_matrix(Cell** matrix, std::size_t size) {
+	for (std::size_t i = 0; i < size; i++) {
+		delete[] matrix[i];
+	}
+	delete matrix;
+}
+
+void clear_fleet(Fleet& fleet, std::size_t size) {
+
+	for (std::size_t i = 0; i < size; i++) {
+		delete[]fleet.ships[i].decks;
+		fleet.ships[i].decks = new Point[fleet.ships[i].size];
+		fleet.ships[i].last_filled = -1;
+		fleet.ships[i].is_destroyed = false;
+	}
+
+}
+
+void remove_fleet(Fleet& fleet, std::size_t size) {
+
+	for (std::size_t i = 0; i < size; i++) {
+		delete[]fleet.ships[i].decks;
+
+	}
+	delete[] fleet.ships;
+}
 
 int main() {
 	const std::size_t width = 1200, height = 600, w = 32, SIZE = 10;
-	Cell** field_user = new Cell*[SIZE]; // -2 destroyed, -1 - empty, >=0 - some ship
-	Cell** field_ai = new Cell * [SIZE];
-	short int score_user = 0, score_ai = 1000, ship_number = -1;
+	Cell** field_user = create_matrix(SIZE); // -2 destroyed, -1 - empty, >=0 - some ship
+	Cell** field_ai = create_matrix(SIZE);
+	short int score_user = 0, score_ai = 0, ship_number = -1;
 	std::vector<std::vector<Point>> possible_ships;
-	for (std::size_t i = 0; i < SIZE; i++) {
-		field_user[i] = new Cell[SIZE];
-		field_ai[i] = new Cell[SIZE];
-		for (std::size_t j = 0; j < SIZE; j++) {
-			field_user[i][j].ship = -1;
-			field_ai[i][j].ship = -1;
-
-			field_user[i][j].is_visited = false;
-			field_ai[i][j].is_visited = false;
-		}
-	}
+	
 	///
 	Font font;
 	font.loadFromFile("fonts/Inter Regular.otf");
@@ -307,10 +345,27 @@ int main() {
 	RenderWindow window(VideoMode(width, height), "Sea Battle");
 	Texture texture;
 	texture.loadFromFile("img/1.jpg");
+	RectangleShape button_start(sf::Vector2f(8 * w, 2 * w)), button_restart(sf::Vector2f(8 * w, 2 * w)), button_stop(sf::Vector2f(8 * w, 2 * w));
+	Text text_start("Start!", font, 40), text_restart("New game", font, 40), text_stop("Exit!", font, 40);
+	button_start.setPosition(15*w, 16*w);
+	button_start.setFillColor(Color(204, 255, 255));
+	text_start.setFillColor(Color(0, 51, 0));
+	text_start.move(17 * w, 16 * w + 5);
+
+	button_restart.setPosition(3 * w, 13 * w);
+	button_restart.setFillColor(Color(204, 255, 255));
+	text_restart.setFillColor(Color(0, 51, 0));
+	text_restart.move(4 * w, 13 * w + 5);
+
+	button_stop.setPosition(3 * w, 16 * w);
+	button_stop.setFillColor(Color(204, 255, 255));
+	text_stop.setFillColor(Color(0, 51, 0));
+	text_stop.move(4 * w, 16 * w + 5);
+
 
 	// sprite creating
 	Sprite sprite(texture);
-	sprite.setTextureRect(IntRect(0, 0, 32, 32));
+	sprite.setTextureRect(IntRect(0, 0, w, w));
 	
 	///
 	short int mode = creating;
@@ -330,14 +385,65 @@ int main() {
 		if (mode == creating) {
 			Event event;
 			while (window.pollEvent(event)) {
-				if (event.type == Event::Closed) { window.close(); }
+				if (event.type == Event::Closed || event.type == Event::MouseButtonPressed && (x >= 3 && x <= 10) && (y >= 16 && y <= 18)) {
+					remove_matrix(field_user, SIZE);
+					remove_matrix(field_ai, SIZE);
+					remove_fleet(fleet_user, SIZE);
+					remove_fleet(fleet_ai, SIZE);
+					window.close();
+					return 0;
+				}
 				if (event.type == Event::MouseButtonPressed && (x >= 15 && x <= 24) && (y >= 2 && y <= 11)) {
 					if (event.key.code == Mouse::Left) {
 						set_deck(x - 15, y-2, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
 					}
-					if (event.key.code == Mouse::Right) {
-						std::cout << "Right mouse\n\n\n";
+				}
+				if (current_ship == SIZE-1 && filled == 1 && event.type == Event::MouseButtonPressed && (x >= 15 && x <= 22) && (y >= 16 && y <=  17)) {
+					if (event.key.code == Mouse::Left) {
+						mode = game;
 					}
+				}
+				if (event.type == Event::MouseButtonPressed && (x >= 3 && x <= 11) && (y >= 13 && y <= 15)) { // button restart
+					current_ship = 0; filled = 0; max_decks = 4;
+					score_user = 0; score_ai = 0; ship_number = -1;
+					clear_matrix(field_user, SIZE);
+					clear_matrix(field_ai, SIZE);
+					clear_fleet(fleet_user, SIZE);
+					remove_fleet(fleet_ai, SIZE);
+					fleet_ai = generate_random_field(field_ai, SIZE);
+				}
+			}
+		}
+
+		if (mode == game) {
+			Event event;
+			while (window.pollEvent(event)) {
+				if (event.type == Event::Closed || event.type == Event::MouseButtonPressed && (x >= 3 && x <= 10) && (y >= 16 && y <= 18)) {
+					remove_matrix(field_user, SIZE);
+					remove_matrix(field_ai, SIZE);
+					remove_fleet(fleet_user, SIZE);
+					remove_fleet(fleet_ai, SIZE);
+					window.close();
+					return 0;
+				}
+				if (event.type == Event::MouseButtonPressed && (x >= 15 && x <= 24) && (y >= 2 && y <= 11)) {
+					if (event.key.code == Mouse::Left) {
+						set_deck(x - 15, y - 2, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
+					}
+				}
+				if (current_ship == SIZE - 1 && filled == 1 && event.type == Event::MouseButtonPressed && (x >= 10 && x <= 24) && (y >= 2 && y <= 15)) {
+					if (event.key.code == Mouse::Left) {
+						mode = game;
+					}
+				}
+				if (event.type == Event::MouseButtonPressed && (x >= 3 && x <= 11) && (y >= 13 && y <= 15)) { // button restart
+					current_ship = 0; filled = 0; max_decks = 4;
+					score_user = 0; score_ai = 0; ship_number = -1;
+					clear_matrix(field_user, SIZE);
+					clear_matrix(field_ai, SIZE);
+					clear_fleet(fleet_user, SIZE);
+					remove_fleet(fleet_ai, SIZE);
+					fleet_ai = generate_random_field(field_ai, SIZE);
 				}
 			}
 		}
@@ -395,11 +501,33 @@ int main() {
 				window.draw(sprite);
 			}
 		}
-		cur_score.setString("SCORE\n" + std::to_string(score_ai) + " : " + std::to_string(score_user));
-		cur_ship.setString("Ship " + std::to_string(current_ship + 1) + ": " + std::to_string(filled) + "/" + std::to_string(max_decks));
+		
+		if (mode == creating) {
+			cur_ship.setString("Ship " + std::to_string(current_ship + 1) + ": " + std::to_string(filled) + "/" + std::to_string(max_decks));
+			if (current_ship == SIZE - 1 && filled == 1) {
+				window.draw(button_start);
+				window.draw(text_start);
+			}
+			window.draw(cur_ship);
+		}
+		else if (mode == game) {
+			cur_score.setString("SCORE\n" + std::to_string(score_ai) + " : " + std::to_string(score_user));
+			window.draw(cur_score);
+			window.draw(button_start);
+			window.draw(button_restart);
+			window.draw(button_stop);
+
+			window.draw(text_start);
+			window.draw(text_restart);
+			window.draw(text_stop);
+		}
+
 		// window draw
-		window.draw(cur_ship);
-		window.draw(cur_score);
+		
+		window.draw(button_restart);
+		window.draw(text_restart);
+		window.draw(button_stop);
+		window.draw(text_stop);
 		window.display();
 	}
 
