@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <ctime>
 
 using namespace sf;
 
@@ -207,16 +208,27 @@ std::vector <std::vector<Point>> build_ships(Cell** matrix, Point start, std::si
 	return ships;
 }
 
-bool is_in_ships(std::vector <std::vector<Point>>& possible_ships, std::size_t index, Point point) {
-	for (std::size_t i = 0; i < possible_ships.size(); i++) {
-		if (possible_ships[i][index].x == point.x && possible_ships[i][index].y == point.y) {
-			return true;
+bool is_in_ships(std::vector <std::vector<Point>>& possible_ships, short int& ship_number, std::size_t index, Point point) {
+	if (ship_number == -1) {
+		for (std::size_t i = 0; i < possible_ships.size(); i++) {
+			if (possible_ships[i][index].x == point.x && possible_ships[i][index].y == point.y) {
+				if (index != 0){ ship_number = i; }
+				
+				return true;
+			}
 		}
 	}
+	else if (possible_ships[ship_number][index].x == point.x && possible_ships[ship_number][index].y == point.y && possible_ships.size() > 0) {
+		return true;
+	}
+	if (possible_ships.size() == 0) {
+		ship_number = -1;
+	}
+	
 	return false;
 }
 
-bool set_deck(std::size_t x, std::size_t y, std::size_t size, std::vector <std::vector<Point>>& possible_ships, Cell** matrix, Fleet& fleet, std::size_t& filled, std::size_t& ship_index, std::size_t& max_decks) {
+bool set_deck(std::size_t x, std::size_t y, std::size_t size, std::vector <std::vector<Point>>& possible_ships, short int& ship_number, Cell** matrix, Fleet& fleet, std::size_t& filled, std::size_t& ship_index, std::size_t& max_decks) {
 	if (matrix[x][y].ship != -1) { return false; }
 	if (x >= size || y >= size) { return false; }
 	if (ship_index >= size) { return false; }
@@ -234,19 +246,22 @@ bool set_deck(std::size_t x, std::size_t y, std::size_t size, std::vector <std::
 	}
 	if (filled == 0) {
 		possible_ships = build_ships(matrix, Point(x, y), fleet.ships[ship_index].size);
+		ship_number = -1;
 	}
-	if (is_in_ships(possible_ships, filled, Point(x, y))) {
+	if (is_in_ships(possible_ships, ship_number, filled, Point(x, y))) {
 		filled++;
 		fleet.add_deck(x, y, ship_index);
 		matrix[x][y].ship = ship_index;
 
 		return true;
 	}
+
 	return false;
 }
 
 
 Fleet generate_random_field(Cell** matrix, std::size_t size) {
+	srand(time(0)); // initialize generator of random numbers by system time
 	Fleet fleet(10);
 	for (std::size_t i = 0; i < size; ) {
 		std::size_t x = rand() % 10;
@@ -269,7 +284,7 @@ int main() {
 	const std::size_t width = 1200, height = 600, w = 32, SIZE = 10;
 	Cell** field_user = new Cell*[SIZE]; // -2 destroyed, -1 - empty, >=0 - some ship
 	Cell** field_ai = new Cell * [SIZE];
-	short int score_user = 0, score_ai = 1000;
+	short int score_user = 0, score_ai = 1000, ship_number = -1;
 	std::vector<std::vector<Point>> possible_ships;
 	for (std::size_t i = 0; i < SIZE; i++) {
 		field_user[i] = new Cell[SIZE];
@@ -311,13 +326,14 @@ int main() {
 		std::size_t x = pos.x / w;
 		std::size_t y = pos.y / w;
 
+		
 		if (mode == creating) {
 			Event event;
 			while (window.pollEvent(event)) {
 				if (event.type == Event::Closed) { window.close(); }
 				if (event.type == Event::MouseButtonPressed && (x >= 15 && x <= 24) && (y >= 2 && y <= 11)) {
 					if (event.key.code == Mouse::Left) {
-						set_deck(x - 15, y-2, SIZE, possible_ships, field_user, fleet_user, filled, current_ship, max_decks);
+						set_deck(x - 15, y-2, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
 					}
 					if (event.key.code == Mouse::Right) {
 						std::cout << "Right mouse\n\n\n";
@@ -325,7 +341,13 @@ int main() {
 				}
 			}
 		}
+		
 
+		/*
+		set_deck(2, 8, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
+		set_deck(2, 7, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
+		set_deck(4, 8, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
+		*/
 
 		// set background
 		window.clear(Color(250, 220, 100, 0));
