@@ -246,15 +246,34 @@ bool set_deck(std::size_t x, std::size_t y, std::size_t size, std::vector <std::
 }
 
 
+Fleet generate_random_field(Cell** matrix, std::size_t size) {
+	Fleet fleet(10);
+	for (std::size_t i = 0; i < size; ) {
+		std::size_t x = rand() % 10;
+		std::size_t y = rand() % 10;
+		std::vector <std::vector<Point>> possible_ships= build_ships(matrix, Point(x, y), fleet.ships[i].size);
+		if (possible_ships.size() != 0) {
+			std::vector<Point> ship = possible_ships[rand() % possible_ships.size()];
+			for (std::size_t j = 0; j < ship.size(); j++) {
+				fleet.add_deck(ship[j].x, ship[j].y, i);
+				matrix[ship[j].x][ship[j].y].ship = i;
+			}
+			i++;
+		}
+	}
+	return fleet;
+}
+
 
 int main() {
 	const std::size_t width = 1200, height = 600, w = 32, SIZE = 10;
 	Cell** field_user = new Cell*[SIZE]; // -2 destroyed, -1 - empty, >=0 - some ship
-	Cell field_ai[10][10];
+	Cell** field_ai = new Cell * [SIZE];
 	short int score_user = 0, score_ai = 1000;
 	std::vector<std::vector<Point>> possible_ships;
 	for (std::size_t i = 0; i < SIZE; i++) {
 		field_user[i] = new Cell[SIZE];
+		field_ai[i] = new Cell[SIZE];
 		for (std::size_t j = 0; j < SIZE; j++) {
 			field_user[i][j].ship = -1;
 			field_ai[i][j].ship = -1;
@@ -285,6 +304,7 @@ int main() {
 	cur_ship.setFillColor(Color(0, 155, 155));
 	cur_ship.move(16*w, 13*w);
 	Fleet fleet_user(10);
+	Fleet fleet_ai = generate_random_field(field_ai, SIZE);
 
 	while (window.isOpen()){
 		Vector2i pos = Mouse::getPosition(window);
@@ -314,15 +334,17 @@ int main() {
 		for (std::size_t i = 0; i < SIZE; i++) {
 			for (std::size_t j = 0; j < SIZE; j++) {
 				
-				if (field_ai[i][j].is_visited == true) {
+//				if (field_ai[i][j].is_visited == true) {
 					if (field_ai[i][j].ship == -2) {  // -2 destroyed, -1 - empty, >=0 - some ship
 						sprite.setTextureRect(IntRect(w, 0, w, w));
 					}
 					else if (field_ai[i][j].ship == -1) {
 						sprite.setTextureRect(IntRect(w, 0, w, w));
 					}
-					
-				}
+					else if (field_ai[i][j].ship >= 0) {
+						sprite.setTextureRect(IntRect(2*w, 0, w, w));
+					}
+//				}
 				else {
 					sprite.setTextureRect(IntRect(0, 0, w, w));
 				}
