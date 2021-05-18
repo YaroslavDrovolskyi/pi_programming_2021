@@ -78,8 +78,8 @@ struct Cell {
 //	bool is_destroyed = false;
 };
 
-// function, that say, can we put only one deck there, that control previous deck
-bool is_good(Cell** matrix, Point point, Point prev) {
+// function, that say, can we put deck there, that control previous deck
+bool is_good_point(Cell** matrix, Point point, Point prev) {
 	int x = point.x;
 	int y = point.y;
 	if (x >= 0 && y >= 0 && x <= 9 && y <= 9) { ; }
@@ -119,8 +119,8 @@ bool is_good(Cell** matrix, Point point, Point prev) {
 	return true;
 }
 
-// function, that say, can we put only one deck there
-bool is_good(Cell** matrix, Point point) {
+// function, that say, can we put deck there
+bool is_good_point(Cell** matrix, Point point) {
 	int x = point.x;
 	int y = point.y;
 	if (x >= 0 && y >= 0 && x <= 9 && y <= 9) { ; }
@@ -162,7 +162,7 @@ bool is_good(Cell** matrix, Point point) {
 
 void build_ship(std::vector <std::vector<Point>>& ships, Cell** matrix, Point start, std::size_t size, std::size_t direct) {
 	std::vector<Point> ship;
-	if (is_good(matrix, start)) {
+	if (is_good_point(matrix, start)) {
 		ship.push_back(start);
 	}
 	else {
@@ -185,7 +185,7 @@ void build_ship(std::vector <std::vector<Point>>& ships, Cell** matrix, Point st
 			test_point.x--;
 		}
 
-		if (is_good(matrix, test_point, prev)) {
+		if (is_good_point(matrix, test_point, prev)) {
 			ship.push_back(test_point);
 			prev = test_point;
 		}
@@ -390,7 +390,7 @@ void make_ships_visited(Fleet& fleet, Cell** ai_shots_matrix,std::size_t size) {
 }
 
 bool shoot(Point point, Cell** matrix, Fleet& fleet, std::size_t size, short int& score) {
-	if (matrix[point.x][point.y].is_visited == true) { return true; } // need to make warning, that we have already visited this
+	if (matrix[point.x][point.y].is_visited == true) { return true; }
 	matrix[point.x][point.y].is_visited = true;
 	if (matrix[point.x][point.y].ship < 0) { return false; }
 
@@ -449,7 +449,7 @@ void ai_shoot(Point& last_shoot, bool& use_last_point, short int& score_ai, Cell
 
 	short int start_score = score_ai;
 	if (shoot(point, field_user, fleet_user, size, score_ai) == true) {
-		if (start_score < score_ai) {  // if ai destroy some deck
+		if (start_score < score_ai) {  // if AI destroyed some deck
 			last_shoot = point;
 			use_last_point = true;
 		}
@@ -564,7 +564,7 @@ int main() {
 
 
 	bool enough_putting_bool = false, wrong_putting_bool = false, wrong_shot_bool = false;
-	Text enough_putting_text("You have putted all ships!", font, 25), wrong_putting_text("Wrong place!", font, 40), wrong_shot_text("You have shot there!", font, 25);
+	Text enough_putting_text("You have put all ships!", font, 25), wrong_putting_text("Wrong place!", font, 40), wrong_shot_text("You have shot there!", font, 25);
 	enough_putting_text.setFillColor(Color(0, 51, 0));
 	enough_putting_text.move(15 * w, 14 * w + 10);
 
@@ -586,7 +586,6 @@ int main() {
 	Sprite sprite(texture);
 	sprite.setTextureRect(IntRect(0, 0, w, w));
 	
-	///
 	short int mode = creating;
 	std::size_t current_ship = 0, filled = 0, max_decks = 4;
 	Text cur_ship("Ship " + std::to_string(current_ship) +": " + std::to_string(filled) + "/" + std::to_string(max_decks), font, 40);
@@ -594,12 +593,6 @@ int main() {
 	cur_ship.move(16*w, 13*w);
 	Fleet fleet_user(10);
 	Fleet fleet_ai = generate_random_field(field_ai, SIZE);
-
-	// for test_only
-	//for (std::size_t i = 0; i < 15; i++) {
-	//	Fleet fleet_ai = generate_random_field(field_ai, SIZE);
-	//}
-
 
 	Text win("", font, 35);
 	win.setFillColor(Color(0, 155, 155));
@@ -668,8 +661,6 @@ int main() {
 			window.draw(win);
 		}
 
-
-
 		if (mode == game) {
 			
 			if (users_turn == false && score_user != MAX_SCORE && score_ai != MAX_SCORE) {
@@ -688,11 +679,7 @@ int main() {
 						window.close();
 						return 0;
 					}
-					/*if (event.type == Event::MouseButtonPressed && (x >= 15 && x <= 24) && (y >= 2 && y <= 11)) {
-						if (event.key.code == Mouse::Left) {
-							set_deck(x - 15, y - 2, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
-						}
-					}*/
+
 					if (event.type == Event::MouseButtonPressed && (x >= 0 && x <= 9) && (y >= 2 && y <= 11) && users_turn == true && score_user != MAX_SCORE && score_ai != MAX_SCORE) {
 						if (event.key.code == Mouse::Left) {
 							if (field_ai[x][y - 2].is_visited == true) {
@@ -730,17 +717,10 @@ int main() {
 			
 		}
 		
-
-		/*
-		set_deck(2, 8, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
-		set_deck(2, 7, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
-		set_deck(4, 8, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
-		*/
-
 		// set background
 		window.clear(Color(250, 220, 100, 0));
 
-		// print Ai field
+		// print AI field
 		for (std::size_t i = 0; i < SIZE; i++) {
 			for (std::size_t j = 0; j < SIZE; j++) {
 				
@@ -815,11 +795,8 @@ int main() {
 		else if (mode == game) {
 			cur_score.setString("SCORE\n" + std::to_string(score_ai) + " : " + std::to_string(score_user));
 			window.draw(cur_score);
-//			window.draw(button_start);
 			window.draw(button_restart);
 			window.draw(button_stop);
-
-//			window.draw(text_start);
 			window.draw(text_restart);
 			window.draw(text_stop);
 		}
@@ -850,6 +827,3 @@ int main() {
 
 	return 0;
 }
-
-
-//if (event.type == Event::MouseButtonPressed && (x < 10 || x > 14) && y < 12 && y > 1) {
