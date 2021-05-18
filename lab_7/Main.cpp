@@ -463,6 +463,63 @@ void ai_shoot(Point& last_shoot, bool& use_last_point, short int& score_ai, Cell
 //	
 }
 
+short int get_ship_direction(Ship& ship) {
+	if (ship.size == 1) { return top; } // doesn't matter what return, because we'll check this condition in plce, where we'll call this function
+	short int x = ship.decks[0].x;
+	short int y = ship.decks[0].y;
+	if (x == ship.decks[1].x && y - 1 == ship.decks[1].y) {
+		return top;
+	}
+
+	if (x+1 == ship.decks[1].x && y == ship.decks[1].y) {
+		return right;
+	}
+
+	if (x == ship.decks[1].x && y + 1 == ship.decks[1].y) {
+		return bottom;
+	}
+
+	if (x-1 == ship.decks[1].x && y == ship.decks[1].y) {
+		return left;
+	}
+}
+
+void print_destroyed_ships(Fleet& fleet, Sprite& sprite, RenderWindow& window, bool is_user = false, const std::size_t w = 32) {
+	for (std::size_t i = 0; i < fleet.size; i++) {
+		if (is_destroyed_ship(fleet.ships[i])) {
+			std::size_t size = fleet.ships[i].size;
+			Point start_point(fleet.ships[i].decks[0].x, fleet.ships[i].decks[0].y);
+			if (get_ship_direction(fleet.ships[i]) == bottom) {
+				sprite.setTextureRect(IntRect(5 * w + fleet.ships[i].size * w, 0, w, fleet.ships[i].size * w));
+			}
+			else if (get_ship_direction(fleet.ships[i]) == top) {
+				start_point.x = fleet.ships[i].decks[size - 1].x;
+				start_point.y = fleet.ships[i].decks[size - 1].y;
+				sprite.setTextureRect(IntRect(5 * w + fleet.ships[i].size * w, 0, w, fleet.ships[i].size * w));
+			}
+			else if (get_ship_direction(fleet.ships[i]) == right) {
+				sprite.setTextureRect(IntRect(10 * w, (size - 1) * w, fleet.ships[i].size * w, w));
+			}
+			else if (get_ship_direction(fleet.ships[i]) == left) {
+				start_point.x = fleet.ships[i].decks[size - 1].x;
+				start_point.y = fleet.ships[i].decks[size - 1].y;
+				sprite.setTextureRect(IntRect(10 * w, (size - 1) * w, fleet.ships[i].size * w, w));
+			}
+			if (!is_user) {
+				sprite.setPosition(start_point.x * w, start_point.y * w);
+			}
+			else {
+				sprite.setPosition(start_point.x * w + 15 * w, start_point.y * w);
+			}
+
+
+			sprite.move(0, 2 * w);
+
+			window.draw(sprite);
+		}
+	}
+}
+
 
 
 int main() {
@@ -503,7 +560,7 @@ int main() {
 	button_stop.setPosition(3 * w, 16 * w);
 	button_stop.setFillColor(Color(204, 255, 255));
 	text_stop.setFillColor(Color(0, 51, 0));
-	text_stop.move(4 * w, 16 * w + 5);
+	text_stop.move(5 * w + 16, 16 * w + 5);
 
 
 	bool enough_putting_bool = false, wrong_putting_bool = false, wrong_shot_bool = false;
@@ -518,6 +575,12 @@ int main() {
 	wrong_putting_text.move(15 * w, 14 * w + 10);
 
 
+	Text user_field_text("Your field", font, 40), ai_field_text("AI field", font, 40);
+	user_field_text.setFillColor(Color(0, 51, 0));
+	user_field_text.move(17 * w, 5);
+
+	ai_field_text.setFillColor(Color(0, 51, 0));
+	ai_field_text.move(2 * w, 5);
 
 	// sprite creating
 	Sprite sprite(texture);
@@ -538,7 +601,7 @@ int main() {
 	//}
 
 
-	Text win("", font, 40);
+	Text win("", font, 35);
 	win.setFillColor(Color(0, 155, 155));
 	win.move(10*w + 5, 200);
 
@@ -601,7 +664,7 @@ int main() {
 			window.draw(win);
 		}
 		else if (score_ai == MAX_SCORE) {
-			win.setString("AI win!");
+			win.setString("  AI win!");
 			window.draw(win);
 		}
 
@@ -689,16 +752,18 @@ int main() {
 						sprite.setTextureRect(IntRect(5 * w, 0, w, w));
 					}
 				}
-				else {
-					//sprite.setTextureRect(IntRect(0, 0, w, w));
+				else { // if this cell isn't visited
+					sprite.setTextureRect(IntRect(0, 0, w, w));
 
 					// for test only
+					/*
 					if (field_ai[i][j].ship == -1) { // empty
 						sprite.setTextureRect(IntRect(1 * w, 0, w, w));
 					}
 					else if (field_ai[i][j].ship >= 0) { // some ship
 						sprite.setTextureRect(IntRect(2 * w, 0, w, w));
 					}
+					*/
 
 				}
 				sprite.setPosition(i * w, j * w);
@@ -706,6 +771,10 @@ int main() {
 				window.draw(sprite);
 			}
 		}
+
+		// print absolutely destroyed AI ships
+		print_destroyed_ships(fleet_ai, sprite, window);
+	
 
 		// print user field
 		for (std::size_t i = 0; i < 10; i++) {
@@ -732,7 +801,9 @@ int main() {
 			window.draw(sprite);
 			}
 		}
-		
+		// print absolutely destroyed users ships
+		print_destroyed_ships(fleet_user, sprite, window, true);
+
 		if (mode == creating) {
 			cur_ship.setString("Ship " + std::to_string(current_ship + 1) + ": " + std::to_string(filled) + "/" + std::to_string(max_decks));
 			if (current_ship == SIZE - 1 && filled == 1) {
@@ -768,6 +839,8 @@ int main() {
 		if (score_user == MAX_SCORE || score_ai == MAX_SCORE) {
 			window.draw(win);
 		}
+		window.draw(user_field_text);
+		window.draw(ai_field_text);
 		window.draw(button_restart);
 		window.draw(text_restart);
 		window.draw(button_stop);
