@@ -328,8 +328,19 @@ void remove_fleet(Fleet& fleet, std::size_t size) {
 	delete[] fleet.ships;
 }
 
+bool is_destroyed_ship(Ship& ship) {
+	for (std::size_t i = 0; i < ship.size; i++) {
+		if (ship.decks[i].is_destroyed == false) {
+			ship.is_destroyed = false;
+			return false;
+		}
+	}
+	ship.is_destroyed = true;
+	return true;
+}
+
 bool shoot(Point point, Cell** matrix, Fleet& fleet, std::size_t size, short int& score) {
-	if (matrix[point.x][point.y].is_visited == true) { return true; }
+	if (matrix[point.x][point.y].is_visited == true) { return true; } // need to make warning, that we have already visited this
 	matrix[point.x][point.y].is_visited = true;
 	if (matrix[point.x][point.y].ship < 0) { return false; }
 
@@ -337,6 +348,7 @@ bool shoot(Point point, Cell** matrix, Fleet& fleet, std::size_t size, short int
 	for (std::size_t i = 0; i < fleet.ships[current_ship].size; i++) {
 		if (point.x == fleet.ships[current_ship].decks[i].x && point.y == fleet.ships[current_ship].decks[i].y) {
 			fleet.ships[current_ship].decks[i].is_destroyed = true;
+			is_destroyed_ship(fleet.ships[current_ship]); // make mark, if ship is destroyed
 			break;
 		}
 	}
@@ -348,9 +360,9 @@ void ai_shoot(Point& last_shoot, bool& use_last_point, short int& score_ai, Cell
 	Point point(rand() % size, rand() % size);
 	std::vector<Point> possible_points;
 	if (use_last_point == true) {
-		
-		if (last_shoot.x >= 0 && last_shoot.y - 1 >= 0 && field_user[last_shoot.x][last_shoot.y-1].is_visited == false) {
-			possible_points.push_back(Point(last_shoot.x,last_shoot.y - 1));
+
+		if (last_shoot.x >= 0 && last_shoot.y - 1 >= 0 && field_user[last_shoot.x][last_shoot.y - 1].is_visited == false) {
+			possible_points.push_back(Point(last_shoot.x, last_shoot.y - 1));
 		}
 		if (last_shoot.x + 1 < size && last_shoot.y >= 0 && field_user[last_shoot.x + 1][last_shoot.y].is_visited == false) {
 			possible_points.push_back(Point(last_shoot.x + 1, last_shoot.y));
@@ -358,7 +370,7 @@ void ai_shoot(Point& last_shoot, bool& use_last_point, short int& score_ai, Cell
 		if (last_shoot.x >= 0 && last_shoot.y + 1 < size && field_user[last_shoot.x][last_shoot.y + 1].is_visited == false) {
 			possible_points.push_back(Point(last_shoot.x, last_shoot.y + 1));
 		}
-		if (last_shoot.x - 1>= 0 && last_shoot.y >= 0 && field_user[last_shoot.x - 1][last_shoot.y].is_visited == false) {
+		if (last_shoot.x - 1 >= 0 && last_shoot.y >= 0 && field_user[last_shoot.x - 1][last_shoot.y].is_visited == false) {
 			possible_points.push_back(Point(last_shoot.x - 1, last_shoot.y));
 		}
 		if (possible_points.size() > 0) {
@@ -379,8 +391,10 @@ void ai_shoot(Point& last_shoot, bool& use_last_point, short int& score_ai, Cell
 		}
 		users_turn = true;
 	}
-	
+
 }
+
+
 
 int main() {
 	const std::size_t width = 800, height = 600, w = 32, SIZE = 10, MAX_SCORE = 20;
@@ -388,6 +402,7 @@ int main() {
 	Cell** field_ai = create_matrix(SIZE);
 	short int score_user = 0, score_ai = 0, ship_number = -1;
 	bool users_turn = true, use_last_point = false;
+
 	Point last_ai_shoot;
 	std::vector<std::vector<Point>> possible_ships;
 	
@@ -402,6 +417,8 @@ int main() {
 	Texture texture;
 	texture.loadFromFile("img/1.jpg");
 	RectangleShape button_start(sf::Vector2f(8 * w, 2 * w)), button_restart(sf::Vector2f(8 * w, 2 * w)), button_stop(sf::Vector2f(8 * w, 2 * w));
+	
+	
 	Text text_start("Start!", font, 40), text_restart("New game", font, 40), text_stop("Exit!", font, 40);
 	button_start.setPosition(15*w, 16*w);
 	button_start.setFillColor(Color(204, 255, 255));
@@ -417,6 +434,19 @@ int main() {
 	button_stop.setFillColor(Color(204, 255, 255));
 	text_stop.setFillColor(Color(0, 51, 0));
 	text_stop.move(4 * w, 16 * w + 5);
+
+
+	bool enough_putting_bool = false, wrong_putting_bool = false, wrong_shot_bool = false;
+	Text enough_putting_text("You have putted all ships!", font, 25), wrong_putting_text("Wrong place!", font, 40), wrong_shot_text("You have shot there!", font, 25);
+	enough_putting_text.setFillColor(Color(0, 51, 0));
+	enough_putting_text.move(15 * w, 14 * w + 10);
+
+	wrong_shot_text.setFillColor(Color(0, 51, 0));
+	wrong_shot_text.move(15 * w, 14 * w + 10);
+
+	wrong_putting_text.setFillColor(Color(0, 51, 0));
+	wrong_putting_text.move(15 * w, 14 * w + 10);
+
 
 
 	// sprite creating
@@ -456,7 +486,17 @@ int main() {
 				}
 				if (event.type == Event::MouseButtonPressed && (x >= 15 && x <= 24) && (y >= 2 && y <= 11)) {
 					if (event.key.code == Mouse::Left) {
-						set_deck(x - 15, y-2, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
+						bool result = set_deck(x - 15, y - 2, SIZE, possible_ships, ship_number, field_user, fleet_user, filled, current_ship, max_decks);
+						if (!result && (current_ship != SIZE - 1 || current_ship == SIZE - 1 && filled != 1)) {
+							wrong_putting_bool = true;
+						}
+						else if(!result && current_ship == SIZE - 1 && filled == 1){ // if last deck is already putted and we try to put more
+							enough_putting_bool = true;
+						}
+						else {
+							wrong_putting_bool = false;
+							enough_putting_bool = false;
+						}
 					}
 				}
 				if (current_ship == SIZE-1 && filled == 1 && event.type == Event::MouseButtonPressed && (x >= 15 && x <= 22) && (y >= 16 && y <=  17)) {
@@ -472,6 +512,9 @@ int main() {
 					clear_fleet(fleet_user, SIZE);
 					remove_fleet(fleet_ai, SIZE);
 					fleet_ai = generate_random_field(field_ai, SIZE);
+					wrong_putting_bool = false;
+					enough_putting_bool = false;
+					wrong_shot_bool = false;
 				}
 			}
 		}
@@ -481,7 +524,7 @@ int main() {
 			window.draw(win);
 		}
 		else if (score_ai == MAX_SCORE) {
-			win.setString("Ai win!");
+			win.setString("AI win!");
 			window.draw(win);
 		}
 
@@ -510,9 +553,16 @@ int main() {
 					}*/
 					if (event.type == Event::MouseButtonPressed && (x >= 0 && x <= 9) && (y >= 2 && y <= 11) && users_turn == true && score_user != MAX_SCORE && score_ai != MAX_SCORE) {
 						if (event.key.code == Mouse::Left) {
+							if (field_ai[x][y - 2].is_visited == true) {
+								wrong_shot_bool = true;
+							}
+							else {
+								wrong_shot_bool = false;
+							}
 							if (shoot(Point(x, y - 2), field_ai, fleet_ai, SIZE, score_user) == false) {
 								users_turn = false;
 							}
+							
 						}
 					}
 
@@ -528,6 +578,9 @@ int main() {
 						users_turn = true;
 						mode = creating;
 						use_last_point = false;
+						wrong_putting_bool = false;
+						enough_putting_bool = false;
+						wrong_shot_bool = false;
 					}
 				}
 			}
@@ -612,7 +665,17 @@ int main() {
 		}
 
 		// window draw
-		
+		if (mode == creating) {
+			if (wrong_putting_bool) {
+				window.draw(wrong_putting_text);
+			}
+			else if (enough_putting_bool) {
+				window.draw(enough_putting_text);
+			}
+		}
+		else if (wrong_shot_bool == true) {
+			window.draw(wrong_shot_text);
+		}
 		if (score_user == MAX_SCORE || score_ai == MAX_SCORE) {
 			window.draw(win);
 		}
