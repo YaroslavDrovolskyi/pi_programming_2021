@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cassert>
+#include <vector>
 
 
 
@@ -37,7 +38,14 @@ void add(ListNode*& list, Time data);
 bool remove_node(ListNode*& list, ListNode* node_to_remove);
 bool remove(ListNode*& list, Time data);
 bool check_order(ListNode* list);
+ListNode* search(ListNode* list, Time data);
+std::vector<ListNode*> search(ListNode* list, Time start, Time end);
 void print(ListNode* list);
+template<typename Callable>
+void process_list(ListNode* list, Callable process);
+void add_random_items(ListNode*& list, std::size_t size);
+unsigned int get_memory(ListNode* list);
+void clear(ListNode*& list);
 
 int main() {
 	
@@ -52,7 +60,7 @@ int main() {
 	add(list, Time{ 2005, 05, 15, 20, 45, 23 });
 	print(list);
 	
-	
+	/*
 	Time time{ 2005, 05, 15, 20, 45, 23 };
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
@@ -77,8 +85,41 @@ int main() {
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
 	print(list);
+	*/
+
+	std::cout << "\n\nSEARCH:" << std::endl << std::endl;
+	ListNode* result = search(list, Time{ 1991, 05, 15, 20, 45, 23 });
+	if (result) {
+		std::cout << result->data << std::endl;
+	}
+	else {
+		std::cout << "\nNot found\n";
+	}
 
 
+	std::cout << "\n\nSEARCH in interval:" << std::endl << std::endl;
+	std::vector<ListNode*> result_v = search(list, Time{ 1800, 05, 15, 20, 45, 23 }, Time{ 2000, 05, 15, 20, 45, 22 });
+	if (result_v.size() > 0) {
+		for (std::size_t i = 0; i < result_v.size(); i++) {
+			std::cout << result_v[i]->data << std::endl;
+		}
+	}
+	else {
+		std::cout << "\nNot found\n";
+	}
+
+
+	short int year_summa = 0;
+	process_list(list, [&](Time& time) {std::cout << time.year << std::endl; });
+	std::cout << "\n\n\nSumma of years: " << year_summa << std::endl;
+
+	add_random_items(list, 10);
+	print(list);
+
+	std::cout << "\n\n\nMemory: " << get_memory(list) << std::endl;
+
+	clear(list);
+	print(list);
 	std::system("pause");
 	return 0;
 }
@@ -137,8 +178,8 @@ std::ostream& operator<< (std::ostream& out, Time& time) {
 Time random_time() {
 	Time new_time;
 	new_time.year = rand() % 46 + 1975;
-	new_time.month = rand() % 13;
-	new_time.day = rand() % 31;
+	new_time.month = rand() % 12 + 1;
+	new_time.day = rand() % 30 + 1 ;
 	new_time.hours = rand() % 24;
 	new_time.minutes = rand() % 60;
 	new_time.seconds = rand() % 60;
@@ -229,6 +270,65 @@ bool check_order(ListNode* list) {
 	return true;
 }
 
+ListNode* search(ListNode* list, Time data) {
+	if (!list) { return nullptr; }
+	ListNode* current = list;
+	while (current && current->data < data) {
+		current = current->next;
+	}
+	if (current && current->data == data) { return current; }
+	else { return nullptr; }
+}
+
+std::vector<ListNode*> search(ListNode* list, Time start, Time end) {
+	assert(start <= end && "Wrong search interval");
+	std::vector<ListNode*> result;
+	ListNode* current = list;
+	while (current && current->data <= end) {
+		if (current->data >= start && current->data <= end) {
+			result.push_back(current);
+		}
+		current = current->next;
+	}
+	return result;
+}
+
+template<typename Callable>
+void process_list(ListNode* list, Callable process) {
+	assert(list && "Try to process empty list");
+	ListNode* current = list;
+	while (current) {
+		process(current->data);
+		current = current->next;
+	}
+}
+
+void add_random_items(ListNode*&list, std::size_t size) {
+	for (std::size_t i = 0; i < size; i++) {
+		add(list, random_time());
+	}
+}
+void clear(ListNode*& list) {
+	if (!list) { return; }
+	ListNode* current = list;
+	ListNode* prev;
+	while (current) {
+		prev = current;
+		current = current->next;
+		delete prev;
+	}
+	list = nullptr;
+}
+unsigned int get_memory(ListNode* list) {
+	ListNode* current = list;
+	std::size_t k = 0;
+	while (current) {
+		k++;
+		current = current->next;
+	}
+	unsigned int memory = sizeof(list) + k * sizeof(ListNode);
+	return memory;
+}
 void print(ListNode* list) {
 	if (!list) { std::cout << "\nList is empty\n"; return; }
 	ListNode* current = list;
