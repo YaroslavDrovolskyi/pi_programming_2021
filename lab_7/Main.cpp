@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <ctime>
+#include <vector>
 
 using namespace sf;
 
@@ -622,7 +623,7 @@ int main() {
 						if (!result && (current_ship != SIZE - 1 || current_ship == SIZE - 1 && filled != 1)) {
 							wrong_putting_bool = true;
 						}
-						else if(!result && current_ship == SIZE - 1 && filled == 1){ // if last deck is already putted and we try to put more
+						else if(!result && current_ship == SIZE - 1 && filled == 1){ // if last deck is already put and we try to put more
 							enough_putting_bool = true;
 						}
 						else {
