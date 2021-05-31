@@ -16,7 +16,7 @@ struct ListNode {
 
 
 
-ListNode* create_empty() {
+ListNode* create_linked_list() {
 	ListNode* new_node = nullptr;
 	return new_node;
 }
@@ -158,6 +158,7 @@ unsigned int get_memory(ListNode* list) {
 	unsigned int memory = sizeof(list) + k * sizeof(ListNode);
 	return memory;
 }
+
 void print(ListNode* list) {
 	if (!list) { std::cout << "\nList is empty\n"; return; }
 	ListNode* current = list;
