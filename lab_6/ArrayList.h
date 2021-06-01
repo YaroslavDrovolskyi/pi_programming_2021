@@ -281,8 +281,4 @@ void print(std::vector<Time>& array_list) {
 
 */
 
-
-
-
-
 #endif ARRAYLIST_
