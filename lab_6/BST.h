@@ -152,7 +152,14 @@ void search_impl(BinTreeNode* root, Time start, Time end, std::vector<BinTreeNod
 	}
 }
 
+template <typename Callable>
+void process_list(BinTreeNode* root, Callable process) {
+	if (root == nullptr) { return; }
 
+	process_list(root->left, process);
+	process(root->data);
+	process_list(rocess->right, process);
+}
 
 
 

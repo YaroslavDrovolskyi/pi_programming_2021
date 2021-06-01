@@ -143,6 +143,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ArrayList.h" />
+    <ClInclude Include="BST.h" />
     <ClInclude Include="linked_list.h" />
     <ClInclude Include="Time.h" />
   </ItemGroup>
