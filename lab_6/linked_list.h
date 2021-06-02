@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef LINKED_LIST_
-#define LINKED_LIST_
+#ifndef LINKED_LIST_H
+#define LINKED_LIST_H
 
 #include <iostream>
 #include <cassert>
@@ -57,7 +57,6 @@ void add(ListNode*& list, Time data) {
 			current->next = new_node;
 		}
 	}
-
 }
 
 bool remove_node(ListNode*& list, ListNode* node_to_remove) {
@@ -99,23 +98,23 @@ bool check_order(ListNode* list) {
 	return true;
 }
 
-ListNode* search(ListNode* list, Time data) {
+Time* search(ListNode* list, Time data) {
 	if (!list) { return nullptr; }
 	ListNode* current = list;
 	while (current && current->data < data) {
 		current = current->next;
 	}
-	if (current && current->data == data) { return current; }
+	if (current && current->data == data) { return &(current->data); }
 	else { return nullptr; }
 }
 
-std::vector<ListNode*> search(ListNode* list, Time start, Time end) {
+std::vector<Time*> search(ListNode* list, Time start, Time end) {
 	assert(start <= end && "Wrong search interval");
-	std::vector<ListNode*> result;
+	std::vector<Time*> result;
 	ListNode* current = list;
 	while (current && current->data <= end) {
 		if (current->data >= start && current->data <= end) {
-			result.push_back(current);
+			result.push_back(&(current->data));
 		}
 		current = current->next;
 	}
@@ -171,4 +170,4 @@ void print(ListNode* list) {
 }
 
 
-#endif LINKED_LIST_
+#endif // LINKED_LIST_H

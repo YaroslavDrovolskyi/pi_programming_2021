@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef BST_
-#define BST_
+#ifndef BST_H
+#define BST_H
 
 #include <iostream>
 #include <cassert>
@@ -21,6 +21,7 @@ BinTreeNode* create_treenode(Time data, BinTreeNode* left = nullptr, BinTreeNode
 	new_node->data = data;
 	new_node->left = left;
 	new_node->right = right;
+	return new_node;
 }
 
 BinTreeNode* create_bst() {
@@ -28,24 +29,24 @@ BinTreeNode* create_bst() {
 	return tree;
 }
 
-BinTreeNode* add(BinTreeNode* root, Time data) {
+void add(BinTreeNode*& root, Time data) {
 	if (root == nullptr) {
 		root = create_treenode(data);
 	}
 	else {
 		if (data < root->data) {
-			root->left = add(root->left, data);
+			add(root->left, data);
 		}
 		else if (data > root->data) {
-			root->right = add(root->right, data);
+			add(root->right, data);
 		}
 	}
-	return root;
 }
 
 void print_as_tree_impl(BinTreeNode* root) {
 	if (!root) { return; }
-	std::cout << root->data << "(";
+//	std::cout << root->data << "(";
+	std::cout << root->data.year << "("; // only for testing
 	if (root->left || root->right) {
 		if (root->left) {
 			print_as_tree_impl(root->left);
@@ -62,10 +63,11 @@ void print_as_tree_impl(BinTreeNode* root) {
 }
 
 void print_as_tree(BinTreeNode* root) {
-	if (!root) { std::cout << "\nTree is empty\n"; }
+	if (!root) { std::cout << "\nTree is empty"; }
 	else {
 		print_as_tree_impl(root);
 	}
+	std::cout << std::endl;
 }
 
 void print_impl(BinTreeNode* root) {
@@ -91,7 +93,7 @@ BinTreeNode*& search_prev_child(BinTreeNode* node) {
 	return current;
 }
 
-bool remove(BinTreeNode*& node, Time data) {
+bool remove(BinTreeNode*& node, Time data) { // need to remake
 	if (node == nullptr){ return false; }
 	if (data == node->data) {
 		if (node->left) {
@@ -130,11 +132,11 @@ bool remove(BinTreeNode*& node, Time data) {
 
 }
 
-BinTreeNode* search(BinTreeNode* root, Time data) {
+Time* search(BinTreeNode* root, Time data) {
 	if (root == nullptr) { return nullptr; }
 
 	if (data == root->data) {
-		return root;
+		return &(root->data);
 	}
 	else if (data < root->data) {
 		return search(root->left, data);
@@ -144,176 +146,86 @@ BinTreeNode* search(BinTreeNode* root, Time data) {
 	}
 }
 
-void search_impl(BinTreeNode* root, Time start, Time end, std::vector<BinTreeNode*> result) {
+void search_impl(BinTreeNode* root, Time start, Time end, std::vector<Time*>& result) {
 	if (root == nullptr) { return; }
 
-	if (root->data >= start && root->data <= end) {
-		result.push_back(root);
+	if (root->data > start && root->data < end) {
+		search_impl(root->left, start, end, result); // such order of recursive calls is to get right order as a result
+		result.push_back(&(root->data));
+		search_impl(root->right, start, end, result);
 	}
+	else if (root->data >= end) {
+		search_impl(root->left, start, end, result); 
+		if (root->data == end) {
+			result.push_back(&(root->data));
+		}
+		
+	}
+	else if (root->data <= start) {
+		if (root->data == start) {
+			result.push_back(&(root->data));
+		}
+		search_impl(root->right, start, end, result);
+	}
+}
+
+std::vector<Time*> search(BinTreeNode* root, Time start, Time end) {
+	assert(start <= end && "Wrong search interval");
+	std::vector<Time*> result;
+	search_impl(root, start, end, result);
+	return result;
 }
 
 template <typename Callable>
 void process_list(BinTreeNode* root, Callable process) {
+	assert(root && "Try to process empty list");
+
+	if (root->left) {
+		process_list(root->left, process);
+	}
+	process(root->data);
+	if (root->right) {
+		process_list(root->right, process);
+	}
+}
+
+void add_random_items(BinTreeNode*& root, std::size_t size) {
+	for (std::size_t i = 0; i < size; i++) {
+		add(root, random_time());
+	}
+}
+
+void clear(BinTreeNode*& root) {
 	if (root == nullptr) { return; }
 
-	process_list(root->left, process);
-	process(root->data);
-	process_list(rocess->right, process);
+	clear(root->left);
+	clear(root->right);
+	BinTreeNode* to_delete = root;
+	delete to_delete;
+	root = nullptr;
 }
 
-
-
-/*
-
-
-
-BinTreeNode* search_one(double key, double delta) { // comparison according to delta-neighborhood
-	if (this->data.distance <= key + delta && this->data.distance >= key - delta) {
-		return this;
-	}
-	else if (key + delta < this->data.distance) { // left tree
-		if (this->left) {
-			return this->left->search_one(key, delta);
-		}
-		else {
-			return nullptr;
-		}
-	}
-	else if (key - delta > this->data.distance) { // right tree
-		if (this->right) {
-			return this->right->search_one(key, delta);
-		}
-		else {
-			return nullptr;
-		}
-	}
-}
-
-void search_all(double key, double delta, std::vector<BinTreeNode*>& result) {
-	double difference = key - this->data.distance;
-	if (this->data.distance <= key + delta && this->data.distance >= key - delta) { // we need to check two subtrees
-		result.push_back(this);
-		if (this->left) {
-			this->left->search_all(key, delta, result);
-		}
-		if (this->right) {
-			this->right->search_all(key, delta, result);
-		}
-	}
-	else if (key + delta < this->data.distance) { // left tree
-		if (this->left) {
-			this->left->search_all(key, delta, result);
-		}
-	}
-	else if (key - delta > this->data.distance) { // right tree
-		if (this->right) {
-			this->right->search_all(key, delta, result);
-		}
-	}
-}
-
-BinTreeNode*& find_previous_child() {
-	BinTreeNode*& current = this->left;
-	if (!current) { return current; } //no previous child
-	while (current->right) {
-		current = current->right;
-	}
-	return current;
-}
-
-
-
-
-
-struct BinSearchTree {
-	BinTreeNode* root;
-
-	BinSearchTree() {
-		this->root = nullptr;
-	}
-
-	BinTreeNode* insert(Pair data) {
-		if (this->root) {
-			return this->root->insert(data);
-		}
-		else {
-			this->root = new BinTreeNode(data);
-			return this->root;
-		}
-	}
-
-	BinTreeNode* search_one(double key, double delta) {
-		if (this->root) {
-			return this->root->search_one(key, delta);
-		}
-		else {
-			return nullptr;
-		}
-	}
-
-	std::vector<BinTreeNode*> search_all(double key, double delta) {
-		std::vector<BinTreeNode*> result;
-		if (this->root) {
-			this->root->search_all(key, delta, result);
-		}
-		return result;
-	}
-
+unsigned int get_memory_impl(BinTreeNode* root) {
+	if (root == nullptr) { return 0; }
 	
-	bool remove_one(double key, double delta) {
-		if (this->root) {
-			return remove_node(this->root, key, delta);
-		}
-		else { return false; }
-	}
-
-	bool remove_all(double key, double delta) {
-		if (this->root) {
-			while (this->root && remove_node(this->root, key, delta)) {
-				;
-			}
-			return true;
-		}
-		else { return false; }
-	}
-};
-
-BinSearchTree generate_random_BST(std::size_t size) {
-	BinSearchTree tree;
-	Film* films = generate_random_films(size);
-	for (std::size_t i = 0; i < size - 1; i++) {
-		for (std::size_t j = i + 1; j < size; j++) {
-			Pair new_pair(films[i], films[j]);
-			tree.insert(new_pair);
-		}
-	}
-	delete[]films;
-	return tree;
+	return sizeof(BinTreeNode) + get_memory_impl(root->left) + get_memory_impl(root->right);
 }
 
-void remove_bin_tree(BinTreeNode* root) {
-	if (root) { return; }
-	if (root->left) {
-		remove_bin_tree(root->left);
-	}
-	if (root->right) {
-		remove_bin_tree(root->right);
-	}
-	delete root;
+unsigned int get_memory(BinTreeNode* root) {
+	return sizeof(BinTreeNode*) + get_memory_impl(root);
 }
 
-*/
+bool check_order_impl(BinTreeNode* root, Time prev, Time next) {
+	if (root == nullptr) { return true; }
+	if (check_order_impl(root->left, Time{ 0,0,0,0,0,0 }, root->data) == false || check_order_impl(root->right, root->data, Time{ SHRT_MAX,13,32,24,61,61 }) == false) {
+		return false;
+	}
+	if (root->data > prev && root->data < next) { return true; }
+}
+
+bool chech_order(BinTreeNode* root) {
+	return check_order_impl(root, Time{ 0,0,0,0,0,0 }, Time{ SHRT_MAX,13,32,24,61,61 });
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-#endif BST_
+#endif // BST_H_

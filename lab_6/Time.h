@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef TIME_
-#define TIME_
+#ifndef TIME_H
+#define TIME_H
 
 
 #include <iostream>
@@ -85,13 +85,20 @@ Time random_time() {
 	return new_time;
 }
 
+void print_search_result(Time* result) {
+	if (!result) { std::cout << "\nNot found\n"; }
+	else {
+		std::cout << "Search result: " << *result << std::endl;
+	}
+}
 
-
-
-
-
-
-
-
-
-#endif TIME_
+void print_search_result(std::vector<Time*> result) {
+	if (result.size() == 0) { std::cout << "\nNot found\n"; }
+	else {
+		std::cout << "Search result:\n";
+		for (std::size_t i = 0; i < result.size(); i++) {
+			std::cout << *(result[i]) << std::endl;
+		}
+	}
+}
+#endif // TIME_H

@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef ARRAYLIST_
-#define ARRAYLIST_
+#ifndef ARRAYLIST_H
+#define ARRAYLIST_H
 
 #include <iostream>
 #include <cassert>
@@ -14,11 +14,6 @@ struct ArrayList {
 	std::size_t size;
 	std::size_t capacity;
 };
-
-std::vector<Time> create_aray_list() {
-	std::vector<Time> array_list;
-	return array_list;
-}
 
 ArrayList create_array_list() {
 	ArrayList list;
@@ -179,6 +174,12 @@ void print(ArrayList& list) {
 
 /****   Based on std::vector  ****/
 /* 
+
+std::vector<Time> create_array_list() {
+	std::vector<Time> array_list;
+	return array_list;
+}
+
 void add(std::vector<Time>& list, Time data) {
 	if (list.size() == 0) { list.push_back(data); }
 	else {
@@ -281,4 +282,4 @@ void print(std::vector<Time>& array_list) {
 
 */
 
-#endif ARRAYLIST_
+#endif // ARRAYLIST_H

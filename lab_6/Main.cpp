@@ -2,15 +2,16 @@
 #include <cassert>
 #include <vector>
 
+
 #include "Time.h"
 #include "linked_list.h"
 #include "ArrayList.h"
-//#include "BST.h"
+#include "BST.h"
 
 
 int main() {
 	
-	ListNode* list = create_linked_list();
+	BinTreeNode* list = create_bst();
 	print(list);
 	std::cout << std::endl;
 	add(list, Time{ 2007, 05, 15, 20, 45, 23 });
@@ -20,71 +21,70 @@ int main() {
 	add(list, Time{ 1975, 05, 15, 20, 45, 23 });
 	add(list, Time{ 2005, 05, 15, 20, 45, 23 });
 	print(list);
+	std::cout << "\n\n\nPrint as a tree\n\n";
+	print_as_tree(list);
 	
-	/*
-	Time time{ 2005, 05, 15, 20, 45, 23 };
+	
+	Time time{ 2000, 05, 15, 20, 45, 23 };
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
+	print_as_tree(list);
 	print(list);
 
 	time.year = 2007;
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
+	print_as_tree(list);
 	print(list);
+	
 
 	time.year = 1975;
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
+	print_as_tree(list);
 	print(list);
+	
 
 	time.year = 2020;
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
+	print_as_tree(list);
 	print(list);
 
 	time.year = 2000;
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
+	print_as_tree(list);
 	print(list);
-	*/
 
+
+	std::cout << "\n\n\nAdd random items:\n\n";
+	add_random_items(list, 10);
+	print(list);
+
+	std::cout << "\n\n\nPrint as a tree\n\n";
+	print_as_tree(list);
 	std::cout << "\n\nSEARCH:" << std::endl << std::endl;
-	ListNode* result = search(list, Time{ 1991, 05, 15, 20, 45, 23 });
-	if (result) {
-		std::cout << result->data << std::endl;
-	}
-	else {
-		std::cout << "\nNot found\n";
-	}
+	print_search_result(search(list, Time{ 2000, 05, 15, 20, 45, 23 }));
 
 
 	std::cout << "\n\nSEARCH in interval:" << std::endl << std::endl;
-	std::vector<ListNode*> result_v = search(list, Time{ 1800, 05, 15, 20, 45, 23 }, Time{ 2000, 05, 15, 20, 45, 22 });
-	if (result_v.size() > 0) {
-		for (std::size_t i = 0; i < result_v.size(); i++) {
-			std::cout << result_v[i]->data << std::endl;
-		}
-	}
-	else {
-		std::cout << "\nNot found\n";
-	}
+	print_search_result(search(list, Time{ 1800, 05, 15, 20, 45, 23 }, Time{ 2000, 05, 15, 20, 45, 23 }));
 
 
 	short int year_summa = 0;
-	process_list(list, [&](Time& time) {std::cout << time.year << std::endl; });
+	process_list(list, [&](Time& time) {std::cout << time.year << std::endl; year_summa += time.year; });
 	std::cout << "\n\n\nSumma of years: " << year_summa << std::endl;
 
-	add_random_items(list, 10);
-	print(list);
+	
 
 	std::cout << "\n\n\nMemory: " << get_memory(list) << std::endl;
 	clear(list);
 	print(list);
 
-
+	/*
 	std::cout << "\n\n\nARRAY LIST\n\n\n";
-	int* arr = new int[100];
-	delete[]arr;
+
 	ArrayList array_list = create_array_list();
 	add(array_list, Time{ 2007, 05, 15, 20, 45, 22 });
 	print(array_list);
@@ -171,7 +171,7 @@ int main() {
 	clear(array_list);
 	print(array_list);
 
-
+	*/
 	std::system("pause");
 	return 0;
 }
