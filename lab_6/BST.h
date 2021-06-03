@@ -235,7 +235,7 @@ bool chech_order(BinTreeNode* root) {
 }
 
 
-#endif // BST_H_
+#endif // BST_H
 
 
 
