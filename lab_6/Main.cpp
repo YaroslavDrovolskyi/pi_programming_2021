@@ -25,7 +25,7 @@ int main() {
 	print_as_tree(list);
 	
 	
-	Time time{ 2000, 05, 15, 20, 45, 23 };
+	Time time{ 1800, 05, 15, 20, 45, 23 };
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
 	print_as_tree(list);
@@ -51,7 +51,7 @@ int main() {
 	print_as_tree(list);
 	print(list);
 
-	time.year = 2000;
+	time.year = 2005;
 	std::cout << "\nremove " << time << std::endl << std::endl;
 	remove(list, time);
 	print_as_tree(list);
@@ -81,6 +81,11 @@ int main() {
 	std::cout << "\n\n\nMemory: " << get_memory(list) << std::endl;
 	clear(list);
 	print(list);
+	std::cout << "\n\n\nMemory: " << get_memory(list) << std::endl;
+
+	add(list, random_time());
+	print(list);
+	std::cout << "\n\n\nMemory: " << get_memory(list) << std::endl;
 
 	/*
 	std::cout << "\n\n\nARRAY LIST\n\n\n";

@@ -84,8 +84,9 @@ void print(BinTreeNode* root) {
 	}
 }
 
-BinTreeNode*& search_prev_child(BinTreeNode* node) {
-	BinTreeNode*& current = node->left;
+
+BinTreeNode* search_prev_child(BinTreeNode* node) {
+	BinTreeNode* current = node->left;
 	if (!current) { return current; } // no previous child
 	while (current->right) {
 		current = current->right;
@@ -93,44 +94,50 @@ BinTreeNode*& search_prev_child(BinTreeNode* node) {
 	return current;
 }
 
-bool remove(BinTreeNode*& node, Time data) { // need to remake
-	if (node == nullptr){ return false; }
-	if (data == node->data) {
-		if (node->left) {
-			if (node->right) { // both childs are exist
-				BinTreeNode*& prev = search_prev_child(node);
+
+
+BinTreeNode* remove_impl(BinTreeNode* root, Time data) {
+	if (root == nullptr) { return nullptr; }
+	if (data == root->data) {
+		if (root->left) {
+			if (root->right) { // both childs are exist
+				BinTreeNode* prev = search_prev_child(root);
 				assert(prev != nullptr);
-				node->data = prev->data;
-				remove(prev, prev->data);
+				root->data = prev->data;
+				root->left = remove_impl(root->left, prev->data);
 			}
 			else {
-				BinTreeNode* to_delete = node;
-				node = node->left;
+				BinTreeNode* to_delete = root;
+				root = root->left;
 				delete to_delete;
 			}
 		}
 		else {
-			if (node->right) {
-				BinTreeNode* to_delete = node;
-				node = node->right;
+			if (root->right) {
+				BinTreeNode* to_delete = root;
+				root = root->right;
 				delete to_delete;
 			}
 			else { // no childs
-				BinTreeNode* to_delete = node;
-				node = nullptr;
-				delete to_delete;
+				delete root; 
+				root = nullptr;
 			}
 		}
-		return true;
 	}
-	else if (data < node->data) {
-		return remove(node->left, data);
+	else if (data < root->data) {
+		root->left = remove_impl(root->left, data);
 	}
-	else {
-		return remove(node->right, data);
+	else if (data > root->data) {
+		root->right = remove_impl(root->right, data);
 	}
-
+	return root;
 }
+
+
+void remove(BinTreeNode*& root, Time data) {
+	root = remove_impl(root, data);
+}
+
 
 Time* search(BinTreeNode* root, Time data) {
 	if (root == nullptr) { return nullptr; }
@@ -229,3 +236,60 @@ bool chech_order(BinTreeNode* root) {
 
 
 #endif // BST_H_
+
+
+
+
+/*    Need remaking            */
+/*
+BinTreeNode*& search_prev_child(BinTreeNode*& node) {
+	BinTreeNode*& current = node->left;
+	if (!current) { return current; } // no previous child
+	while (current->right) {
+		current = current->right;
+	}
+	return current;
+}
+
+
+bool remove(BinTreeNode*& node, Time data) {
+	if (node == nullptr){ return false; }
+	if (data == node->data) {
+		if (node->left) {
+			if (node->right) { // both childs are exist
+				BinTreeNode*& prev = search_prev_child(node);
+				assert(prev != nullptr);
+				Time prev_data = prev->data;
+				node->data = prev->data;
+				prev->data = data;
+				remove(node->left, data); // probles was, that first parameter was "prev", but *& on it wasn't from its parent, that's why we hadx nullptr in the left subtree
+			}
+			else {
+				BinTreeNode* to_delete = node;
+				node = node->left;
+				delete to_delete;
+			}
+		}
+		else {
+			if (node->right) {
+				BinTreeNode* to_delete = node;
+				node = node->right;
+				delete to_delete;
+			}
+			else { // no childs
+				BinTreeNode* to_delete = node;
+				node = nullptr;
+				delete to_delete;
+			}
+		}
+		return true;
+	}
+	else if (data < node->data) {
+		return remove(node->left, data);
+	}
+	else {
+		return remove(node->right, data);
+	}
+
+}
+*/
