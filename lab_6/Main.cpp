@@ -7,10 +7,11 @@
 #include "linked_list.h"
 #include "ArrayList.h"
 #include "BST.h"
+#include "AvlTree.h"
 
 
 int main() {
-	
+	/*
 	BinTreeNode* list = create_bst();
 	print(list);
 	std::cout << std::endl;
@@ -86,6 +87,8 @@ int main() {
 	add(list, random_time());
 	print(list);
 	std::cout << "\n\n\nMemory: " << get_memory(list) << std::endl;
+	*/
+
 
 	/*
 	std::cout << "\n\n\nARRAY LIST\n\n\n";
@@ -177,6 +180,28 @@ int main() {
 	print(array_list);
 
 	*/
+
+	std::cout << "\n\n\nAVL tree\n\n\n";
+	AvlNode* list = create_avl();
+	print(list);
+	std::cout << std::endl;
+	add(list, Time{ 2007, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2020, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2007, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2000, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2011, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2001, 05, 15, 20, 45, 23 });
+	add(list, Time{ 1975, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2005, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2006, 05, 15, 20, 45, 23 });
+	print(list);
+	std::cout << "\n\nPrint as tree:\n";
+	print_as_tree(list);
+
+
+
+
+
 	std::system("pause");
 	return 0;
 }
