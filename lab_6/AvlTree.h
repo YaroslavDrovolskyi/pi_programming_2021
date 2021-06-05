@@ -47,6 +47,65 @@ void right_rotate(AvlNode*& node) {
 	node = b;
 }
 
+/*
+1- right
+0 - equal
+-1 - left
+*/
+
+AvlNode* add(AvlNode* root, Time data) {
+	if (root == nullptr) {
+		root = create_avlnode(data);
+		return root;
+	}
+	else if (data == root->data) {
+		return nullptr; // don't need to duplicate
+	}
+	else if (data < root->data) {
+		if (root->left) {
+			int prev_balance = root->left->balance;
+			AvlNode* result = add(root->left, data);
+			int cur_balance = root->left->balance;
+			if (!result) { return nullptr; } // we didn't add anything
+			if (prev_balance != cur_balance) {
+				root->balance--;
+				if (root->balance < -1) {
+					if (cur_balance == -1) {
+						// left-left rotation of root
+					}
+					else if (cur_balance == 1) {
+						// left-right rotation of root
+					}
+				}
+			}
+			/*
+			if (prev_balance == 0) {
+				if (cur_balance != 0) {
+					root->balance--;
+					if (root->balance < -1) {
+						if (cur_balance == -1) {
+							// left-left rotation of root
+						}
+						else if (cur_balance == 1) {
+							// left-right rotation of root
+						}
+					}
+				}
+			}
+			*/
+		}
+		else {
+			root->left = create_avlnode(data);
+			root->balance--;
+			return root->left;
+		}
+		
+	}
+	else if (data > root->data) {
+		return add(root->right, data);
+	}
+}
+
 
 
 
