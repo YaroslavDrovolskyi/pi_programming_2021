@@ -85,6 +85,16 @@ Time random_time() {
 	return new_time;
 }
 
+Time get_time() {
+	Time t;
+	std::cout << "\nEnter a date dd/mm/yy: ";
+	std::cin >> t.day >> t.month >> t.year;
+	std::cout << "\nEnter a time hh/mm/ss: ";
+	std::cin >> t.hours >> t.minutes >> t.seconds;
+
+	return t;
+}
+
 template <typename T>
 void print_search_result(T* result) {
 	if (!result) { std::cout << "\nNot found\n"; }
