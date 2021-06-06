@@ -85,19 +85,21 @@ Time random_time() {
 	return new_time;
 }
 
-void print_search_result(Time* result) {
+template <typename T>
+void print_search_result(T* result) {
 	if (!result) { std::cout << "\nNot found\n"; }
 	else {
-		std::cout << "Search result: " << *result << std::endl;
+		std::cout << "Search result: " << result->data << std::endl;
 	}
 }
 
-void print_search_result(std::vector<Time*> result) {
+template <typename T>
+void print_search_result(std::vector<T*> result) {
 	if (result.size() == 0) { std::cout << "\nNot found\n"; }
 	else {
 		std::cout << "Search result:\n";
 		for (std::size_t i = 0; i < result.size(); i++) {
-			std::cout << *(result[i]) << std::endl;
+			std::cout << result[i]->data << std::endl;
 		}
 	}
 }

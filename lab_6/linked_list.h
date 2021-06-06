@@ -98,23 +98,23 @@ bool check_order(ListNode* list) {
 	return true;
 }
 
-Time* search(ListNode* list, Time data) {
+ListNode* search(ListNode* list, Time data) {
 	if (!list) { return nullptr; }
 	ListNode* current = list;
 	while (current && current->data < data) {
 		current = current->next;
 	}
-	if (current && current->data == data) { return &(current->data); }
+	if (current && current->data == data) { return current; }
 	else { return nullptr; }
 }
 
-std::vector<Time*> search(ListNode* list, Time start, Time end) {
+std::vector<ListNode*> search(ListNode* list, Time start, Time end) {
 	assert(start <= end && "Wrong search interval");
-	std::vector<Time*> result;
+	std::vector<ListNode*> result;
 	ListNode* current = list;
 	while (current && current->data <= end) {
 		if (current->data >= start && current->data <= end) {
-			result.push_back(&(current->data));
+			result.push_back(current);
 		}
 		current = current->next;
 	}

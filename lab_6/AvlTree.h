@@ -225,6 +225,102 @@ void remove(AvlNode*& root, Time data) {
 }
 
 
+AvlNode* search(AvlNode* root, Time data) {
+	if (root == nullptr) { return nullptr; }
+
+	if (data == root->data) {
+		return root;
+	}
+	else if (data < root->data) {
+		return search(root->left, data);
+	}
+	else if (data > root->data) {
+		return search(root->right, data);
+	}
+}
+
+void search_impl(AvlNode* root, Time start, Time end, std::vector<AvlNode*>& result) {
+	if (root == nullptr) { return; }
+
+	if (root->data > start && root->data < end) {
+		search_impl(root->left, start, end, result); // such order of recursive calls is to get right order as a result
+		result.push_back(root);
+		search_impl(root->right, start, end, result);
+	}
+	else if (root->data >= end) {
+		search_impl(root->left, start, end, result);
+		if (root->data == end) {
+			result.push_back(root);
+		}
+
+	}
+	else if (root->data <= start) {
+		if (root->data == start) {
+			result.push_back(root);
+		}
+		search_impl(root->right, start, end, result);
+	}
+}
+
+std::vector<AvlNode*> search(AvlNode* root, Time start, Time end) {
+	assert(start <= end && "Wrong search interval");
+	std::vector<AvlNode*> result;
+	search_impl(root, start, end, result);
+	return result;
+}
+
+template <typename Callable>
+void process_list(AvlNode* root, Callable process) {
+	assert(root && "Try to process empty list");
+
+	if (root->left) {
+		process_list(root->left, process);
+	}
+	process(root->data);
+	if (root->right) {
+		process_list(root->right, process);
+	}
+}
+
+void add_random_items(AvlNode*& root, std::size_t size) {
+	for (std::size_t i = 0; i < size; i++) {
+		add(root, random_time());
+	}
+}
+
+void clear(AvlNode*& root) {
+	if (root == nullptr) { return; }
+
+	clear(root->left);
+	clear(root->right);
+	AvlNode* to_delete = root;
+	delete to_delete;
+	root = nullptr;
+}
+
+unsigned int get_memory_impl(AvlNode* root) {
+	if (root == nullptr) { return 0; }
+
+	return sizeof(AvlNode) + get_memory_impl(root->left) + get_memory_impl(root->right);
+}
+
+unsigned int get_memory(AvlNode* root) {
+	return sizeof(AvlNode*) + get_memory_impl(root);
+}
+
+bool check_order_impl(AvlNode* root, Time prev, Time next) {
+	if (root == nullptr) { return true; }
+	if (check_order_impl(root->left, Time{ 0,0,0,0,0,0 }, root->data) == false || check_order_impl(root->right, root->data, Time{ SHRT_MAX,13,32,24,61,61 }) == false) {
+		return false;
+	}
+	if (root->data > prev && root->data < next) { return true; }
+	else { return false; }
+}
+
+bool check_order(AvlNode* root) {
+	return check_order_impl(root, Time{ 0,0,0,0,0,0 }, Time{ SHRT_MAX,13,32,24,61,61 });
+}
+
 
 
 

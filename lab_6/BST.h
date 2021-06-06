@@ -139,11 +139,11 @@ void remove(BinTreeNode*& root, Time data) {
 }
 
 
-Time* search(BinTreeNode* root, Time data) {
+BinTreeNode* search(BinTreeNode* root, Time data) {
 	if (root == nullptr) { return nullptr; }
 
 	if (data == root->data) {
-		return &(root->data);
+		return root;
 	}
 	else if (data < root->data) {
 		return search(root->left, data);
@@ -153,32 +153,32 @@ Time* search(BinTreeNode* root, Time data) {
 	}
 }
 
-void search_impl(BinTreeNode* root, Time start, Time end, std::vector<Time*>& result) {
+void search_impl(BinTreeNode* root, Time start, Time end, std::vector<BinTreeNode*>& result) {
 	if (root == nullptr) { return; }
 
 	if (root->data > start && root->data < end) {
 		search_impl(root->left, start, end, result); // such order of recursive calls is to get right order as a result
-		result.push_back(&(root->data));
+		result.push_back(root);
 		search_impl(root->right, start, end, result);
 	}
 	else if (root->data >= end) {
 		search_impl(root->left, start, end, result); 
 		if (root->data == end) {
-			result.push_back(&(root->data));
+			result.push_back(root);
 		}
 		
 	}
 	else if (root->data <= start) {
 		if (root->data == start) {
-			result.push_back(&(root->data));
+			result.push_back(root);
 		}
 		search_impl(root->right, start, end, result);
 	}
 }
 
-std::vector<Time*> search(BinTreeNode* root, Time start, Time end) {
+std::vector<BinTreeNode*> search(BinTreeNode* root, Time start, Time end) {
 	assert(start <= end && "Wrong search interval");
-	std::vector<Time*> result;
+	std::vector<BinTreeNode*> result;
 	search_impl(root, start, end, result);
 	return result;
 }
@@ -228,9 +228,10 @@ bool check_order_impl(BinTreeNode* root, Time prev, Time next) {
 		return false;
 	}
 	if (root->data > prev && root->data < next) { return true; }
+	else { return false; }
 }
 
-bool chech_order(BinTreeNode* root) {
+bool check_order(BinTreeNode* root) {
 	return check_order_impl(root, Time{ 0,0,0,0,0,0 }, Time{ SHRT_MAX,13,32,24,61,61 });
 }
 

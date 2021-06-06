@@ -252,6 +252,27 @@ int main() {
 	print_as_tree(list);
 
 
+	add_random_items(list, 10);
+	std::cout << "\n\n\nCheck order: " << check_order(list) << std::endl;
+	print(list);
+
+	std::cout << "\n\nSEARCH:" << std::endl << std::endl;
+	print_search_result(search(list, Time{ 1975, 05, 15, 20, 45, 22 }));
+
+
+	std::cout << "\n\nSEARCH in interval:" << std::endl << std::endl;
+	print_search_result(search(list, Time{ 1800, 05, 15, 20, 45, 23 }, Time{ 1990, 05, 15, 20, 45, 23 }));
+
+	int summa = 0;
+	process_list(list, [&](Time& time) {std::cout << time.year << std::endl; summa += time.year; });
+	std::cout << "\n\n\nSumma of years: " << summa << std::endl;
+
+
+
+	std::cout << "\n\n\nMemory: " << get_memory(list) << std::endl;
+	clear(list);
+	print(list);
+
 
 
 
