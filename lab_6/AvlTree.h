@@ -63,7 +63,7 @@ void print_as_tree(AvlNode* root) {
 void print_impl(AvlNode* root) {
 	if (!root) { return; }
 	print_impl(root->left);
-	std::cout << root->data << "   " << root->height <<  std::endl; // only for testing
+	std::cout << root->data << std::endl;
 	print_impl(root->right);
 }
 
