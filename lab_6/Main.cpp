@@ -194,8 +194,61 @@ int main() {
 	add(list, Time{ 1975, 05, 15, 20, 45, 23 });
 	add(list, Time{ 2005, 05, 15, 20, 45, 23 });
 	add(list, Time{ 2006, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2010, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2009, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2008, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2022, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2018, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2023, 05, 15, 20, 45, 23 });
+	add(list, Time{ 2024, 05, 15, 20, 45, 23 });
 	print(list);
 	std::cout << "\n\nPrint as tree:\n";
+	print_as_tree(list);
+
+	short int year;
+	std::cout << "\n\n\nRemoving:\n\n";
+
+	year = 2011;
+	std::cout << "\n1. Remove " << year << ":\n";
+	remove(list, Time{ year, 05, 15, 20, 45, 23 });
+	print(list);
+	print_as_tree(list);
+
+	year = 2013;
+	std::cout << "\n2. Remove " << year << ":\n";
+	remove(list, Time{ year, 05, 15, 20, 45, 23 });
+	print(list);
+	print_as_tree(list);
+
+	year = 2024;
+	std::cout << "\n3. Remove " << year << ":\n";
+	remove(list, Time{ year, 05, 15, 20, 45, 23 });
+	print(list);
+	print_as_tree(list);
+
+	year = 2011;
+	std::cout << "\n4. Remove " << year << ":\n";
+	remove(list, Time{ year, 05, 15, 20, 45, 23 });
+	print(list);
+	print_as_tree(list);
+
+	year = 1975;
+	std::cout << "\n5. Remove " << year << ":\n";
+	remove(list, Time{ year, 05, 15, 20, 45, 23 });
+	print(list);
+	print_as_tree(list);
+
+	year = 2007;
+	std::cout << "\n6. Remove " << year << ":\n";
+	remove(list, Time{ year, 05, 15, 20, 45, 23 });
+	print(list);
+	print_as_tree(list);
+
+	year = 2006;
+	std::cout << "\n7. Remove " << year << ":\n";
+	remove(list, Time{ year, 05, 15, 20, 45, 23 });
+	print(list);
+	std::cout << std::endl;
 	print_as_tree(list);
 
 

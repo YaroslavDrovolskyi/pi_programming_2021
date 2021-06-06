@@ -63,7 +63,7 @@ void print_as_tree(AvlNode* root) {
 void print_impl(AvlNode* root) {
 	if (!root) { return; }
 	print_impl(root->left);
-	std::cout << root->data << std::endl;
+	std::cout << root->data << "   " << root->height <<  std::endl; // only for testing
 	print_impl(root->right);
 }
 
@@ -91,25 +91,25 @@ void fix_height(AvlNode* node) {
 }
 
 void left_rotate(AvlNode*& node) { // right-right case
-	node->height = 0;
 	AvlNode* b = node->right;
 	node->right = b->left;
 	b->left = node;
 	node = b;
 
-	fix_height(node);
 	fix_height(node->left);
+	fix_height(node);
+	
 }
 
 void right_rotate(AvlNode*& node) { // left-left case
-	node->height = 0;
 	AvlNode* b = node->left;
 	node->left = b->right;
 	b->right = node;
 	node = b;
 
-	fix_height(node);
 	fix_height(node->right);
+	fix_height(node);
+	
 }
 
 void double_left_rotate(AvlNode*& node) { // right-left case
@@ -118,7 +118,7 @@ void double_left_rotate(AvlNode*& node) { // right-left case
 }
 
 void double_right_rotate(AvlNode*& node) { // right-left case
-	left_rotate(node->right);
+	left_rotate(node->left); // was node->right and error
 	right_rotate(node);
 }
 
@@ -169,6 +169,60 @@ AvlNode* add(AvlNode*& root, Time data) {
 	return result;
 }
 
+
+AvlNode* get_min(AvlNode* root) {
+	if (root == nullptr) { return nullptr; }
+	AvlNode* current = root;
+	while (current->left) {
+		current = current->left;
+	}
+	return current;
+}
+
+AvlNode* remove_min(AvlNode* root, Time& min_data) {
+	if (root == nullptr) { return nullptr; }
+	if (root->left == nullptr) { // we are on min item now
+		min_data = root->data;
+		AvlNode* right = root->right;
+		delete root;
+		return right;
+	}
+	else {
+		root->left = remove_min(root->left, min_data);
+	}
+	balancing(root);
+	return root;
+}
+AvlNode* remove_impl(AvlNode* root, Time data) {
+	if (root == nullptr) {
+		return nullptr;
+	}
+	else if (data == root->data) {
+		if (root->right) {
+			Time min;
+			root->right = remove_min(root->right, min);
+			root->data = min;
+		}
+		else {
+			AvlNode* left = root->left;
+			delete root;
+			return left;
+		}
+//		balancing(root);
+	}
+	else if (data < root->data) {
+		root->left = remove_impl(root->left, data);
+	}
+	else if (data > root->data) {
+		root->right = remove_impl(root->right, data);
+	}
+	balancing(root);
+	return root;
+}
+
+void remove(AvlNode*& root, Time data) {
+	root = remove_impl(root, data);
+}
 
 
 
