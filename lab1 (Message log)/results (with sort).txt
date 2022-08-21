@@ -1,0 +1,244 @@
+Results of benchmark mode
+Testing all ways of saving until total time with binary files < 10s to deeper testing, because binary files is faster
+Time in columns: generation, write in file, read from file, search, total time
+For std::vector time of generation, search and total time
+
+
+N = 10
+TEXTfile: 	0.001s	0.008s	0.002s	0.001s	0.012s	1320 Bytes
+BINfile: 	0s	0.007s	0.001s	0s	0.008s	911 Bytes
+VECTOR: 	0s	0.001s	0.001s			1590 Bytes
+
+Sort by type (counting sort): 0 ms
+Sort by type (comparison sort): 1 ms
+Sort by priority (radix sort): 0 ms
+Sort by priority (comparison sort): 1 ms
+Sort by type priority (not comparison sort): 1 ms
+Sort by type priority (comparison sort): 0 ms
+
+
+
+N = 20
+TEXTfile: 	0.001s	0.004s	0.004s	0.001s	0.01s	2727 Bytes
+BINfile: 	0.001s	0.002s	0.001s	0s	0.004s	2514 Bytes
+VECTOR: 	0.002s	0s	0.002s			3420 Bytes
+
+Sort by type (counting sort): 1 ms
+Sort by type (comparison sort): 1 ms
+Sort by priority (radix sort): 1 ms
+Sort by priority (comparison sort): 2 ms
+Sort by type priority (not comparison sort): 2 ms
+Sort by type priority (comparison sort): 2 ms
+
+
+
+N = 40
+TEXTfile: 	0.002s	0.009s	0.006s	0.001s	0.018s	5356 Bytes
+BINfile: 	0.002s	0.004s	0.001s	0.001s	0.008s	5207 Bytes
+VECTOR: 	0.002s	0.001s	0.003s			6568 Bytes
+
+Sort by type (counting sort): 1 ms
+Sort by type (comparison sort): 5 ms
+Sort by priority (radix sort): 3 ms
+Sort by priority (comparison sort): 7 ms
+Sort by type priority (not comparison sort): 5 ms
+Sort by type priority (comparison sort): 7 ms
+
+
+
+N = 80
+TEXTfile: 	0.005s	0.02s	0.012s	0.002s	0.039s	11632 Bytes
+BINfile: 	0.004s	0.023s	0s	0.002s	0.029s	10956 Bytes
+VECTOR: 	0.004s	0.002s	0.006s			13232 Bytes
+
+Sort by type (counting sort): 2 ms
+Sort by type (comparison sort): 5 ms
+Sort by priority (radix sort): 5 ms
+Sort by priority (comparison sort): 12 ms
+Sort by type priority (not comparison sort): 7 ms
+Sort by type priority (comparison sort): 12 ms
+
+
+
+N = 160
+TEXTfile: 	0.009s	0.022s	0.022s	0.003s	0.056s	21184 Bytes
+BINfile: 	0.009s	0.017s	0.001s	0.004s	0.031s	19618 Bytes
+VECTOR: 	0.009s	0.004s	0.013s			25488 Bytes
+
+Sort by type (counting sort): 3 ms
+Sort by type (comparison sort): 6 ms
+Sort by priority (radix sort): 11 ms
+Sort by priority (comparison sort): 20 ms
+Sort by type priority (not comparison sort): 14 ms
+Sort by type priority (comparison sort): 25 ms
+
+
+
+N = 320
+TEXTfile: 	0.018s	0.033s	0.044s	0.006s	0.101s	44344 Bytes
+BINfile: 	0.018s	0.011s	0.002s	0.006s	0.037s	40346 Bytes
+VECTOR: 	0.018s	0.008s	0.026s			51808 Bytes
+
+Sort by type (counting sort): 6 ms
+Sort by type (comparison sort): 12 ms
+Sort by priority (radix sort): 22 ms
+Sort by priority (comparison sort): 47 ms
+Sort by type priority (not comparison sort): 27 ms
+Sort by type priority (comparison sort): 54 ms
+
+
+
+N = 640
+TEXTfile: 	0.036s	0.063s	0.09s	0.016s	0.205s	86534 Bytes
+BINfile: 	0.035s	0.013s	0.005s	0.012s	0.065s	81810 Bytes
+VECTOR: 	0.038s	0.013s	0.051s			104192 Bytes
+
+Sort by type (counting sort): 13 ms
+Sort by type (comparison sort): 40 ms
+Sort by priority (radix sort): 44 ms
+Sort by priority (comparison sort): 108 ms
+Sort by type priority (not comparison sort): 54 ms
+Sort by type priority (comparison sort): 127 ms
+
+
+
+N = 1280
+TEXTfile: 	0.071s	0.093s	0.171s	0.032s	0.367s	173655 Bytes
+BINfile: 	0.075s	0.053s	0.01s	0.029s	0.167s	163267 Bytes
+VECTOR: 	0.071s	0.024s	0.095s			210240 Bytes
+
+Sort by type (counting sort): 27 ms
+Sort by type (comparison sort): 53 ms
+Sort by priority (radix sort): 88 ms
+Sort by priority (comparison sort): 212 ms
+Sort by type priority (not comparison sort): 109 ms
+Sort by type priority (comparison sort): 263 ms
+
+
+
+N = 2560
+TEXTfile: 	0.143s	0.25s	0.344s	0.05s	0.787s	353484 Bytes
+BINfile: 	0.138s	0.023s	0.021s	0.072s	0.254s	324512 Bytes
+VECTOR: 	0.14s	0.05s	0.19s			415504 Bytes
+
+Sort by type (counting sort): 48 ms
+Sort by type (comparison sort): 114 ms
+Sort by priority (radix sort): 177 ms
+Sort by priority (comparison sort): 364 ms
+Sort by type priority (not comparison sort): 226 ms
+Sort by type priority (comparison sort): 537 ms
+
+
+
+N = 5120
+TEXTfile: 	0.302s	0.346s	0.718s	0.106s	1.472s	702523 Bytes
+BINfile: 	0.28s	0.033s	0.039s	0.094s	0.446s	658146 Bytes
+VECTOR: 	0.293s	0.123s	0.416s			832800 Bytes
+
+Sort by type (counting sort): 97 ms
+Sort by type (comparison sort): 198 ms
+Sort by priority (radix sort): 357 ms
+Sort by priority (comparison sort): 675 ms
+Sort by type priority (not comparison sort): 443 ms
+Sort by type priority (comparison sort): 1083 ms
+
+
+
+N = 10240
+TEXTfile: 	0.581s	0.712s	1.4s	0.211s	2.904s	1398300 Bytes
+BINfile: 	0.565s	0.072s	0.079s	0.221s	0.937s	1320304 Bytes
+VECTOR: 	0.562s	0.201s	0.763s			1655120 Bytes
+
+Sort by type (counting sort): 194 ms
+Sort by type (comparison sort): 439 ms
+Sort by priority (radix sort): 710 ms
+Sort by priority (comparison sort): 1369 ms
+Sort by type priority (not comparison sort): 892 ms
+Sort by type priority (comparison sort): 2017 ms
+
+
+
+N = 20480
+TEXTfile: 	1.177s	1.388s	2.779s	0.346s	5.69s	2813196 Bytes
+BINfile: 	1.122s	0.124s	0.159s	0.442s	1.847s	2624820 Bytes
+VECTOR: 	1.144s	0.38s	1.524s			3319312 Bytes
+
+Sort by type (counting sort): 393 ms
+Sort by type (comparison sort): 882 ms
+Sort by priority (radix sort): 1437 ms
+Sort by priority (comparison sort): 2671 ms
+Sort by type priority (not comparison sort): 1800 ms
+Sort by type priority (comparison sort): 3769 ms
+
+
+
+N = 40960
+TEXTfile: 	2.426s	2.854s	5.593s	0.913s	11.786s	5632328 Bytes
+BINfile: 	2.241s	0.216s	0.313s	0.993s	3.763s	5250011 Bytes
+VECTOR: 	2.251s	0.793s	3.044s			6642960 Bytes
+
+Sort by type (counting sort): 774 ms
+Sort by type (comparison sort): 1616 ms
+Sort by priority (radix sort): 2878 ms
+Sort by priority (comparison sort): 5642 ms
+Sort by type priority (not comparison sort): 3604 ms
+Sort by type priority (comparison sort): 7275 ms
+
+
+
+N = 61440
+TEXTfile: 	3.399s	4.104s	8.334s	1.417s	17.254s	8457897 Bytes
+BINfile: 	3.369s	0.359s	0.47s	1.188s	5.386s	7892867 Bytes
+VECTOR: 	3.385s	1.426s	4.811s			9962592 Bytes
+
+Sort by type (counting sort): 1171 ms
+Sort by type (comparison sort): 2843 ms
+Sort by priority (radix sort): 4320 ms
+Sort by priority (comparison sort): 8139 ms
+Sort by type priority (not comparison sort): 5432 ms
+Sort by type priority (comparison sort): 11253 ms
+
+
+
+N = 81920
+TEXTfile: 	4.547s	5.454s	11.157s	1.952s	23.11s	11328865 Bytes
+BINfile: 	4.492s	0.421s	0.642s	1.644s	7.199s	10528739 Bytes
+VECTOR: 	4.504s	1.852s	6.356s			13294480 Bytes
+
+Sort by type (counting sort): 1566 ms
+Sort by type (comparison sort): 3242 ms
+Sort by priority (radix sort): 5742 ms
+Sort by priority (comparison sort): 10951 ms
+Sort by type priority (not comparison sort): 7229 ms
+Sort by type priority (comparison sort): 14364 ms
+
+
+
+N = 102400
+TEXTfile: 	5.628s	6.994s	13.876s	1.665s	28.163s	14088263 Bytes
+BINfile: 	5.603s	0.511s	0.812s	1.969s	8.895s	13129133 Bytes
+VECTOR: 	5.609s	1.784s	7.393s			16569360 Bytes
+
+Sort by type (counting sort): 1954 ms
+Sort by type (comparison sort): 4474 ms
+Sort by priority (radix sort): 7192 ms
+Sort by priority (comparison sort): 14086 ms
+Sort by type priority (not comparison sort): 9023 ms
+Sort by type priority (comparison sort): 17763 ms
+
+
+
+N = 122880
+TEXTfile: 	6.791s	8.162s	17.021s	2.332s	34.306s	16984224 Bytes
+BINfile: 	6.723s	0.614s	0.966s	2.016s	10.319s	15745808 Bytes
+VECTOR: 	6.752s	2.13s	8.882s			19928640 Bytes
+
+Sort by type (counting sort): 2336 ms
+Sort by type (comparison sort): 4654 ms
+Sort by priority (radix sort): 8636 ms
+Sort by priority (comparison sort): 16035 ms
+Sort by type priority (not comparison sort): 10872 ms
+Sort by type priority (comparison sort): 23053 ms
+
+
+
